@@ -1,8 +1,7 @@
 # TrilateralBazaar
-Bazaar of Trilateral tests and related experiments
+Bazaar of Trilateral tests and related experiments for [trilateral](https://github.com/nanjizar/trilateral/)
 
-https://nanjizal.github.io/TrilateralBazaar/
-
+Demos: 
 [WebGL](https://nanjizal.github.io/TrilateralBazaar/demo/binWebGL/)
 [Kha](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/build/html5/)
 [Heaps](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binHeaps/)
