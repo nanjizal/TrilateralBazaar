@@ -9,4 +9,4 @@ https://nanjizal.github.io/TrilateralBazaar/
 [Luxe](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binLuxe/web/)
 [NME](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binNme/jsprime/TestFlash/)
 [OpenFL](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binOpenFL/Exports/html5/release/bin/)
-[Canvas](hhttps://nanjizal.github.io/TrilateralBazaar/toolKitTest/binCanvas/)
+[Canvas](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binCanvas/)
