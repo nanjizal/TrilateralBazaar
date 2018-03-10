@@ -1,1 +1,0 @@
-typedef AssetType = nme.AssetType;
