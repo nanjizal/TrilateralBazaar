@@ -1,0 +1,10 @@
+### Uncomment the compile you require
+# compile/compileHeapsWebGL.hxml
+#-cmd haxe compile/compileLuxeWebGL.hxml
+# compile/compileNME.hxml
+#-cmd haxe compile/compileLime.hxml
+ compile/compileCanvas.hxml 
+ 
+ 
+# probably run this from terminal for Kha or use Kode
+#-cmd node Kha/make -t html5 --server
