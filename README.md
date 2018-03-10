@@ -7,5 +7,5 @@ Demos:
 [Heaps](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binHeaps/)
 [Luxe](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binLuxe/web/)
 [NME](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binNme/jsprime/TestFlash/)
-[OpenFL](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binOpenFL/Exports/html5/release/bin/)
-[Canvas](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binCanvas/)
+[OpenFL](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binOpenFL/Exports/html5/release/bin/index.html)
+[Canvas](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binCanvas/index.html)
