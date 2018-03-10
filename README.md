@@ -1,5 +1,5 @@
 # TrilateralBazaar
-Bazaar of Trilateral tests and related experiments for [trilateral](https://github.com/nanjizar/trilateral/)
+Bazaar of Trilateral tests and related experiments for [trilateral](https://github.com/nanjizal/trilateral/)
 
 Demos: 
 [WebGL](https://nanjizal.github.io/TrilateralBazaar/demo/binWebGL/)
@@ -8,4 +8,4 @@ Demos:
 [Luxe](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binLuxe/web/)
 [NME](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binNme/jsprime/TestFlash/)
 [OpenFL](https://nanjizal.github.io/TrilateralBazaar/toolKitTest/binOpenFL/Exports/html5/release/bin/)
-[Canvas](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binCanvas/)
+[Canvas](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binCanvas/?a=refresh)
