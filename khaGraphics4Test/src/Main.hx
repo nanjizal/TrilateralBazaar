@@ -13,9 +13,6 @@ class Main {
     public static function main() {
         System.init({ title: "Test Graphics 4", width: 1024, height: 1024, samplesPerPixel: 4 }, function() { new Main(); } );
     }
- 
-    var pixelLayer:         Image;
-    var vectorLayer:        Image;
     var initialized:        Bool = false;
     var xPos:               Float;
     var yPos:               Float;
