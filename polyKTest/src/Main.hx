@@ -54,16 +54,9 @@ class Main {
         var triples = new ArrayTriple( tgs );
         var count = 0;
         for( tri in triples ){
-            trace( 'count ' + count );
             var a: Int = Std.int( tri.a*2 );
             var b: Int = Std.int( tri.b*2 );
             var c: Int = Std.int( tri.c*2 );
-            trace( poly[a] );
-            trace( poly[b] );
-            trace( poly[c] );
-            trace( poly[a+1] );
-            trace( poly[b+1] );
-            trace( poly[c+1] );
             triangles.drawTriangle(  id, { x: poly[ a ], y: poly[ a + 1 ] }
                                       , { x: poly[ b ], y: poly[ b + 1 ] }
                                       , { x: poly[ c ], y: poly[ c + 1 ] }, colorID );
