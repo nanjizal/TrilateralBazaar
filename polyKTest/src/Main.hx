@@ -39,7 +39,6 @@ class Main {
         svg.parse( d, -10, -200, 6, 6 );
         var p = fine.points; 
         var l = p.length;
-        var red = 0;
         var j = 0;
         for( i in 0...l ){
             if( p[ i ].length != 0 ){ // only try to fill empty arrays
