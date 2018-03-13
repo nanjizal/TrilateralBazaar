@@ -9,3 +9,6 @@ Demos:
 [NME](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binNme/jsprime/TestFlash/)
 [OpenFL](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/openFL/)
 [Canvas](https://nanjizal.github.io/TrilateralBazaar/toolkitTest/binCanvas/?a=refresh)
+
+
+[hxDaedalus pathfinding](https://nanjizal.github.io/TrilateralBazaar/hxDaedalusTest/binWebGL/)
