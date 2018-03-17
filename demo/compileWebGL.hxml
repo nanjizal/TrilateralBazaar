@@ -3,10 +3,11 @@
 #-D trilateral_debug
 #-D trilateral_debugPoints
 #-D trilateral_includeSegments
+-debug
 -lib trilateral
 -main Main
--D js-flatten 
--dce full
+#-D js-flatten 
+#-dce full
 --next
 -cmd echo '<!DOCTYPE html><meta charset="UTF-8"><html><body><script src="test.js"></script></body></html>' >binWebGL/index.html
 -cmd open binWebGL/index.html

@@ -7,6 +7,7 @@ import trilateral.helper.*;
 import trilateral.justPath.*;
 import trilateral.angle.*;
 import trilateral.polys.*;
+import trilateral.angle.*;
 #if trilateral_includeSegments
 import trilateral.segment.*;
 #end
@@ -50,6 +51,7 @@ class TrilateralTest {
     //
     function draw(){
         triangles = new TriangleArray();
+        // ellipticArc(); Only partially working
         addPaths();
         pieTests();
         pieArc();
@@ -217,8 +219,25 @@ class TrilateralTest {
         triangles.addArray( 0
                         ,   Poly.arc( bottomRight.x, bottomRight.y, pieRadius + 40, 30, Math.PI, Math.PI/16, LARGE )
                         ,   5 );
-        
     }
+    // Only partially working
+    function ellipticArc(){
+        var fine = new Fine();
+        fine.width = 1;
+        fine.moveTo( 10, 315 );
+        fine.lineTo( 110, 215 );
+        var zero: ZeroTo2pi = 0;
+        fine.ellipticArc( 30, 50, zero, false, true, 162.55, 162.45 );
+        fine.lineTo( 172.55, 152.45 );
+        var radians: ZeroTo2pi = 0;
+        radians.degrees = -45;
+        fine.ellipticArc( 30, 50, radians, false, true, 215.1, 109.9 );
+        fine.lineTo( 315, 10 );
+        triangles.addArray( 22
+                        ,   fine.trilateralArray
+                        ,   appColors.indexOf( Orange ) );
+    }
+    
     // Test SVG data
     var quadtest_d = "M200,300 Q400,50 600,300 T1000,300";
     var cubictest_d = "M100,200 C100,100 250,100 250,200S400,300 400,200";
