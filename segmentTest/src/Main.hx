@@ -12,12 +12,14 @@ import kha.input.KeyCode;
 import hxPolyK.PolyK; // used for iterating triangle simply ( lazy ;) )
 import org.poly2tri.VisiblePolygon;
 import trilateral.path.Fine;
+import trilateral.path.Crude;
 import trilateral.path.FillOnly;
 import trilateral.tri.Triangle;
 import trilateral.justPath.SvgPath;
 import trilateral.tri.TriangleArray;
 import trilateral.segment.SixteenSeg;
 import trilateral.segment.SevenSeg;
+import trilateral.geom.Algebra;
 import Shapes;
 import Metrophobic;
 class Main {
@@ -86,6 +88,9 @@ class Main {
                         ,   colorID );
     }
     function drawPanels( x: Float, y: Float ){
+        // For small text we don't need accuracy so we can use straight lines...
+        Algebra.quadStep = 10;
+        Algebra.cubicStep = 10;
         var svgText  = [ Metrophobic.destinationTime()
                     ,    Metrophobic.presentTime()
                     ,    Metrophobic.lastTimeDeparted() ];
@@ -146,12 +151,12 @@ class Main {
             renderD( d, x + ( panelWid - pxs[k]*0.5 )/2 , dy + k*100 + 2, 0.25, 7 );
             k++;
         }
-
+        trace( triangles.length );
     }
 
     var count: Int = 0;
     public function renderD( d: String, x: Float, y: Float, scaleText: Float, colorID: Int ){
-        var fine = new Fine();
+        var fine = new Crude();
         fine.width = 1;
         var p = new SvgPath( fine );
         p.parse( d, x, y, scaleText, scaleText );
