@@ -14,3 +14,5 @@ Demos:
 [hxDaedalus pathfinding](https://nanjizal.github.io/TrilateralBazaar/hxDaedalusTest/binWebGL/)
 
 [backToFuture Segments](https://nanjizal.github.io/TrilateralBazaar/segmentTest/build/html5/)
+
+[DotMatrix Display](https://nanjizal.github.io/TrilateralBazaar/dotMatrixTest/build/html5/)
