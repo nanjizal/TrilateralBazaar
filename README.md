@@ -16,3 +16,5 @@ Demos:
 [backToFuture Segments](https://nanjizal.github.io/TrilateralBazaar/segmentTest/build/html5/)
 
 [DotMatrix Display](https://nanjizal.github.io/TrilateralBazaar/dotMatrixTest/build/html5/index.html)
+
+[Fxg (from swf) Parrot using PolyPainter ](https://nanjizal.github.io/TrilateralBazaar/fxgTest/build/html5/index.html)
