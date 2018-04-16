@@ -18,3 +18,5 @@ Demos:
 [DotMatrix Display](https://nanjizal.github.io/TrilateralBazaar/dotMatrixTest/build/html5/index.html)
 
 [Fxg (from swf) Parrot using PolyPainter ](https://nanjizal.github.io/TrilateralBazaar/fxgTest/build/html5/index.html)
+
+[PolyK example](http://nanjizal.github.io/TrilateralBazaar/polyKTest/build/html5/index.html)
