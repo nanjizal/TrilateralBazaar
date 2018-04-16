@@ -14,7 +14,7 @@
 * dotMatrixTest ( Kha - graphics2 )
         ![](screenshots/RoundedPortrain.png)
 * polyK ( Kha - graphics )                  
-    
+        ![](screenshots/polyK.png)
 * poly2trihx ( Kha - graphics )
     
 * fxg ( Kha - graphics )                    

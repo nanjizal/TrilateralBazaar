@@ -14,9 +14,9 @@ import trilateral.path.Crude;
 import trilateral.tri.Triangle;
 import trilateral.tri.TriangleArray;
 import trilateral.geom.Algebra;
-import trilateral.segment.DotMatrix;
-import trilateral.helper.ShapesGeneric;
-import trilateral.segment.Character5x7;
+import trilateralXtra.segment.DotMatrix;
+import trilateral.polys.Shapes;
+import trilateralXtra.segment.Character5x7;
 class Main {
     var appColors = [ Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Purple, Color.White, Color.Orange ];
     var triangles = new TriangleArray();
@@ -42,7 +42,7 @@ class Main {
         Scheduler.addTimeTask( update, 0, 1/30 );
     }
     function drawPanels(){
-        var shapes = new ShapesGeneric( triangles, colors );
+        var shapes = new Shapes( triangles, colors );
         var scale = 5.;
         var dw = 2*5*scale;
         var dh = 2*7*scale;
