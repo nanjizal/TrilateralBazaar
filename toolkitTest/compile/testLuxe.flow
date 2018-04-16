@@ -25,6 +25,7 @@
 			dependencies : {
 				luxe : '*',
 				trilateral : '*',
+				trilateralXtra : '*'
 			}
 		},
 

@@ -6,6 +6,7 @@
    <!-- <source poth="../samples/" /> -->
     <haxelib name="openfl" />
     <haxelib name="trilateral" />
+    <haxelib name="trilateralXtra"/>
     <!--  <haxelib name="" /> -->
     <window width="1024" height="768" background="0x181818" unless="mobile" />
     <!--assets path="../binOpenFL/Assets" rename="assets" exclude="openfl.svg" /-->

@@ -18,6 +18,7 @@
 	<!-- classpath, haxe libs -->
 	<source path="../src/" />
 	<haxelib name="nme" />
+    <haxelib name="trilateralXtra"/>
     <haxelib name="trilateral" />
     
 </project>

@@ -4,6 +4,7 @@
 
 -lib heaps
 -lib trilateral
+-lib trilateralXtra
 
 -main testTrilateral.TestHeaps
 #-D js-flatten 

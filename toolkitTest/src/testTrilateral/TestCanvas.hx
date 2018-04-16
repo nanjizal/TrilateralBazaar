@@ -44,6 +44,7 @@ class TestCanvas {
                 g.beginFill( triangleColors[ tri.mark ] );
             } else {
                 g.beginFill( triangleColors[ tri.colorID ] );
+                g.lineStyle( 0., triangleColors[ tri.colorID ], 1. );
             }
             g.drawTri( [   ox + tri.ax * s, oy + tri.ay * s
                         ,  ox + tri.bx * s, oy + tri.by * s
