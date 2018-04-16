@@ -22,3 +22,5 @@ Demos:
 [PolyK example](http://nanjizal.github.io/TrilateralBazaar/polyKTest/build/html5/index.html)
 
 [Graphics4 Kha](http://nanjizal.github.io/TrilateralBazaar/khaGraphics4Test/build/html5/index.html)
+
+[elliptic Arc svg tests](http://nanjizal.github.io/TrilateralBazaar/ellipticalArc/build/html5/index.html)
