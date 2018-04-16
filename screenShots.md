@@ -1,25 +1,25 @@
 ## Screenshots
     
-    * demo ( WebGL )
-        ![](sevenSegRoundBorder.png)
+    - demo ( WebGL )
+        ![](screenshots/sevenSegRoundBorder.png)
         Debug "Fine" showing rounded corners.
-        ![](linesTrianglesCorners2.png)
+        ![](screenshots/linesTrianglesCorners2.png)
     - toolkitTest ( Multiple Toolkits )
         
     - ellipticalArc ( Kha - graphics2 )         ADDED
-        ![](ellipticalArcExamples.png)
+        ![](screenshots/ellipticalArcExamples.png)
     - khaGraphics4Test ( Kha - graphics4 )      
         
     - segmentTest ( Kha - graphics2 )           
-        ![](back2future.png)
+        ![](screenshots/back2future.png)
     - dotMatrixTest ( Kha - graphics2 )
-        ![](RoundedPortrain.png)
+        ![](screenshots/RoundedPortrain.png)
     - polyK ( Kha - graphics )                  
     
     - poly2trihx ( Kha - graphics )
     
     - fxg ( Kha - graphics )                    
-        ![](parrot.png)
+        ![](screenshots/parrot.png)
     - svg                                       not started
     - linear gradient                           not started
     - texture                                   not started
