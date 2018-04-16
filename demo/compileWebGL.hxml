@@ -5,6 +5,7 @@
 #-D trilateral_includeSegments
 -debug
 -lib trilateral
+-lib trilateralXtra
 -main Main
 #-D js-flatten 
 #-dce full

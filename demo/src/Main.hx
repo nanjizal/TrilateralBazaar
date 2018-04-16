@@ -8,27 +8,12 @@ import js.html.MouseEvent;
 import htmlHelper.tools.AnimateTimer; 
 import trilateral.tri.Triangle;
 import TrilateralTest;
+import shaders.Shaders;
 using htmlHelper.webgl.WebGLSetup;
 class Main extends WebGLSetup {
     var webgl:          WebGLSetup;
     var trilateralTest: TrilateralTest;
     var scale:          Float;
-    // Generic triangle drawing Shaders
-    public static inline var vertex: String =
-        'attribute vec3 pos;' +
-        'attribute vec4 color;' +
-        'varying vec4 vcol;' +
-        'uniform mat4 modelViewProjection;' +
-        'void main(void) {' +
-            ' gl_Position = modelViewProjection * vec4(pos, 1.0);' +
-            ' vcol = color;' +
-        '}';
-    public static inline var fragment: String =
-        'precision mediump float;'+
-        'varying vec4 vcol;' +
-        'void main(void) {' +
-            ' gl_FragColor = vcol;' +
-        '}';
     public static function main(){ new Main(); }
     public inline static var stageRadius: Int = 570;
     public function new(){
@@ -36,7 +21,7 @@ class Main extends WebGLSetup {
         scale = 1/(stageRadius);
         darkBackground();
         modelViewProjection = Matrix4.identity();
-        setupProgram( vertex, fragment );
+        setupProgram( Shaders.vertex, Shaders.fragment );
         trilateralTest =  new TrilateralTest( stageRadius, setMatrix, setAnimate );
         trilateralTest.setup();
         setTriangles( trilateralTest.triangles, cast trilateralTest.appColors );

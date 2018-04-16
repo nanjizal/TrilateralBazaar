@@ -3,13 +3,17 @@ import khaMath.Matrix4;
 import trilateral.tri.*;
 import trilateral.geom.*;
 import trilateral.path.*;
-import trilateral.helper.*;
 import trilateral.justPath.*;
 import trilateral.angle.*;
 import trilateral.polys.*;
 import trilateral.angle.*;
+import trilateralXtra.color.AppColors;
+import trilateral.polys.Shapes;
+import trilateral.justPath.transform.ScaleContext;
+import trilateral.justPath.transform.ScaleTranslateContext;
+import trilateral.justPath.transform.TranslationContext;
 #if trilateral_includeSegments
-import trilateral.segment.*;
+import trilateralXtra.segment.*;
 #end
 class TrilateralTest {
     public var appColors:       Array<AppColors> = [ Black, Red, Orange, Yellow, Green, Blue, Indigo, Violet
@@ -51,7 +55,6 @@ class TrilateralTest {
     //
     function draw(){
         triangles = new TriangleArray();
-        // ellipticArc(); Only partially working
         addPaths();
         pieTests();
         pieArc();
@@ -92,21 +95,21 @@ class TrilateralTest {
     function addShapes(){
         var size = 80;
         var shapes = new Shapes( triangles, appColors );
-        shapes.star( ( bottomLeft.x + centre.x )/2, ( bottomLeft.y + centre.y )/2,      size,  Orange  );
-        shapes.diamond( ( topLeft.x + centre.x )/2, ( topLeft.y + centre.y )/2,     0.7*size,  Yellow  );
+        shapes.star( ( bottomLeft.x + centre.x )/2, ( bottomLeft.y + centre.y )/2,      size,  findColorID( Orange )  );
+        shapes.diamond( ( topLeft.x + centre.x )/2, ( topLeft.y + centre.y )/2,     0.7*size,  findColorID( Yellow )  );
         shapes.diamondOutline( ( topLeft.x + centre.x )/2
-                                                 , ( topLeft.y + centre.y )/2,  0.7*size, 6,   MidGrey );
+                                                 , ( topLeft.y + centre.y )/2,  0.7*size, 6,   findColorID( MidGrey ) );
         shapes.square( ( bottomRight.x + centre.x )/2
-                                                 , ( bottomRight.y + centre.y )/2,  0.7*size,  Green   );
+                                                 , ( bottomRight.y + centre.y )/2,  0.7*size,  findColorID( Green )   );
         shapes.squareOutline( ( bottomRight.x + centre.x )/2
-                                            , ( bottomRight.y + centre.y )/2, 0.7*size, 6,     MidGrey );
-        shapes.rectangle( centre.x - 100, centre.y - 50,                        size*2, size,  Blue    );
-        shapes.circle( ( topRight.x + centre.x )/2, ( topRight.y + centre.y )/2,        size,  Indigo  );
-        shapes.spiralLines( centre.x, centre.y, 15, 60, 0.08, 0.05,                            Red     );
+                                            , ( bottomRight.y + centre.y )/2, 0.7*size, 6,     findColorID( MidGrey ) );
+        shapes.rectangle( centre.x - 100, centre.y - 50,                        size*2, size,  findColorID( Blue )    );
+        shapes.circle( ( topRight.x + centre.x )/2, ( topRight.y + centre.y )/2,        size,  findColorID( Indigo )  );
+        shapes.spiralLines( centre.x, centre.y, 15, 60, 0.08, 0.05,                            findColorID( Red )     );
         shapes.roundedRectangle( topLeft.x - size
-                              ,( topLeft.y + bottomLeft.y )/2 - size/2, size*2, size, 30,      Violet  );
+                              ,( topLeft.y + bottomLeft.y )/2 - size/2, size*2, size, 30,      findColorID( Violet )  );
         shapes.roundedRectangleOutline( topLeft.x - size
-                              ,( topLeft.y + bottomLeft.y )/2 - size/2, size*2, size,  6, 30,  MidGrey );
+                              ,( topLeft.y + bottomLeft.y )/2 - size/2, size*2, size,  6, 30,  findColorID( MidGrey ) );
     }
     function addBird(){
         //var path = new RoundEnd(); // currently Fine has issues.
@@ -119,11 +122,12 @@ class TrilateralTest {
         //var path = new Fine();
         
         path.width = 1;
-        var p = new SvgPath( path );
-        p.parse( bird_d, 0, 0, 1.5, 1.5 );
+        var scaleContext = new ScaleContext( path, 1.5, 1.5 );
+        var p = new SvgPath( scaleContext );
+        p.parse( bird_d );
         triangles.addArray( 6
                         ,   path.trilateralArray
-                        ,   8 );
+                        ,   appColors.indexOf( White ) );
         
     }
     function addQuadCurve(){
@@ -133,8 +137,9 @@ class TrilateralTest {
         path.widthFunction = function( width: Float, x: Float, y: Float, x_: Float, y_: Float ): Float{
             return width+0.008;
         }
-        var p = new SvgPath( path );
-        p.parse( quadtest_d, -100, 300, 1, 1 );
+        var translateContext = new TranslationContext( path, -100, 300 );
+        var p = new SvgPath( translateContext );
+        p.parse( quadtest_d );
         triangles.addArray( 7
                         ,   path.trilateralArray
                         ,   1 );
@@ -146,8 +151,9 @@ class TrilateralTest {
         path.widthFunction = function( width: Float, x: Float, y: Float, x_: Float, y_: Float ): Float{
             return width+0.008;
         }
-        var p = new SvgPath( path );
-        p.parse( cubictest_d, -50, 500, 1, 1 );
+        var translateContext = new TranslationContext( path, -50, 500 );
+        var p = new SvgPath( translateContext );
+        p.parse( cubictest_d );
         triangles.addArray( 7
                         ,   path.trilateralArray
                         ,   5 );
@@ -220,24 +226,6 @@ class TrilateralTest {
                         ,   Poly.arc( bottomRight.x, bottomRight.y, pieRadius + 40, 30, Math.PI, Math.PI/16, LARGE )
                         ,   5 );
     }
-    // Only partially working
-    function ellipticArc(){
-        var fine = new Fine();
-        fine.width = 1;
-        fine.moveTo( 10, 315 );
-        fine.lineTo( 110, 215 );
-        var zero: ZeroTo2pi = 0;
-        fine.ellipticArc( 30, 50, zero, false, true, 162.55, 162.45 );
-        fine.lineTo( 172.55, 152.45 );
-        var radians: ZeroTo2pi = 0;
-        radians.degrees = -45;
-        fine.ellipticArc( 30, 50, radians, false, true, 215.1, 109.9 );
-        fine.lineTo( 315, 10 );
-        triangles.addArray( 22
-                        ,   fine.trilateralArray
-                        ,   appColors.indexOf( Orange ) );
-    }
-    
     // Test SVG data
     var quadtest_d = "M200,300 Q400,50 600,300 T1000,300";
     var cubictest_d = "M100,200 C100,100 250,100 250,200S400,300 400,200";
