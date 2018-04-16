@@ -20,3 +20,5 @@ Demos:
 [Fxg (from swf) Parrot using PolyPainter ](https://nanjizal.github.io/TrilateralBazaar/fxgTest/build/html5/index.html)
 
 [PolyK example](http://nanjizal.github.io/TrilateralBazaar/polyKTest/build/html5/index.html)
+
+[Graphics4 Kha](http://nanjizal.github.io/TrilateralBazarr/khaGraphics4Test/build/html5/index.html)
