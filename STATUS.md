@@ -9,7 +9,7 @@ This is temp Status file for me to keep track of the status of folders, as I reb
     - segmentTest ( Kha - graphics2 )           UPDATED
     - dotMatrixTest ( Kha - graphics2 )         UPDATED
     - polyK ( Kha - graphics )                  UPDATED
-    - poly2trihx ( Kha - graphics               rebuild
+    - poly2trihx ( Kha - graphics               ADDED
     - fxg ( Kha - graphics )                    UPDATED
     - svg                                       not started
     - linear gradient                           not started

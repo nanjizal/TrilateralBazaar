@@ -24,3 +24,5 @@ Demos:
 [Graphics4 Kha](http://nanjizal.github.io/TrilateralBazaar/khaGraphics4Test/build/html5/index.html)
 
 [elliptic Arc svg tests](http://nanjizal.github.io/TrilateralBazaar/ellipticalArc/build/html5/index.html)
+
+[poly2trihx fill example](http://nanjizal.github.io/TrilateralBazaar/polyK2trihxTest/build/html5/index.html)

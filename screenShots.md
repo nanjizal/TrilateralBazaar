@@ -16,7 +16,7 @@
 * polyK ( Kha - graphics )                  
         ![](screenshots/polyK.png)
 * poly2trihx ( Kha - graphics )
-    
+        ![](screenshots/poly2trihx.png)
 * fxg ( Kha - graphics )                    
         ![](screenshots/parrot.png)
 * svg                                       not started
