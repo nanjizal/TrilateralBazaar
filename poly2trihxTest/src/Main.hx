@@ -42,7 +42,7 @@ class Main {
         var scaleTranslateContext = new ScaleTranslateContext( base, 0, 0, 1, 1 );
         var svg = new SvgPath( scaleTranslateContext );
         svg.parse( d );
-        var p = base.points; 
+        var p = base.pointsNoEndOverlap(); // remove end points that match begin points
         fillPoly2trihx( 2, p, 3 );
     }
     public function fillPoly2trihx( id: Int, points: Array<Array<Float>>, colorID: Int ){
@@ -57,10 +57,6 @@ class Main {
                 var p0 = pairs[0].x;
                 var p1 = pairs[0].y;
                 for( pair in pairs ) p2t.push( new org.poly2tri.Point( pair.x, pair.y ) );
-                var l2 = p2t.length;
-                if( p0 == p2t[ l2 - 1 ].x && p1 == p2t[ l2 - 1 ].y ){
-                    p2t.pop();
-                }
                 vp.addPolyline( p2t );
             }
         }
