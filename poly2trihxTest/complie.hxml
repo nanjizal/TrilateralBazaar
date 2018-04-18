@@ -1,0 +1,4 @@
+-cmd node Kha/make -t html5
+--next
+# remove generated files as I don't want them in the repository..
+-cmd haxe cleanupOpen.hxml

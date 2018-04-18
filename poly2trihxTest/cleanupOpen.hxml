@@ -1,0 +1,13 @@
+# remove generated files as I don't want them in the repository..
+-cmd cd build
+-cmd mv 'html5-resources' h5
+-cmd rm -r h5
+-cmd rm -r temp
+-cmd mv 'TrilateralKha_poly2trihxTest-html5-intellij' intellij
+-cmd rm -r intellij
+-cmd mv 'project-html5.hxml' project
+-cmd rm project
+-cmd mv 'TrilateralKha_poly2trihxTest-html5.hxproj' hxproj
+-cmd rm hxproj
+--next
+-cmd open html5/index.html
