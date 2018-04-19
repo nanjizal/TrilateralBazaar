@@ -160,7 +160,7 @@ _$List_ListIterator.prototype = {
 };
 var Main = function() {
 	this.theta = 0.;
-	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(800,600);
+	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawingPolyK(800,600);
 	kha_Assets.loadEverything($bind(this,this.loadParrot));
 };
 $hxClasses["Main"] = Main;
@@ -351,7 +351,7 @@ Main.prototype = {
 		return this.imageDrawing.image;
 	}
 	,backgroundToImage: function() {
-		this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(800,600);
+		this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawingPolyK(800,600);
 		this.imageDrawing.startImage();
 		this.backgroundDraw();
 		this.imageDrawing.end();
@@ -5336,20 +5336,20 @@ kha_Shaders.init = function() {
 	var _g6 = 0;
 	while(_g6 < 3) {
 		var i6 = _g6++;
-		var data6 = Reflect.field(kha_Shaders,"painter_video_vertData" + i6);
+		var data6 = Reflect.field(kha_Shaders,"painter_video_fragData" + i6);
 		var bytes6 = haxe_Unserializer.run(data6);
 		blobs6.push(kha_internal_BytesBlob.fromBytes(bytes6));
 	}
-	kha_Shaders.painter_video_vert = new kha_graphics4_VertexShader(blobs6,["painter-video.vert.essl","painter-video-relaxed.vert.essl","painter-video-webgl2.vert.essl"]);
+	kha_Shaders.painter_video_frag = new kha_graphics4_FragmentShader(blobs6,["painter-video.frag.essl","painter-video-relaxed.frag.essl","painter-video-webgl2.frag.essl"]);
 	var blobs7 = [];
 	var _g7 = 0;
 	while(_g7 < 3) {
 		var i7 = _g7++;
-		var data7 = Reflect.field(kha_Shaders,"painter_video_fragData" + i7);
+		var data7 = Reflect.field(kha_Shaders,"painter_video_vertData" + i7);
 		var bytes7 = haxe_Unserializer.run(data7);
 		blobs7.push(kha_internal_BytesBlob.fromBytes(bytes7));
 	}
-	kha_Shaders.painter_video_frag = new kha_graphics4_FragmentShader(blobs7,["painter-video.frag.essl","painter-video-relaxed.frag.essl","painter-video-webgl2.frag.essl"]);
+	kha_Shaders.painter_video_vert = new kha_graphics4_VertexShader(blobs7,["painter-video.vert.essl","painter-video-relaxed.vert.essl","painter-video-webgl2.vert.essl"]);
 };
 var kha_Sound = function() {
 };
@@ -37344,6 +37344,36 @@ trilateral_path_Base.prototype = {
 	,endLine: null
 	,points: null
 	,dim: null
+	,pointsNoEndOverlap: function() {
+		var p;
+		var l;
+		var j = 0;
+		var pointsClean = [];
+		var _g1 = 0;
+		var _g = this.points.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			p = this.points[i];
+			if(p.length > 2) {
+				pointsClean[j++] = p;
+			}
+		}
+		this.points = pointsClean;
+		var _g11 = 0;
+		var _g2 = this.points.length;
+		while(_g11 < _g2) {
+			var i1 = _g11++;
+			p = this.points[i1];
+			l = p.length;
+			var repeat = p[0] == p[l - 2] && p[1] == p[l - 1];
+			if(repeat) {
+				this.points[i1].pop();
+				this.points[i1].pop();
+				l -= 2;
+			}
+		}
+		return this.points;
+	}
 	,initDim: function() {
 		return { minX : Infinity, maxX : -Infinity, minY : Infinity, maxY : -Infinity};
 	}
@@ -37589,33 +37619,36 @@ trilateral_path_Base.prototype = {
 		this.contour.reset();
 	}
 	,lineTo: function(x_,y_) {
-		if(this.widthFunction != null) {
-			this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+		var repeat = this.x == x_ && this.y == y_;
+		if(!repeat) {
+			if(this.widthFunction != null) {
+				this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+			}
+			this.line(x_,y_);
+			var l = this.points.length;
+			var p = this.points[l - 1];
+			var l2 = p.length;
+			p[l2] = x_;
+			p[l2 + 1] = y_;
+			var d = this.dim[this.dim.length - 1];
+			if(x_ < d.minX) {
+				d.minX = x_;
+			}
+			if(x_ > d.maxX) {
+				d.maxX = x_;
+			}
+			if(y_ < d.minY) {
+				d.minY = y_;
+			}
+			if(y_ > d.maxY) {
+				d.maxY = y_;
+			}
+			this.x = x_;
+			this.y = y_;
 		}
-		this.line(x_,y_);
-		var l = this.points.length;
-		var p = this.points[l - 1];
-		var l2 = p.length;
-		p[l2] = x_;
-		p[l2 + 1] = y_;
-		var d = this.dim[this.dim.length - 1];
-		if(x_ < d.minX) {
-			d.minX = x_;
-		}
-		if(x_ > d.maxX) {
-			d.maxX = x_;
-		}
-		if(y_ < d.minY) {
-			d.minY = y_;
-		}
-		if(y_ > d.maxY) {
-			d.maxY = y_;
-		}
-		this.x = x_;
-		this.y = y_;
 	}
 	,line: function(x_,y_) {
-		haxe_Log.trace("lineTo( " + this.x + ", " + this.y + ", " + x_ + ", " + y_ + ", width )",{ fileName : "Base.hx", lineNumber : 73, className : "trilateral.path.Base", methodName : "lineTrace"});
+		haxe_Log.trace("lineTo( " + this.x + ", " + this.y + ", " + x_ + ", " + y_ + ", width )",{ fileName : "Base.hx", lineNumber : 130, className : "trilateral.path.Base", methodName : "lineTrace"});
 		var _this = this.contour;
 		var ax_ = this.x;
 		var ay_ = this.y;
@@ -37731,7 +37764,7 @@ trilateral_path_Base.prototype = {
 		this2[this2.length] = tri1;
 	}
 	,lineTrace: function(x_,y_) {
-		haxe_Log.trace("lineTo( " + this.x + ", " + this.y + ", " + x_ + ", " + y_ + ", width )",{ fileName : "Base.hx", lineNumber : 73, className : "trilateral.path.Base", methodName : "lineTrace"});
+		haxe_Log.trace("lineTo( " + this.x + ", " + this.y + ", " + x_ + ", " + y_ + ", width )",{ fileName : "Base.hx", lineNumber : 130, className : "trilateral.path.Base", methodName : "lineTrace"});
 	}
 	,quadTo: function(x1,y1,x2,y2) {
 		this.tempArr = [];
@@ -37765,57 +37798,63 @@ trilateral_path_Base.prototype = {
 		var i = 2;
 		var x_ = arr[0];
 		var y_ = arr[1];
-		if(this.widthFunction != null) {
-			this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+		var repeat = this.x == x_ && this.y == y_;
+		if(!repeat) {
+			if(this.widthFunction != null) {
+				this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+			}
+			this.line(x_,y_);
+			var l2 = this.points.length;
+			var p1 = this.points[l2 - 1];
+			var l21 = p1.length;
+			p1[l21] = x_;
+			p1[l21 + 1] = y_;
+			var d = this.dim[this.dim.length - 1];
+			if(x_ < d.minX) {
+				d.minX = x_;
+			}
+			if(x_ > d.maxX) {
+				d.maxX = x_;
+			}
+			if(y_ < d.minY) {
+				d.minY = y_;
+			}
+			if(y_ > d.maxY) {
+				d.maxY = y_;
+			}
+			this.x = x_;
+			this.y = y_;
 		}
-		this.line(x_,y_);
-		var l2 = this.points.length;
-		var p1 = this.points[l2 - 1];
-		var l21 = p1.length;
-		p1[l21] = x_;
-		p1[l21 + 1] = y_;
-		var d = this.dim[this.dim.length - 1];
-		if(x_ < d.minX) {
-			d.minX = x_;
-		}
-		if(x_ > d.maxX) {
-			d.maxX = x_;
-		}
-		if(y_ < d.minY) {
-			d.minY = y_;
-		}
-		if(y_ > d.maxY) {
-			d.maxY = y_;
-		}
-		this.x = x_;
-		this.y = y_;
 		while(i < l1) {
 			var x_1 = arr[i];
 			var y_1 = arr[i + 1];
-			if(this.widthFunction != null) {
-				this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+			var repeat1 = this.x == x_1 && this.y == y_1;
+			if(!repeat1) {
+				if(this.widthFunction != null) {
+					this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+				}
+				this.line(x_1,y_1);
+				var l3 = this.points.length;
+				var p2 = this.points[l3 - 1];
+				var l22 = p2.length;
+				p2[l22] = x_1;
+				p2[l22 + 1] = y_1;
+				var d1 = this.dim[this.dim.length - 1];
+				if(x_1 < d1.minX) {
+					d1.minX = x_1;
+				}
+				if(x_1 > d1.maxX) {
+					d1.maxX = x_1;
+				}
+				if(y_1 < d1.minY) {
+					d1.minY = y_1;
+				}
+				if(y_1 > d1.maxY) {
+					d1.maxY = y_1;
+				}
+				this.x = x_1;
+				this.y = y_1;
 			}
-			this.line(x_1,y_1);
-			var l3 = this.points.length;
-			var p2 = this.points[l3 - 1];
-			var l22 = p2.length;
-			p2[l22] = x_1;
-			p2[l22 + 1] = y_1;
-			var d1 = this.dim[this.dim.length - 1];
-			if(x_1 < d1.minX) {
-				d1.minX = x_1;
-			}
-			if(x_1 > d1.maxX) {
-				d1.maxX = x_1;
-			}
-			if(y_1 < d1.minY) {
-				d1.minY = y_1;
-			}
-			if(y_1 > d1.maxY) {
-				d1.maxY = y_1;
-			}
-			this.x = x_1;
-			this.y = y_1;
 			i += 2;
 		}
 		this.x = x2;
@@ -37855,57 +37894,63 @@ trilateral_path_Base.prototype = {
 		var i = 2;
 		var x_ = arr[0];
 		var y_ = arr[1];
-		if(this.widthFunction != null) {
-			this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+		var repeat = this.x == x_ && this.y == y_;
+		if(!repeat) {
+			if(this.widthFunction != null) {
+				this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+			}
+			this.line(x_,y_);
+			var l2 = this.points.length;
+			var p1 = this.points[l2 - 1];
+			var l21 = p1.length;
+			p1[l21] = x_;
+			p1[l21 + 1] = y_;
+			var d = this.dim[this.dim.length - 1];
+			if(x_ < d.minX) {
+				d.minX = x_;
+			}
+			if(x_ > d.maxX) {
+				d.maxX = x_;
+			}
+			if(y_ < d.minY) {
+				d.minY = y_;
+			}
+			if(y_ > d.maxY) {
+				d.maxY = y_;
+			}
+			this.x = x_;
+			this.y = y_;
 		}
-		this.line(x_,y_);
-		var l2 = this.points.length;
-		var p1 = this.points[l2 - 1];
-		var l21 = p1.length;
-		p1[l21] = x_;
-		p1[l21 + 1] = y_;
-		var d = this.dim[this.dim.length - 1];
-		if(x_ < d.minX) {
-			d.minX = x_;
-		}
-		if(x_ > d.maxX) {
-			d.maxX = x_;
-		}
-		if(y_ < d.minY) {
-			d.minY = y_;
-		}
-		if(y_ > d.maxY) {
-			d.maxY = y_;
-		}
-		this.x = x_;
-		this.y = y_;
 		while(i < l1) {
 			var x_1 = arr[i];
 			var y_1 = arr[i + 1];
-			if(this.widthFunction != null) {
-				this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+			var repeat1 = this.x == x_1 && this.y == y_1;
+			if(!repeat1) {
+				if(this.widthFunction != null) {
+					this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+				}
+				this.line(x_1,y_1);
+				var l3 = this.points.length;
+				var p2 = this.points[l3 - 1];
+				var l22 = p2.length;
+				p2[l22] = x_1;
+				p2[l22 + 1] = y_1;
+				var d1 = this.dim[this.dim.length - 1];
+				if(x_1 < d1.minX) {
+					d1.minX = x_1;
+				}
+				if(x_1 > d1.maxX) {
+					d1.maxX = x_1;
+				}
+				if(y_1 < d1.minY) {
+					d1.minY = y_1;
+				}
+				if(y_1 > d1.maxY) {
+					d1.maxY = y_1;
+				}
+				this.x = x_1;
+				this.y = y_1;
 			}
-			this.line(x_1,y_1);
-			var l3 = this.points.length;
-			var p2 = this.points[l3 - 1];
-			var l22 = p2.length;
-			p2[l22] = x_1;
-			p2[l22 + 1] = y_1;
-			var d1 = this.dim[this.dim.length - 1];
-			if(x_1 < d1.minX) {
-				d1.minX = x_1;
-			}
-			if(x_1 > d1.maxX) {
-				d1.maxX = x_1;
-			}
-			if(y_1 < d1.minY) {
-				d1.minY = y_1;
-			}
-			if(y_1 > d1.maxY) {
-				d1.maxY = y_1;
-			}
-			this.x = x_1;
-			this.y = y_1;
 			i += 2;
 		}
 		this.x = x2;
@@ -37946,82 +37991,17 @@ trilateral_path_Base.prototype = {
 		var i = 2;
 		var x_ = arr[0];
 		var y_ = arr[1];
-		if(this.widthFunction != null) {
-			this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
-		}
-		this.line(x_,y_);
-		var l2 = this.points.length;
-		var p1 = this.points[l2 - 1];
-		var l21 = p1.length;
-		p1[l21] = x_;
-		p1[l21 + 1] = y_;
-		var d = this.dim[this.dim.length - 1];
-		if(x_ < d.minX) {
-			d.minX = x_;
-		}
-		if(x_ > d.maxX) {
-			d.maxX = x_;
-		}
-		if(y_ < d.minY) {
-			d.minY = y_;
-		}
-		if(y_ > d.maxY) {
-			d.maxY = y_;
-		}
-		this.x = x_;
-		this.y = y_;
-		while(i < l1) {
-			var x_1 = arr[i];
-			var y_1 = arr[i + 1];
-			if(this.widthFunction != null) {
-				this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
-			}
-			this.line(x_1,y_1);
-			var l3 = this.points.length;
-			var p2 = this.points[l3 - 1];
-			var l22 = p2.length;
-			p2[l22] = x_1;
-			p2[l22 + 1] = y_1;
-			var d1 = this.dim[this.dim.length - 1];
-			if(x_1 < d1.minX) {
-				d1.minX = x_1;
-			}
-			if(x_1 > d1.maxX) {
-				d1.maxX = x_1;
-			}
-			if(y_1 < d1.minY) {
-				d1.minY = y_1;
-			}
-			if(y_1 > d1.maxY) {
-				d1.maxY = y_1;
-			}
-			this.x = x_1;
-			this.y = y_1;
-			i += 2;
-		}
-		this.x = x3;
-		this.y = y3;
-	}
-	,plotCoord: function(arr,withMove) {
-		if(withMove == null) {
-			withMove = true;
-		}
-		var l = arr.length;
-		var i = 2;
-		if(withMove) {
-			this.moveTo(arr[0],arr[1]);
-		} else {
-			var x_ = arr[0];
-			var y_ = arr[1];
+		var repeat = this.x == x_ && this.y == y_;
+		if(!repeat) {
 			if(this.widthFunction != null) {
 				this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
 			}
 			this.line(x_,y_);
-			var l1 = this.points.length;
-			var p = this.points[l1 - 1];
-			var l2 = p.length;
-			p[l2] = x_;
-			p[l2 + 1] = y_;
+			var l2 = this.points.length;
+			var p1 = this.points[l2 - 1];
+			var l21 = p1.length;
+			p1[l21] = x_;
+			p1[l21 + 1] = y_;
 			var d = this.dim[this.dim.length - 1];
 			if(x_ < d.minX) {
 				d.minX = x_;
@@ -38038,33 +38018,110 @@ trilateral_path_Base.prototype = {
 			this.x = x_;
 			this.y = y_;
 		}
+		while(i < l1) {
+			var x_1 = arr[i];
+			var y_1 = arr[i + 1];
+			var repeat1 = this.x == x_1 && this.y == y_1;
+			if(!repeat1) {
+				if(this.widthFunction != null) {
+					this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+				}
+				this.line(x_1,y_1);
+				var l3 = this.points.length;
+				var p2 = this.points[l3 - 1];
+				var l22 = p2.length;
+				p2[l22] = x_1;
+				p2[l22 + 1] = y_1;
+				var d1 = this.dim[this.dim.length - 1];
+				if(x_1 < d1.minX) {
+					d1.minX = x_1;
+				}
+				if(x_1 > d1.maxX) {
+					d1.maxX = x_1;
+				}
+				if(y_1 < d1.minY) {
+					d1.minY = y_1;
+				}
+				if(y_1 > d1.maxY) {
+					d1.maxY = y_1;
+				}
+				this.x = x_1;
+				this.y = y_1;
+			}
+			i += 2;
+		}
+		this.x = x3;
+		this.y = y3;
+	}
+	,plotCoord: function(arr,withMove) {
+		if(withMove == null) {
+			withMove = true;
+		}
+		var l = arr.length;
+		var i = 2;
+		if(withMove) {
+			this.moveTo(arr[0],arr[1]);
+		} else {
+			var x_ = arr[0];
+			var y_ = arr[1];
+			var repeat = this.x == x_ && this.y == y_;
+			if(!repeat) {
+				if(this.widthFunction != null) {
+					this.width = this.widthFunction(this.width,this.x,this.x,x_,y_);
+				}
+				this.line(x_,y_);
+				var l1 = this.points.length;
+				var p = this.points[l1 - 1];
+				var l2 = p.length;
+				p[l2] = x_;
+				p[l2 + 1] = y_;
+				var d = this.dim[this.dim.length - 1];
+				if(x_ < d.minX) {
+					d.minX = x_;
+				}
+				if(x_ > d.maxX) {
+					d.maxX = x_;
+				}
+				if(y_ < d.minY) {
+					d.minY = y_;
+				}
+				if(y_ > d.maxY) {
+					d.maxY = y_;
+				}
+				this.x = x_;
+				this.y = y_;
+			}
+		}
 		while(i < l) {
 			var x_1 = arr[i];
 			var y_1 = arr[i + 1];
-			if(this.widthFunction != null) {
-				this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+			var repeat1 = this.x == x_1 && this.y == y_1;
+			if(!repeat1) {
+				if(this.widthFunction != null) {
+					this.width = this.widthFunction(this.width,this.x,this.x,x_1,y_1);
+				}
+				this.line(x_1,y_1);
+				var l3 = this.points.length;
+				var p1 = this.points[l3 - 1];
+				var l21 = p1.length;
+				p1[l21] = x_1;
+				p1[l21 + 1] = y_1;
+				var d1 = this.dim[this.dim.length - 1];
+				if(x_1 < d1.minX) {
+					d1.minX = x_1;
+				}
+				if(x_1 > d1.maxX) {
+					d1.maxX = x_1;
+				}
+				if(y_1 < d1.minY) {
+					d1.minY = y_1;
+				}
+				if(y_1 > d1.maxY) {
+					d1.maxY = y_1;
+				}
+				this.x = x_1;
+				this.y = y_1;
 			}
-			this.line(x_1,y_1);
-			var l3 = this.points.length;
-			var p1 = this.points[l3 - 1];
-			var l21 = p1.length;
-			p1[l21] = x_1;
-			p1[l21 + 1] = y_1;
-			var d1 = this.dim[this.dim.length - 1];
-			if(x_1 < d1.minX) {
-				d1.minX = x_1;
-			}
-			if(x_1 > d1.maxX) {
-				d1.maxX = x_1;
-			}
-			if(y_1 < d1.minY) {
-				d1.minY = y_1;
-			}
-			if(y_1 > d1.maxY) {
-				d1.maxY = y_1;
-			}
-			this.x = x_1;
-			this.y = y_1;
 			i += 2;
 		}
 	}
@@ -41934,9 +41991,145 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			tri = this.triangles[i];
 			this.polyPainter.drawFillTriangle(tri.ax * scale + cx,tri.ay * scale + cy,tri.bx * scale + cx,tri.by * scale + cy,tri.cx * scale + cx,tri.cy * scale + cy,this.colors[tri.colorID]);
 		}
-		haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 50, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderTriangles"});
+		haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 49, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderTriangles"});
 	}
-	,fill: function(poly,colorID) {
+	,fill: function(p,colorID) {
+		throw new js__$Boot_HaxeError("please extend ImageDrawing with implementation");
+	}
+	,pathFactory: function() {
+		throw new js__$Boot_HaxeError("please extend ImageDrawing with implementation");
+	}
+	,colorId: function(color) {
+		var id = this.colors.indexOf(color);
+		if(id == -1) {
+			id = this.colors.length;
+			this.colors[id] = color;
+		}
+		return id;
+	}
+	,__class__: trilateralXtra_kDrawing_ImageDrawing
+};
+var trilateralXtra_kDrawing_ImageDrawingPolyK = function(w,h) {
+	trilateralXtra_kDrawing_ImageDrawing.call(this,w,h);
+};
+$hxClasses["trilateralXtra.kDrawing.ImageDrawingPolyK"] = trilateralXtra_kDrawing_ImageDrawingPolyK;
+trilateralXtra_kDrawing_ImageDrawingPolyK.__name__ = true;
+trilateralXtra_kDrawing_ImageDrawingPolyK.__super__ = trilateralXtra_kDrawing_ImageDrawing;
+trilateralXtra_kDrawing_ImageDrawingPolyK.prototype = $extend(trilateralXtra_kDrawing_ImageDrawing.prototype,{
+	fill: function(p,colorID) {
+		var l = p.length;
+		var _g1 = 0;
+		var _g = l;
+		while(_g1 < _g) {
+			var i = _g1++;
+			if(p[i].length != 0) {
+				var poly = p[i];
+				var n = poly.length >> 1;
+				var tgs;
+				if(n < 3) {
+					tgs = [];
+				} else {
+					var tgs1 = [];
+					var avl = [];
+					var _g11 = 0;
+					var _g2 = n;
+					while(_g11 < _g2) {
+						var i1 = _g11++;
+						avl.push(i1);
+					}
+					var i2 = 0;
+					var al = n;
+					var i0;
+					var i11;
+					var i21;
+					var vi;
+					var ax;
+					var ay;
+					var bx;
+					var by;
+					var cx;
+					var cy;
+					var earFound;
+					while(al > 3) {
+						i0 = avl[i2 % al];
+						i11 = avl[(i2 + 1) % al];
+						i21 = avl[(i2 + 2) % al];
+						ax = poly[2 * i0];
+						ay = poly[2 * i0 + 1];
+						bx = poly[2 * i11];
+						by = poly[2 * i11 + 1];
+						cx = poly[2 * i21];
+						cy = poly[2 * i21 + 1];
+						earFound = false;
+						if((ay - by) * (cx - bx) + (bx - ax) * (cy - by) >= 0) {
+							earFound = true;
+							var _g12 = 0;
+							var _g3 = al;
+							while(_g12 < _g3) {
+								var j = _g12++;
+								var vi1 = avl[j];
+								if(vi1 == i0 || vi1 == i11 || vi1 == i21) {
+									continue;
+								}
+								var v0x = cx - ax;
+								var v0y = cy - ay;
+								var v1x = bx - ax;
+								var v1y = by - ay;
+								var v2x = poly[2 * vi1] - ax;
+								var v2y = poly[2 * vi1 + 1] - ay;
+								var dot00 = v0x * v0x + v0y * v0y;
+								var dot01 = v0x * v1x + v0y * v1y;
+								var dot02 = v0x * v2x + v0y * v2y;
+								var dot11 = v1x * v1x + v1y * v1y;
+								var dot12 = v1x * v2x + v1y * v2y;
+								var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+								var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+								var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+								if(u >= 0 && v >= 0 && u + v < 1) {
+									earFound = false;
+									break;
+								}
+							}
+						}
+						if(earFound) {
+							tgs1.push(i0);
+							tgs1.push(i11);
+							tgs1.push(i21);
+							avl.splice((i2 + 1) % al,1);
+							--al;
+							i2 = 0;
+						} else if(i2++ > 3 * al) {
+							break;
+						}
+					}
+					tgs1.push(avl[0]);
+					tgs1.push(avl[1]);
+					tgs1.push(avl[2]);
+					tgs = tgs1;
+				}
+				var triples = hxPolyK__$PolyK_ArrayTriple_$Impl_$._new(tgs);
+				var _g4 = 0;
+				while(_g4 < (triples.length / 3 | 0)) {
+					var tri_c;
+					var tri_b;
+					var tri_a;
+					var i3 = _g4 * 3 | 0;
+					tri_a = triples[i3];
+					tri_b = triples[i3 + 1];
+					tri_c = triples[i3 + 2];
+					++_g4;
+					var a = tri_a * 2 | 0;
+					var b = tri_b * 2 | 0;
+					var c = tri_c * 2 | 0;
+					var this1 = this.triangles;
+					var tri = new trilateral_tri_Triangle(this.count,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
+					this1[this1.length] = tri;
+				}
+				haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawingPolyK.hx", lineNumber : 31, className : "trilateralXtra.kDrawing.ImageDrawingPolyK", methodName : "fillTriangles"});
+			}
+		}
+	}
+	,fillTriangles: function(poly,colorID) {
 		var n = poly.length >> 1;
 		var tgs;
 		if(n < 3) {
@@ -42038,22 +42231,14 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			var tri = new trilateral_tri_Triangle(this.count,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
 			this1[this1.length] = tri;
 		}
-		haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 64, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "fill"});
+		haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawingPolyK.hx", lineNumber : 31, className : "trilateralXtra.kDrawing.ImageDrawingPolyK", methodName : "fillTriangles"});
 	}
 	,pathFactory: function() {
 		var pen = new trilateral_path_Fine(null,null,null);
 		return pen;
 	}
-	,colorId: function(color) {
-		var id = this.colors.indexOf(color);
-		if(id == -1) {
-			id = this.colors.length;
-			this.colors[id] = color;
-		}
-		return id;
-	}
-	,__class__: trilateralXtra_kDrawing_ImageDrawing
-};
+	,__class__: trilateralXtra_kDrawing_ImageDrawingPolyK
+});
 var trilateralXtra_kDrawing_PolyPainter = function() {
 	this.destinationBlend = kha_graphics4_BlendingFactor.Undefined;
 	this.sourceBlend = kha_graphics4_BlendingFactor.Undefined;
@@ -42714,7 +42899,6 @@ trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.render = function(this1,imageDra
 				var _g21 = pair1.name;
 				if(_g21 == "color") {
 					var col = HxOverrides.substr(pair1.value,1,null);
-					haxe_Log.trace(" col " + col,{ fileName : "Path.hx", lineNumber : 80, className : "trilateralXtra.kDrawing.fxg._Path.Path_Impl_", methodName : "parseColor"});
 					var color = -16777216 + Std.parseInt("0x" + col);
 					var id1 = imageDrawing.colors.indexOf(color);
 					if(id1 == -1) {
@@ -42745,7 +42929,6 @@ trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.render = function(this1,imageDra
 				switch(_g22) {
 				case "color":
 					var col1 = HxOverrides.substr(pair3.value,1,null);
-					haxe_Log.trace(" col " + col1,{ fileName : "Path.hx", lineNumber : 80, className : "trilateralXtra.kDrawing.fxg._Path.Path_Impl_", methodName : "parseColor"});
 					var color1 = -16777216 + Std.parseInt("0x" + col1);
 					var id2 = imageDrawing.colors.indexOf(color1);
 					if(id2 == -1) {
@@ -42771,25 +42954,16 @@ trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.render = function(this1,imageDra
 		pen.width = lineWidth;
 		new trilateral_justPath_SvgPath(pen).parse(d);
 		if(hasFill) {
-			var p = pen.points;
-			var l = p.length;
-			var _g11 = 0;
-			var _g3 = l;
-			while(_g11 < _g3) {
-				var i = _g11++;
-				if(p[i].length != 0) {
-					imageDrawing.fill(p[i],solidColor);
-				}
-			}
+			imageDrawing.fill(pen.points,solidColor);
 		}
 		var this4 = imageDrawing.triangles;
 		var id3 = imageDrawing.count;
 		var triArr = pen.trilateralArray;
 		var tri;
-		var _g4 = 0;
-		while(_g4 < triArr.length) {
-			var t = triArr[_g4];
-			++_g4;
+		var _g3 = 0;
+		while(_g3 < triArr.length) {
+			var t = triArr[_g3];
+			++_g3;
 			if(t != null) {
 				var t1 = Type.createEmptyInstance(trilateral_tri_Triangle);
 				t1.id = id3;
@@ -42815,32 +42989,11 @@ trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.render = function(this1,imageDra
 		var fillOnly = new trilateral_path_FillOnly();
 		fillOnly.width = 1;
 		new trilateral_justPath_SvgPath(fillOnly).parse(d);
-		var p1 = fillOnly.points;
-		var l1 = p1.length;
-		var _g12 = 0;
-		var _g5 = l1;
-		while(_g12 < _g5) {
-			var i1 = _g12++;
-			if(p1[i1].length != 0) {
-				imageDrawing.fill(p1[i1],solidColor);
-			}
-		}
-	}
-};
-trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.fill = function(this1,imageDrawing,p,colorID) {
-	var l = p.length;
-	var _g1 = 0;
-	var _g = l;
-	while(_g1 < _g) {
-		var i = _g1++;
-		if(p[i].length != 0) {
-			imageDrawing.fill(p[i],colorID);
-		}
+		imageDrawing.fill(fillOnly.points,solidColor);
 	}
 };
 trilateralXtra_kDrawing_fxg__$Path_Path_$Impl_$.parseColor = function(this1,hashColor) {
 	var col = HxOverrides.substr(hashColor,1,null);
-	haxe_Log.trace(" col " + col,{ fileName : "Path.hx", lineNumber : 80, className : "trilateralXtra.kDrawing.fxg._Path.Path_Impl_", methodName : "parseColor"});
 	return -16777216 + Std.parseInt("0x" + col);
 };
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
@@ -42923,6 +43076,7 @@ kha_CompilerDefines.trilateral = "1";
 kha_CompilerDefines.kha_g4 = "1";
 kha_CompilerDefines.sys_g3 = "1";
 kha_CompilerDefines.kha_g1 = "1";
+kha_CompilerDefines.poly2trihx = "1";
 kha_CompilerDefines.sys_a1 = "1";
 kha_CompilerDefines.trilateralXtra = "1";
 kha_CompilerDefines.haxe_ver = "3.404";
@@ -42975,12 +43129,12 @@ kha_Shaders.painter_text_fragData2 = "s348:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZ
 kha_Shaders.painter_text_vertData0 = "s436:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgdGV4Q29vcmQgPSB0ZXhQb3NpdGlvbjsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_text_vertData1 = "s500:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgdGV4Q29vcmQgPSB0ZXhQb3NpdGlvbjsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_text_vertData2 = "s466:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKaW4gbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
-kha_Shaders.painter_video_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
-kha_Shaders.painter_video_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
-kha_Shaders.painter_video_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_video_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
 kha_Shaders.painter_video_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_video_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
+kha_Shaders.painter_video_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.painter_video_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.painter_video_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_System.renderListeners = [];
 kha_System.foregroundListeners = [];
 kha_System.resumeListeners = [];

@@ -5,6 +5,8 @@ import kha.Image;
 import trilateral.nodule.*;
 import kha.Assets;
 import trilateralXtra.kDrawing.fxg.Group;
+import trilateralXtra.kDrawing.ImageDrawingPolyK;
+// import trilateralXtra.kDrawing.ImageDrawing2Tri;  currently poly2trihx is rather fragile to use with fxg even if it's better for holes etc.
 import trilateralXtra.kDrawing.ImageDrawing;
 import trilateralXtra.kDrawing.SceneXtras; // sky, grass
 class Main {
@@ -22,7 +24,7 @@ class Main {
                      } );
     }
     public function new(){
-        imageDrawing = new ImageDrawing( 800, 600 );
+        imageDrawing = new ImageDrawingPolyK( 800, 600 );
         Assets.loadEverything( loadParrot );
     }
     function loadParrot(){
@@ -48,7 +50,7 @@ class Main {
         return imageDrawing.image;
     }
     function backgroundToImage(){
-        imageDrawing = new ImageDrawing( 800, 600 );
+        imageDrawing = new ImageDrawingPolyK( 800, 600 );
         imageDrawing.startImage();
         backgroundDraw();
         imageDrawing.end();
