@@ -26,3 +26,5 @@ Demos:
 [elliptic Arc svg tests](http://nanjizal.github.io/TrilateralBazaar/ellipticalArc/build/html5/index.html)
 
 [poly2trihx fill example](http://nanjizal.github.io/TrilateralBazaar/poly2trihxTest/build/html5/index.html)
+
+[linear gradient test](http://nanjizal.github.io/TrilateralBazaar/linearGradient/build/html5/index.html)
