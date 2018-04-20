@@ -36,10 +36,7 @@ class Main {
     public function new(){
         imageDrawing = new ImageDrawing( 800, 600 );
         imageDrawing.colors = appColors;
-        
         background = backgroundDraw();
-        
-        
         imageDrawing = new ImageDrawing( 800, 600 );
         imageDrawing.triangles = [];
         imageDrawing.colors = appColors;
