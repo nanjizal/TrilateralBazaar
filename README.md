@@ -29,4 +29,4 @@ Demos:
 
 [linear gradient test](http://nanjizal.github.io/TrilateralBazaar/linearGradient/build/html5/index.html)
 
-[Svg limited test](http://nanjizal.github.io/TrilateralBazaar/svgTest/buidl/html5/index.html)
+[Svg limited test](http://nanjizal.github.io/TrilateralBazaar/svgTest/build/html5/index.html)
