@@ -4,13 +4,15 @@ import kha.System;
 import kha.Image;
 import trilateral.nodule.*;
 import kha.Assets;
-import trilateralXtra.kDrawing.fxg.Group;
-import trilateralXtra.kDrawing.ImageDrawingPolyK;
-// import trilateralXtra.kDrawing.ImageDrawing2Tri;  currently poly2trihx is rather fragile to use with fxg even if it's better for holes etc.
+import trilateral.parsing.fxg.Group;
+import trilateralXtra.parsing.FillDrawPolyK;
 import trilateralXtra.kDrawing.ImageDrawing;
+import trilateral.parsing.FillDraw;
+// import trilateralXtra.parsing.FillDraw2Tri;  currently poly2trihx is rather fragile to use with fxg even if it's better for holes etc.
 import trilateralXtra.kDrawing.SceneXtras; // sky, grass
 class Main {
     var imageDrawing: ImageDrawing;
+    var fillDraw:     FillDraw;
     var parrot:       Image;
     var background:   Image;
     public static 
@@ -24,23 +26,23 @@ class Main {
                      } );
     }
     public function new(){
-        imageDrawing = new ImageDrawingPolyK( 800, 600 );
-        Assets.loadEverything( loadParrot );
+        fillDraw     = new FillDrawPolyK( 800, 600 );
+        imageDrawing = new ImageDrawing( fillDraw );
+        Assets.loadEverything( loadAll );
     }
-    function loadParrot(){
-        parrotToTriangles();
-        parrot      = parrotToImage();
+    function loadAll(){
+        toTriangles();
+        parrot      = toImage();
         background  = backgroundToImage();
         startRendering();
     }
-    function parrotToTriangles(){
+    function toTriangles(){
         var parrotStr       = Assets.blobs.Parrot_fxg.toString();
         var nodule: Nodule  = ReadXML.toNodule( parrotStr );
         var group:  Group   = nodule.firstChild;
-        var img             = imageDrawing;
-        group.render( imageDrawing );
+        group.render( fillDraw );
     }
-    function parrotToImage(){
+    function toImage(){
         imageDrawing.startImage();
         var scale = 0.5;
         var x = 0.;
@@ -50,7 +52,7 @@ class Main {
         return imageDrawing.image;
     }
     function backgroundToImage(){
-        imageDrawing = new ImageDrawingPolyK( 800, 600 );
+        imageDrawing = new ImageDrawing( new FillDraw( 800, 600 ) );
         imageDrawing.startImage();
         backgroundDraw();
         imageDrawing.end();
@@ -70,7 +72,7 @@ class Main {
         poly.drawImage( background );
         var dW = 150;
         for( i in 0...4 ){
-            poly.drawImage( parrot, dx + i*dW, 290 + 5*Math.cos( 1/dx ), w+0.1*w*Math.sin( theta ), h+0.1*h*Math.sin(theta) );
+            poly.drawImage( parrot, dx + i*dW, 290, w+0.1*w*Math.sin( theta ), h+0.1*h*Math.sin(theta) );
             dx = 100*Math.sin( theta+= 0.005 );
         }
         imageDrawing.end();

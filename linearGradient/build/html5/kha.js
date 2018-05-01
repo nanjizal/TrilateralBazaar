@@ -42243,6 +42243,9 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 	,fill: function(p,colorID) {
 		throw new js__$Boot_HaxeError("please extend ImageDrawing with implementation");
 	}
+	,fillRnd: function(p,rnd) {
+		throw new js__$Boot_HaxeError("please extend ImageDrawing with implementation");
+	}
 	,pathFactory: function() {
 		throw new js__$Boot_HaxeError("please extend ImageDrawing with implementation");
 	}
@@ -42372,7 +42375,6 @@ trilateralXtra_kDrawing_ImageDrawingPolyK.prototype = $extend(trilateralXtra_kDr
 					var tri = new trilateral_tri_Triangle(this.count,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
 					this1[this1.length] = tri;
 				}
-				haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawingPolyK.hx", lineNumber : 31, className : "trilateralXtra.kDrawing.ImageDrawingPolyK", methodName : "fillTriangles"});
 			}
 		}
 	}
@@ -42478,7 +42480,225 @@ trilateralXtra_kDrawing_ImageDrawingPolyK.prototype = $extend(trilateralXtra_kDr
 			var tri = new trilateral_tri_Triangle(this.count,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
 			this1[this1.length] = tri;
 		}
-		haxe_Log.trace(this.triangles.length,{ fileName : "ImageDrawingPolyK.hx", lineNumber : 31, className : "trilateralXtra.kDrawing.ImageDrawingPolyK", methodName : "fillTriangles"});
+	}
+	,fillRnd: function(p,rnd) {
+		var l = p.length;
+		var _g1 = 0;
+		var _g = l;
+		while(_g1 < _g) {
+			var i = _g1++;
+			if(p[i].length != 0) {
+				var poly = p[i];
+				var n = poly.length >> 1;
+				var tgs;
+				if(n < 3) {
+					tgs = [];
+				} else {
+					var tgs1 = [];
+					var avl = [];
+					var _g11 = 0;
+					var _g2 = n;
+					while(_g11 < _g2) {
+						var i1 = _g11++;
+						avl.push(i1);
+					}
+					var i2 = 0;
+					var al = n;
+					var i0;
+					var i11;
+					var i21;
+					var vi;
+					var ax;
+					var ay;
+					var bx;
+					var by;
+					var cx;
+					var cy;
+					var earFound;
+					while(al > 3) {
+						i0 = avl[i2 % al];
+						i11 = avl[(i2 + 1) % al];
+						i21 = avl[(i2 + 2) % al];
+						ax = poly[2 * i0];
+						ay = poly[2 * i0 + 1];
+						bx = poly[2 * i11];
+						by = poly[2 * i11 + 1];
+						cx = poly[2 * i21];
+						cy = poly[2 * i21 + 1];
+						earFound = false;
+						if((ay - by) * (cx - bx) + (bx - ax) * (cy - by) >= 0) {
+							earFound = true;
+							var _g12 = 0;
+							var _g3 = al;
+							while(_g12 < _g3) {
+								var j = _g12++;
+								var vi1 = avl[j];
+								if(vi1 == i0 || vi1 == i11 || vi1 == i21) {
+									continue;
+								}
+								var v0x = cx - ax;
+								var v0y = cy - ay;
+								var v1x = bx - ax;
+								var v1y = by - ay;
+								var v2x = poly[2 * vi1] - ax;
+								var v2y = poly[2 * vi1 + 1] - ay;
+								var dot00 = v0x * v0x + v0y * v0y;
+								var dot01 = v0x * v1x + v0y * v1y;
+								var dot02 = v0x * v2x + v0y * v2y;
+								var dot11 = v1x * v1x + v1y * v1y;
+								var dot12 = v1x * v2x + v1y * v2y;
+								var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+								var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+								var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+								if(u >= 0 && v >= 0 && u + v < 1) {
+									earFound = false;
+									break;
+								}
+							}
+						}
+						if(earFound) {
+							tgs1.push(i0);
+							tgs1.push(i11);
+							tgs1.push(i21);
+							avl.splice((i2 + 1) % al,1);
+							--al;
+							i2 = 0;
+						} else if(i2++ > 3 * al) {
+							break;
+						}
+					}
+					tgs1.push(avl[0]);
+					tgs1.push(avl[1]);
+					tgs1.push(avl[2]);
+					tgs = tgs1;
+				}
+				var triples = hxPolyK__$PolyK_ArrayTriple_$Impl_$._new(tgs);
+				var _g4 = 0;
+				while(_g4 < (triples.length / 3 | 0)) {
+					var tri_c;
+					var tri_b;
+					var tri_a;
+					var i3 = _g4 * 3 | 0;
+					tri_a = triples[i3];
+					tri_b = triples[i3 + 1];
+					tri_c = triples[i3 + 2];
+					++_g4;
+					var a = tri_a * 2 | 0;
+					var b = tri_b * 2 | 0;
+					var c = tri_c * 2 | 0;
+					var this1 = this.triangles;
+					var id = this.count;
+					var colorID = Math.round(Math.random() * rnd) | 0;
+					var tri = new trilateral_tri_Triangle(id,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
+					this1[this1.length] = tri;
+				}
+			}
+		}
+	}
+	,fillTrianglesRnd: function(poly,rnd) {
+		var n = poly.length >> 1;
+		var tgs;
+		if(n < 3) {
+			tgs = [];
+		} else {
+			var tgs1 = [];
+			var avl = [];
+			var _g1 = 0;
+			var _g = n;
+			while(_g1 < _g) {
+				var i = _g1++;
+				avl.push(i);
+			}
+			var i1 = 0;
+			var al = n;
+			var i0;
+			var i11;
+			var i2;
+			var vi;
+			var ax;
+			var ay;
+			var bx;
+			var by;
+			var cx;
+			var cy;
+			var earFound;
+			while(al > 3) {
+				i0 = avl[i1 % al];
+				i11 = avl[(i1 + 1) % al];
+				i2 = avl[(i1 + 2) % al];
+				ax = poly[2 * i0];
+				ay = poly[2 * i0 + 1];
+				bx = poly[2 * i11];
+				by = poly[2 * i11 + 1];
+				cx = poly[2 * i2];
+				cy = poly[2 * i2 + 1];
+				earFound = false;
+				if((ay - by) * (cx - bx) + (bx - ax) * (cy - by) >= 0) {
+					earFound = true;
+					var _g11 = 0;
+					var _g2 = al;
+					while(_g11 < _g2) {
+						var j = _g11++;
+						var vi1 = avl[j];
+						if(vi1 == i0 || vi1 == i11 || vi1 == i2) {
+							continue;
+						}
+						var v0x = cx - ax;
+						var v0y = cy - ay;
+						var v1x = bx - ax;
+						var v1y = by - ay;
+						var v2x = poly[2 * vi1] - ax;
+						var v2y = poly[2 * vi1 + 1] - ay;
+						var dot00 = v0x * v0x + v0y * v0y;
+						var dot01 = v0x * v1x + v0y * v1y;
+						var dot02 = v0x * v2x + v0y * v2y;
+						var dot11 = v1x * v1x + v1y * v1y;
+						var dot12 = v1x * v2x + v1y * v2y;
+						var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+						var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+						var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+						if(u >= 0 && v >= 0 && u + v < 1) {
+							earFound = false;
+							break;
+						}
+					}
+				}
+				if(earFound) {
+					tgs1.push(i0);
+					tgs1.push(i11);
+					tgs1.push(i2);
+					avl.splice((i1 + 1) % al,1);
+					--al;
+					i1 = 0;
+				} else if(i1++ > 3 * al) {
+					break;
+				}
+			}
+			tgs1.push(avl[0]);
+			tgs1.push(avl[1]);
+			tgs1.push(avl[2]);
+			tgs = tgs1;
+		}
+		var triples = hxPolyK__$PolyK_ArrayTriple_$Impl_$._new(tgs);
+		var _g3 = 0;
+		while(_g3 < (triples.length / 3 | 0)) {
+			var tri_c;
+			var tri_b;
+			var tri_a;
+			var i3 = _g3 * 3 | 0;
+			tri_a = triples[i3];
+			tri_b = triples[i3 + 1];
+			tri_c = triples[i3 + 2];
+			++_g3;
+			var a = tri_a * 2 | 0;
+			var b = tri_b * 2 | 0;
+			var c = tri_c * 2 | 0;
+			var this1 = this.triangles;
+			var id = this.count;
+			var colorID = Math.round(Math.random() * rnd) | 0;
+			var tri = new trilateral_tri_Triangle(id,{ x : poly[a], y : poly[a + 1]},{ x : poly[b], y : poly[b + 1]},{ x : poly[c], y : poly[c + 1]},0,colorID);
+			this1[this1.length] = tri;
+		}
 	}
 	,pathFactory: function() {
 		var pen = new trilateral_path_Fine(null,null,null);

@@ -11,6 +11,6 @@ This is temp Status file for me to keep track of the status of folders, as I reb
     - polyK ( Kha - graphics )                  UPDATED
     - poly2trihx ( Kha - graphics               ADDED
     - fxg ( Kha - graphics )                    UPDATED
-    - svg                                       not started
-    - linear gradient                           not started
+    - svg                                       ADDED
+    - linear gradient                           ADDED
     - texture                                   not started

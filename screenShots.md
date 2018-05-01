@@ -19,6 +19,7 @@
         ![](screenshots/poly2trihx.png)
 * fxg ( Kha - graphics )                    
         ![](screenshots/parrot.png)
-* svg                                       not started
+* svg ( Kha - graphics )
+        ![](screenshots/svgTest.png)
 * linear gradient                           not started
 * texture                                   not started

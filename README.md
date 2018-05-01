@@ -28,3 +28,5 @@ Demos:
 [poly2trihx fill example](http://nanjizal.github.io/TrilateralBazaar/poly2trihxTest/build/html5/index.html)
 
 [linear gradient test](http://nanjizal.github.io/TrilateralBazaar/linearGradient/build/html5/index.html)
+
+[Svg limited test](http://nanjizal.github.io/TrilateralBazaar/svgTest/buidl/html5/index.html)
