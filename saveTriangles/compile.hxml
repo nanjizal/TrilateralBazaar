@@ -1,0 +1,14 @@
+-cp src
+-main SaveTriangles
+-neko saveTriangles.n
+-lib hxPolyK
+-lib hxbit
+-lib trilateral
+-lib trilateralXtra
+-lib justDrawing
+-lib hxPixels
+-lib format
+-lib pixelDrawing
+-D pixel
+-D Sys
+-cmd neko saveTriangles.n
