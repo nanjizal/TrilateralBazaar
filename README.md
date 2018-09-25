@@ -31,4 +31,4 @@ Demos:
 
 [Svg limited test](http://nanjizal.github.io/TrilateralBazaar/svgTest/build/html5/index.html)
 
-[mask test with polyK](http://nanjizal.github.io/TrilateralBazaar/imageFill/build/html5/index.html)
+[mask test with polyK](http://nanjizal.github.io/TrilateralBazaar/imageFill/build/html5/SumaCat.jpg)
