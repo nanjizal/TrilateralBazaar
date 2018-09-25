@@ -12,8 +12,6 @@ import trilateralXtra.parsing.FillDrawPolyK;
 import trilateral.justPath.SvgPath;
 import trilateral.justPath.PathContextTrace;
 import trilateral.parsing.FillDraw;
-//import trilateralXtra.kDrawing.ImageDrawingPolyK;
-//import trilateralXtra.kDrawing.ImageDrawing2Tri;
 import trilateralXtra.kDrawing.ImageDrawing;
 import trilateral.tri.TriangleGradient;
 import trilateralXtra.color.AppColors;
