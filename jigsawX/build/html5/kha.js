@@ -160,9 +160,8 @@ _$List_ListIterator.prototype = {
 };
 var Main = function() {
 	this.appColors = [-16777216,-65536,-33024,-256,-16711936,-16776961,-11861886,-7077677,-12303292,-13421773,-15987700,-15658735,-1,-16776961,-16711936,-65536];
-	this.jigsawImages = [];
 	this.jigsawShapeArray = [];
-	this.scaleImg = 1.2;
+	this.scaleImg = 1;
 	this.count = 0;
 	this.cols = 10;
 	this.rows = 7;
@@ -172,7 +171,7 @@ var Main = function() {
 	this.imgWidth = 371;
 	this.once = true;
 	this.backgroundAlpha = 0.3;
-	this.showBackground = false;
+	this.showBackground = true;
 	trilateralXtra_kDrawing_PolyPainter.bufferSize = 3000000;
 	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(Math.ceil(this.imgWidth * this.scaleImg),Math.ceil(this.imgHeight * this.scaleImg));
 	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(this.fillDraw);
@@ -182,7 +181,7 @@ var Main = function() {
 $hxClasses["Main"] = Main;
 Main.__name__ = true;
 Main.main = function() {
-	kha_System.init({ title : "JigsawX Trilateral Kha example", width : 800, height : 600, samplesPerPixel : 4},function() {
+	kha_System.init({ title : "JigsawX Trilateral Kha example", width : 1024, height : 768, samplesPerPixel : 4},function() {
 		new Main();
 	});
 };
@@ -204,12 +203,11 @@ Main.prototype = {
 	,jigsawx: null
 	,triangles: null
 	,jigsawShapeArray: null
-	,jigsawImages: null
+	,imgJigsaw: null
 	,appColors: null
 	,loadAll: function() {
-		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 69, className : "Main", methodName : "loadAll"});
+		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "loadAll"});
 		this.fillDraw.colors = this.appColors;
-		this.nudeImage = this.drawNude();
 		this.drawMask();
 		this.startRendering();
 	}
@@ -234,8 +232,8 @@ Main.prototype = {
 			path.trilateralArray = [];
 			path.points = [];
 			path.dim = [];
-			ox = jig1.xy.x - 45;
-			oy = jig1.xy.y - 45;
+			ox = jig1.xy.x;
+			oy = jig1.xy.y;
 			var first = jig1.getFirst();
 			path.moveTo(first.x + ox,first.y + oy);
 			var p = jig1.getPoints();
@@ -281,41 +279,54 @@ Main.prototype = {
 	}
 	,render: function(framebuffer) {
 		if(this.once) {
-			var g2 = framebuffer.get_g2();
 			var poly = this.imageDrawing.polyPainter;
+			var tablecloth = kha_Assets.images.tablecloth;
 			var scale = 1;
 			var jigsawShape;
 			var x = 0.;
 			var y = 0.;
-			this.imageDrawing.startFrame(framebuffer);
+			this.imageDrawing.startImage();
 			if(this.showBackground) {
-				poly.drawImage(kha_Assets.images.tablecloth,0,0,this.imgWidth,this.imgHeight,this.backgroundAlpha);
+				poly.drawImage(tablecloth,0,0,this.imgWidth,this.imgHeight,this.backgroundAlpha);
 			}
-			var _g1 = 0;
-			var _g = this.jigsawShapeArray.length;
-			while(_g1 < _g) {
-				var i = _g1++;
+			var _g = 0;
+			while(_g < 1) {
+				var i = _g++;
 				jigsawShape = this.jigsawShapeArray[i];
 				this.fillDraw.triangles = jigsawShape.triangles;
-				var dx = jigsawShape.x / 1.5 + 23;
-				var dy = jigsawShape.y / 1.5 + 23;
-				this.imageDrawing.renderImageTrianglesOffset(scale,dx,dy,-dx,-dy);
+				var dx = jigsawShape.x * this.scaleImg;
+				var dy = jigsawShape.y * this.scaleImg;
+				this.imageDrawing.renderImageTrianglesOffset(tablecloth,scale,dx,dy,-dx,-dy);
 			}
 			this.imageDrawing.end();
+			this.imgJigsaw = this.imageDrawing.image;
+			var g2 = framebuffer.get_g2();
+			g2.begin();
+			g2.drawImage(this.imgJigsaw,0,0);
+			g2.end();
 			this.once = false;
 		}
 	}
-	,renderPieceToImage: function() {
+	,renderJigsaw: function(framebuffer) {
 		var poly = this.imageDrawing.polyPainter;
+		var tablecloth = kha_Assets.images.tablecloth;
+		var scale = 1;
+		var jigsawShape;
+		var x = 0.;
+		var y = 0.;
 		this.imageDrawing.startImage();
-		this.imageDrawing.renderImageTriangles(1,0,0);
-		this.imageDrawing.end();
-		return this.imageDrawing.image;
-	}
-	,drawNude: function() {
-		var poly = this.imageDrawing.polyPainter;
-		this.imageDrawing.startImage();
-		poly.drawImage(kha_Assets.images.tablecloth,-20,-20,this.imgWidth * this.scaleImg,this.imgHeight * this.scaleImg);
+		if(this.showBackground) {
+			poly.drawImage(tablecloth,0,0,this.imgWidth,this.imgHeight,this.backgroundAlpha);
+		}
+		var _g = 0;
+		while(_g < 1) {
+			var i = _g++;
+			jigsawShape = this.jigsawShapeArray[i];
+			this.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * this.scaleImg;
+			var dy = jigsawShape.y * this.scaleImg;
+			this.imageDrawing.renderImageTrianglesOffset(tablecloth,scale,dx,dy,-dx,-dy);
+		}
 		this.imageDrawing.end();
 		return this.imageDrawing.image;
 	}
@@ -5650,20 +5661,20 @@ kha_Shaders.init = function() {
 	var _g1 = 0;
 	while(_g1 < 3) {
 		var i1 = _g1++;
-		var data1 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i1);
+		var data1 = Reflect.field(kha_Shaders,"painter_image_fragData" + i1);
 		var bytes1 = haxe_Unserializer.run(data1);
 		blobs1.push(kha_internal_BytesBlob.fromBytes(bytes1));
 	}
-	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs1,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
+	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs1,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
 	var blobs2 = [];
 	var _g2 = 0;
 	while(_g2 < 3) {
 		var i2 = _g2++;
-		var data2 = Reflect.field(kha_Shaders,"painter_image_fragData" + i2);
+		var data2 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i2);
 		var bytes2 = haxe_Unserializer.run(data2);
 		blobs2.push(kha_internal_BytesBlob.fromBytes(bytes2));
 	}
-	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs2,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
+	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs2,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
 	var blobs3 = [];
 	var _g3 = 0;
 	while(_g3 < 3) {
@@ -42559,7 +42570,6 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			tri = triangles[i];
 			this.polyPainter.drawFillTriangle(tri.ax * scale + cx,tri.ay * scale + cy,tri.bx * scale + cx,tri.by * scale + cy,tri.cx * scale + cx,tri.cy * scale + cy,colors[tri.colorID],alpha);
 		}
-		haxe_Log.trace(triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 53, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderTriangles"});
 	}
 	,renderGradientTriangles: function(scale,cx,cy,alpha) {
 		if(alpha == null) {
@@ -42616,17 +42626,16 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			_this.posGradient = pos + 21;
 			trilateralXtra_kDrawing_PolyPainter.gradBufferIndex++;
 		}
-		haxe_Log.trace(triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 69, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderGradientTriangles"});
 	}
-	,renderImageTriangles: function(scale,dx,dy,alpha) {
+	,renderImageTriangles: function(img,scale,dx,dy,alpha) {
 		if(alpha == null) {
 			alpha = 1.;
 		}
 		var tri;
 		var triangles = this.fillDraw.triangles;
 		var colors = this.fillDraw.colors;
-		var img1W = 1 / this.image.get_width();
-		var img1H = 1 / this.image.get_height();
+		var img1W = 1 / img.get_width();
+		var img1H = 1 / img.get_height();
 		var _g1 = 0;
 		var _g = triangles.length | 0;
 		while(_g1 < _g) {
@@ -42644,19 +42653,18 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			var bv = by * img1H;
 			var cu = cx * img1W;
 			var cv = cy * img1H;
-			this.polyPainter.drawImageTriangle(ax,ay,bx,by,cx,cy,au,av,bu,bv,cu,cv,this.image,alpha);
+			this.polyPainter.drawImageTriangle(ax,ay,bx,by,cx,cy,au,av,bu,bv,cu,cv,img,alpha);
 		}
-		haxe_Log.trace(triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 95, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderImageTriangles"});
 	}
-	,renderImageTrianglesOffset: function(scale,dx,dy,ex,ey,alpha) {
+	,renderImageTrianglesOffset: function(img,scale,dx,dy,ex,ey,alpha) {
 		if(alpha == null) {
 			alpha = 1.;
 		}
 		var tri;
 		var triangles = this.fillDraw.triangles;
 		var colors = this.fillDraw.colors;
-		var img1W = 1 / this.image.get_width();
-		var img1H = 1 / this.image.get_height();
+		var img1W = 1 / img.get_width();
+		var img1H = 1 / img.get_height();
 		var _g1 = 0;
 		var _g = triangles.length | 0;
 		while(_g1 < _g) {
@@ -42674,9 +42682,8 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			var bv = (by + ey) * img1H;
 			var cu = (cx + ex) * img1W;
 			var cv = (cy + ey) * img1H;
-			this.polyPainter.drawImageTriangle(ax,ay,bx,by,cx,cy,au,av,bu,bv,cu,cv,this.image,alpha);
+			this.polyPainter.drawImageTriangle(ax,ay,bx,by,cx,cy,au,av,bu,bv,cu,cv,img,alpha);
 		}
-		haxe_Log.trace(triangles.length,{ fileName : "ImageDrawing.hx", lineNumber : 121, className : "trilateralXtra.kDrawing.ImageDrawing", methodName : "renderImageTrianglesOffset"});
 	}
 	,__class__: trilateralXtra_kDrawing_ImageDrawing
 };
@@ -43681,12 +43688,12 @@ kha_Scheduler.startTime = 0;
 kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
 kha_Shaders.painter_colored_fragData2 = "s210:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7CgpvdXQgdmVjNCBGcmFnQ29sb3I7CmluIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIEZyYWdDb2xvciA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
-kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
 kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
+kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
+kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_image_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";

@@ -2,6 +2,7 @@ package;
 import kha.Framebuffer;
 import kha.System;
 import kha.Image;
+import kha.Color;
 import trilateral.nodule.*;
 import kha.Assets;
 import trilateral.path.Base;
@@ -25,11 +26,12 @@ import jigsawx.JigsawPiece;
 import jigsawx.Jigsawx;
 import jigsawx.math.Vec2;
 import jigsawxKha.JigsawShape;
+import kha.graphics4.DepthStencilFormat;
 class Main {
     var imageDrawing:   ImageDrawing;
     var fillDraw:       FillDraw;
     var nudeImage:       Image;
-    var showBackground  = false; // useful for debug
+    var showBackground  = true; // useful for debug
     var backgroundAlpha = 0.3;
     var once            = true; // only render the first time after loading.
     var imgWidth        = 371;
@@ -39,18 +41,18 @@ class Main {
     var rows            = 7;
     var cols            = 10;
     var count           = 0;
-    var scaleImg        = 1.2;
+    var scaleImg        = 1;//.2;
     var jigsawx:        Jigsawx;
     var triangles:      TriangleArray;
-    var jigsawShapeArray = new Array<JigsawShape>(); 
-    var jigsawImages     = new Array<Image>();    
+    var jigsawShapeArray = new Array<JigsawShape>();    
+    var imgJigsaw       : Image;
     var appColors:      Array<AppColors> = [ Black, Red, Orange, Yellow, Green, Blue, Indigo, Violet
                                            , LightGrey, MidGrey, DarkGrey, NearlyBlack, White
                                            , BlueAlpha, GreenAlpha, RedAlpha ];
     public static 
     function main() {
         System.init( {  title: "JigsawX Trilateral Kha example"
-                     ,  width: 800, height: 600
+                     ,  width: 1024, height: 768
                      ,  samplesPerPixel: 4 }
                      , function()
                      {
@@ -68,7 +70,6 @@ class Main {
     public function loadAll(){
         trace( 'loadAll' );
         fillDraw.colors = appColors;
-        nudeImage = drawNude();
         drawMask();
         startRendering();
     }
@@ -86,8 +87,8 @@ class Main {
             path.trilateralArray  = [];
             path.points           = [];
             path.dim              = [];
-            ox = jig.xy.x - 45;
-            oy = jig.xy.y - 45;
+            ox = jig.xy.x;
+            oy = jig.xy.y;
             var first = jig.getFirst();
             path.moveTo( first.x + ox, first.y + oy );
             var p = jig.getPoints();
@@ -97,42 +98,36 @@ class Main {
             fillDraw.fill( path.points, appColors[ 1 ] );
             jigsawShapeArray[ count ] = new JigsawShape( jig, fillDraw.triangles, ox, oy );
             count++;
-            //if( count > 10 ) break;
         }
     }
-    // render sprite sheet, renderPieceToImage too heavy.
+    // render to stage
     function render( framebuffer: Framebuffer ): Void {
         if( once ){
+            imgJigsaw = renderJigsaw( framebuffer );
             var g2 = framebuffer.g2;
-            var poly = imageDrawing.polyPainter;
-            var scale = 1;
-            var jigsawShape: JigsawShape;
-            var x = 0.;
-            var y = 0.;
-            imageDrawing.startFrame( framebuffer );
-            if( showBackground ) poly.drawImage( Assets.images.tablecloth, 0, 0, imgWidth, imgHeight, backgroundAlpha );
-            for( i in 0...jigsawShapeArray.length ){
-                jigsawShape = jigsawShapeArray[ i ];
-                fillDraw.triangles = jigsawShape.triangles;
-                var dx = jigsawShape.x/1.5 + 23;
-                var dy = jigsawShape.y/1.5 + 23;
-                imageDrawing.renderImageTrianglesOffset( scale, dx, dy, -dx, -dy );
-            }
-            imageDrawing.end();
+            g2.begin();
+            g2.drawImage( imgJigsaw, 0, 0 );
+            g2.end();
             once = false;
         }
     }
-    function renderPieceToImage(){
-        var poly        = imageDrawing.polyPainter;
+    inline function renderJigsaw( framebuffer: Framebuffer ): Image {
+        var poly = imageDrawing.polyPainter;
+        var tablecloth = Assets.images.tablecloth;
+        var scale = 1;
+        var jigsawShape: JigsawShape;
+        var x = 0.;
+        var y = 0.;
         imageDrawing.startImage();
-        imageDrawing.renderImageTriangles( 1, 0, 0 );
-        imageDrawing.end();
-        return imageDrawing.image;
-    }
-    function drawNude(){
-        var poly        = imageDrawing.polyPainter;
-        imageDrawing.startImage();
-        poly.drawImage( Assets.images.tablecloth, -20, -20, imgWidth*scaleImg, imgHeight*scaleImg );
+        //imageDrawing.startFrame( framebuffer );
+        if( showBackground ) poly.drawImage( tablecloth, 0, 0, imgWidth, imgHeight, backgroundAlpha );
+        for( i in 0...1 ){//jigsawShapeArray.length ){
+            jigsawShape = jigsawShapeArray[ i ];
+            fillDraw.triangles = jigsawShape.triangles;
+            var dx = jigsawShape.x*scaleImg;
+            var dy = jigsawShape.y*scaleImg;
+            imageDrawing.renderImageTrianglesOffset( tablecloth, scale, dx, dy, -dx, -dy );
+        }
         imageDrawing.end();
         return imageDrawing.image;
     }
