@@ -29,11 +29,11 @@ class Jigsawx {
         rows                                = rows_;
         cols                                = cols_;
         //corners, theoretically JigsawSideData could be modified to allow these to have a random element.
-        var xy                              = new Vec2( 1,      1 );
-        var lt                              = new Vec2( 1,      1 );
-        var rt                              = new Vec2( 1 + dx, 1 );
-        var rb                              = new Vec2( 1 + dx, dy + 1 );
-        var lb                              = new Vec2( 1,      dy + 1 );
+        var xy                              = new Vec2( 0,      0 );
+        var lt                              = new Vec2( 0,      0 );
+        var rt                              = new Vec2( 0 + dx, 0 );
+        var rb                              = new Vec2( 0 + dx, dy + 0 );
+        var lb                              = new Vec2( 0,      dy + 0 );
         length                              = 0;
         var last:   JigsawPieceData; 
         for( row in 0...rows  ){
@@ -66,7 +66,7 @@ class Jigsawx {
                 jigs.push( jig );
                 xy.x                        += dx;
             }
-            xy.x                            = 1;
+            xy.x                            = 0;
             xy.y                            += dy;
         }
     }

@@ -1,0 +1,25 @@
+// imports no longer used in Main, but keep here perhaps for later.
+
+import trilateral.path.Base;
+import trilateral.path.Fine;
+import trilateral.path.MediumOverlap;
+import trilateral.path.FillOnly;
+import trilateralXtra.parsing.FillDrawPolyK;
+import trilateral.justPath.SvgPath;
+import trilateral.justPath.PathContextTrace;
+import trilateral.parsing.FillDraw;
+import trilateralXtra.kDrawing.ImageDrawing;
+import trilateral.tri.TriangleGradient;
+import trilateralXtra.color.AppColors;
+import trilateral.justPath.transform.ScaleContext;
+import trilateral.justPath.transform.ScaleTranslateContext;
+import trilateral.justPath.transform.TranslationContext;
+import trilateralXtra.kDrawing.PolyPainter;
+import trilateral.tri.TriangleArray;
+import trilateral.tri.Triangle;
+//import jigsawx.JigsawPiece;
+//import jigsawx.Jigsawx;
+//import jigsawx.math.Vec2;
+//import jigsawxKha.JigsawShape;
+//import kha.graphics4.DepthStencilFormat;
+import trilateral.nodule.*;

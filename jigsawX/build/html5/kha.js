@@ -159,23 +159,16 @@ _$List_ListIterator.prototype = {
 	,__class__: _$List_ListIterator
 };
 var Main = function() {
-	this.appColors = [-16777216,-65536,-33024,-256,-16711936,-16776961,-11861886,-7077677,-12303292,-13421773,-15987700,-15658735,-1,-16776961,-16711936,-65536];
-	this.jigsawShapeArray = [];
-	this.scaleImg = 1;
-	this.count = 0;
-	this.cols = 10;
-	this.rows = 7;
+	this.topDepth = 100;
+	this.depths = [];
+	this.mouseIsDown = false;
+	this.cols = 8;
+	this.rows = 6;
 	this.hi = 45;
 	this.wid = 45;
-	this.imgHeight = 262;
-	this.imgWidth = 371;
 	this.once = true;
-	this.backgroundAlpha = 0.3;
-	this.showBackground = true;
-	trilateralXtra_kDrawing_PolyPainter.bufferSize = 3000000;
-	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(Math.ceil(this.imgWidth * this.scaleImg),Math.ceil(this.imgHeight * this.scaleImg));
-	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(this.fillDraw);
 	this.jigsawx = new jigsawx_Jigsawx(this.wid,this.hi,this.rows,this.cols);
+	this.jigsawBuilder = new jigsawxKha_JigsawImageBuilder(this.jigsawx.jigs);
 	kha_Assets.loadEverything($bind(this,this.loadAll));
 };
 $hxClasses["Main"] = Main;
@@ -186,57 +179,44 @@ Main.main = function() {
 	});
 };
 Main.prototype = {
-	imageDrawing: null
-	,fillDraw: null
-	,nudeImage: null
-	,showBackground: null
-	,backgroundAlpha: null
-	,once: null
-	,imgWidth: null
-	,imgHeight: null
+	once: null
+	,jigsawx: null
+	,imgJigsaw: null
+	,jigsawBuilder: null
+	,gridDef: null
+	,gridSheet: null
 	,wid: null
 	,hi: null
 	,rows: null
 	,cols: null
-	,count: null
-	,scaleImg: null
-	,jigsawx: null
-	,triangles: null
-	,jigsawShapeArray: null
-	,imgJigsaw: null
-	,appColors: null
+	,offX: null
+	,offY: null
+	,mouseIsDown: null
+	,selected: null
+	,depths: null
+	,topDepth: null
 	,loadAll: function() {
-		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 71, className : "Main", methodName : "loadAll"});
-		this.fillDraw.colors = this.appColors;
-		this.drawMask();
-		this.startRendering();
-	}
-	,startRendering: function() {
-		var _gthis = this;
-		kha_System.notifyOnRender(function(framebuffer) {
-			_gthis.render(framebuffer);
-		});
-	}
-	,drawMask: function() {
+		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 47, className : "Main", methodName : "loadAll"});
+		var _this = this.jigsawBuilder;
 		var path = new trilateral_path_FillOnly();
-		var jig = this.jigsawx.jigs[0];
+		var jig = _this.jigs[0];
 		var image;
 		var ox;
 		var oy;
 		var count = 0;
-		var _g = 0;
-		var _g1 = this.jigsawx.jigs;
-		while(_g < _g1.length) {
-			var jig1 = _g1[_g];
-			++_g;
+		var _g1 = 0;
+		var _g = _this.jigs.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = _this.jigs[i];
 			path.trilateralArray = [];
 			path.points = [];
 			path.dim = [];
-			ox = jig1.xy.x;
-			oy = jig1.xy.y;
-			var first = jig1.getFirst();
+			ox = jig.xy.x;
+			oy = jig.xy.y;
+			var first = jig.getFirst();
 			path.moveTo(first.x + ox,first.y + oy);
-			var p = jig1.getPoints();
+			var p = jig.getPoints();
 			var _g2 = 0;
 			while(_g2 < p.length) {
 				var v = p[_g2];
@@ -271,64 +251,345 @@ Main.prototype = {
 					path.y = y_;
 				}
 			}
-			this.fillDraw.triangles = [];
-			this.fillDraw.fill(path.points,this.appColors[1]);
-			this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig1,this.fillDraw.triangles,ox,oy);
+			_this.fillDraw.triangles = [];
+			_this.fillDraw.fill(path.points,0);
+			_this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,_this.fillDraw.triangles,ox,oy);
 			++count;
 		}
-	}
-	,render: function(framebuffer) {
-		if(this.once) {
-			var poly = this.imageDrawing.polyPainter;
-			var tablecloth = kha_Assets.images.tablecloth;
-			var scale = 1;
-			var jigsawShape;
-			var x = 0.;
-			var y = 0.;
-			this.imageDrawing.startImage();
-			if(this.showBackground) {
-				poly.drawImage(tablecloth,0,0,this.imgWidth,this.imgHeight,this.backgroundAlpha);
-			}
-			var _g = 0;
-			while(_g < 1) {
-				var i = _g++;
-				jigsawShape = this.jigsawShapeArray[i];
-				this.fillDraw.triangles = jigsawShape.triangles;
-				var dx = jigsawShape.x * this.scaleImg;
-				var dy = jigsawShape.y * this.scaleImg;
-				this.imageDrawing.renderImageTrianglesOffset(tablecloth,scale,dx,dy,-dx,-dy);
-			}
-			this.imageDrawing.end();
-			this.imgJigsaw = this.imageDrawing.image;
-			var g2 = framebuffer.get_g2();
-			g2.begin();
-			g2.drawImage(this.imgJigsaw,0,0);
-			g2.end();
-			this.once = false;
-		}
-	}
-	,renderJigsaw: function(framebuffer) {
-		var poly = this.imageDrawing.polyPainter;
-		var tablecloth = kha_Assets.images.tablecloth;
-		var scale = 1;
+		var _this1 = this.jigsawBuilder;
+		var imageIn = kha_Assets.images.tablecloth;
+		var poly = _this1.imageDrawing.polyPainter;
 		var jigsawShape;
+		var scale = 1;
 		var x = 0.;
 		var y = 0.;
-		this.imageDrawing.startImage();
-		if(this.showBackground) {
-			poly.drawImage(tablecloth,0,0,this.imgWidth,this.imgHeight,this.backgroundAlpha);
+		_this1.imageDrawing.startImage();
+		if(_this1.showBackground) {
+			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),_this1.backgroundAlpha);
+		}
+		var _g11 = 0;
+		var _g3 = _this1.jigsawShapeArray.length;
+		while(_g11 < _g3) {
+			var i1 = _g11++;
+			jigsawShape = _this1.jigsawShapeArray[i1];
+			_this1.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * _this1.scaleImg;
+			var dy = jigsawShape.y * _this1.scaleImg;
+			_this1.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
+		}
+		_this1.imageDrawing.end();
+		this.imgJigsaw = _this1.imageDrawing.image;
+		var _g4 = 0;
+		var _g12 = this.jigsawx.jigs;
+		while(_g4 < _g12.length) {
+			var jig1 = _g12[_g4];
+			++_g4;
+			if((Math.random() * 4 | 0) != 0) {
+				var tmp = Math.random() * 370;
+				jig1.xy.x = tmp + 320;
+				var tmp1 = Math.random() * 250;
+				jig1.xy.y = tmp1 + 265;
+			} else {
+				jig1.enabled = false;
+			}
+		}
+		this.gridDef = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgJigsaw};
+		var _g13 = 0;
+		var _g5 = this.rows * this.cols;
+		while(_g13 < _g5) {
+			var i2 = _g13++;
+			this.depths[i2] = i2;
+		}
+		this.gridSheet = new trilateralXtra_kDrawing_GridSheet(this.gridDef);
+		this.gridSheet.dx = -this.wid / 2 + 1;
+		this.gridSheet.dy = -this.hi / 2 + 1;
+		var _gthis = this;
+		kha_System.notifyOnRender(function(framebuffer) {
+			var g = framebuffer.get_g2();
+			g.begin();
+			g.set_color(kha__$Color_Color_$Impl_$._new(-11184642));
+			g.drawImage(kha_Assets.images.tablecloth,_gthis.wid / 2 + 1,_gthis.hi / 2 + 1);
+			_gthis.gridSheet.renderGrid(g,_gthis,false);
+			g.end();
+		});
+		this.initInputs();
+	}
+	,setupImageGrid: function() {
+		this.gridDef = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgJigsaw};
+		var _g1 = 0;
+		var _g = this.rows * this.cols;
+		while(_g1 < _g) {
+			var i = _g1++;
+			this.depths[i] = i;
+		}
+		this.gridSheet = new trilateralXtra_kDrawing_GridSheet(this.gridDef);
+		this.gridSheet.dx = -this.wid / 2 + 1;
+		this.gridSheet.dy = -this.hi / 2 + 1;
+	}
+	,drawJigsawImage: function() {
+		var _this = this.jigsawBuilder;
+		var path = new trilateral_path_FillOnly();
+		var jig = _this.jigs[0];
+		var image;
+		var ox;
+		var oy;
+		var count = 0;
+		var _g1 = 0;
+		var _g = _this.jigs.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = _this.jigs[i];
+			path.trilateralArray = [];
+			path.points = [];
+			path.dim = [];
+			ox = jig.xy.x;
+			oy = jig.xy.y;
+			var first = jig.getFirst();
+			path.moveTo(first.x + ox,first.y + oy);
+			var p = jig.getPoints();
+			var _g2 = 0;
+			while(_g2 < p.length) {
+				var v = p[_g2];
+				++_g2;
+				var x_ = v.x + ox;
+				var y_ = v.y + oy;
+				var repeat = path.x == x_ && path.y == y_;
+				if(!repeat) {
+					if(path.widthFunction != null) {
+						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
+					}
+					path.line(x_,y_);
+					var l = path.points.length;
+					var p1 = path.points[l - 1];
+					var l2 = p1.length;
+					p1[l2] = x_;
+					p1[l2 + 1] = y_;
+					var d = path.dim[path.dim.length - 1];
+					if(x_ < d.minX) {
+						d.minX = x_;
+					}
+					if(x_ > d.maxX) {
+						d.maxX = x_;
+					}
+					if(y_ < d.minY) {
+						d.minY = y_;
+					}
+					if(y_ > d.maxY) {
+						d.maxY = y_;
+					}
+					path.x = x_;
+					path.y = y_;
+				}
+			}
+			_this.fillDraw.triangles = [];
+			_this.fillDraw.fill(path.points,0);
+			_this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,_this.fillDraw.triangles,ox,oy);
+			++count;
+		}
+		var _this1 = this.jigsawBuilder;
+		var imageIn = kha_Assets.images.tablecloth;
+		var poly = _this1.imageDrawing.polyPainter;
+		var jigsawShape;
+		var scale = 1;
+		var x = 0.;
+		var y = 0.;
+		_this1.imageDrawing.startImage();
+		if(_this1.showBackground) {
+			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),_this1.backgroundAlpha);
+		}
+		var _g11 = 0;
+		var _g3 = _this1.jigsawShapeArray.length;
+		while(_g11 < _g3) {
+			var i1 = _g11++;
+			jigsawShape = _this1.jigsawShapeArray[i1];
+			_this1.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * _this1.scaleImg;
+			var dy = jigsawShape.y * _this1.scaleImg;
+			_this1.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
+		}
+		_this1.imageDrawing.end();
+		this.imgJigsaw = _this1.imageDrawing.image;
+		var _g4 = 0;
+		var _g12 = this.jigsawx.jigs;
+		while(_g4 < _g12.length) {
+			var jig1 = _g12[_g4];
+			++_g4;
+			if((Math.random() * 4 | 0) != 0) {
+				var tmp = Math.random() * 370;
+				jig1.xy.x = tmp + 320;
+				var tmp1 = Math.random() * 250;
+				jig1.xy.y = tmp1 + 265;
+			} else {
+				jig1.enabled = false;
+			}
+		}
+	}
+	,startRendering: function() {
+		var _gthis = this;
+		kha_System.notifyOnRender(function(framebuffer) {
+			var g = framebuffer.get_g2();
+			g.begin();
+			g.set_color(kha__$Color_Color_$Impl_$._new(-11184642));
+			g.drawImage(kha_Assets.images.tablecloth,_gthis.wid / 2 + 1,_gthis.hi / 2 + 1);
+			_gthis.gridSheet.renderGrid(g,_gthis,false);
+			g.end();
+		});
+	}
+	,render: function(framebuffer) {
+		var g = framebuffer.get_g2();
+		g.begin();
+		g.set_color(kha__$Color_Color_$Impl_$._new(-11184642));
+		g.drawImage(kha_Assets.images.tablecloth,this.wid / 2 + 1,this.hi / 2 + 1);
+		this.gridSheet.renderGrid(g,this,false);
+		g.end();
+	}
+	,getItem: function(col,row) {
+		var id = row * this.cols + col;
+		var jig = this.jigsawx.jigs[id];
+		var color = -1;
+		var depth = this.depths[id];
+		if(jig == this.selected) {
+			color = kha__$Color_Color_$Impl_$._new(-74275);
+			depth = this.topDepth++;
+			this.depths[id] = this.topDepth;
+		}
+		var alpha = 0.8;
+		if(jig.enabled == false) {
+			alpha = 1.;
+			color = -1;
+		}
+		var x = jig.xy.x;
+		var y = jig.xy.y;
+		return { x : x, y : y, color : color, alpha : alpha, transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : depth};
+	}
+	,initInputs: function() {
+		if(kha_input_Mouse.get() != null) {
+			kha_input_Mouse.get().notify($bind(this,this.mouseDown),$bind(this,this.mouseUp),$bind(this,this.mouseMove),null);
+		}
+	}
+	,sortByDistance: function(arr,x,y) {
+		var _gthis = this;
+		var mx = x;
+		var my = y;
+		var jigs = this.jigsawx.jigs;
+		haxe_ds_ArraySort.sort(arr,function(a,b) {
+			var j = jigs[a].xy;
+			var k = jigs[b].xy;
+			var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
+			var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
+			if(distA < distB) {
+				return -1;
+			} else if(distA > distB) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+	}
+	,distP: function(px,py,x,y) {
+		return Math.pow(x - px,2) + Math.pow(y - py,2);
+	}
+	,mouseDown: function(button,x,y) {
+		var _this = this.jigsawBuilder;
+		var x1 = x - this.wid / 2;
+		var y1 = y - this.hi / 2;
+		var hits = [];
+		var hitCount = 0;
+		var jigsawShape;
+		var ox;
+		var oy;
+		var xy;
+		var _g1 = 0;
+		var _g = _this.jigsawShapeArray.length;
+		while(_g1 < _g) {
+			var s = _g1++;
+			jigsawShape = _this.jigsawShapeArray[s];
+			ox = jigsawShape.x;
+			oy = jigsawShape.y;
+			xy = _this.jigs[s].xy;
+			var t = HxOverrides.iter(jigsawShape.triangles);
+			while(t.hasNext()) {
+				var t1 = t.next();
+				if(t1.fullHit(x1 + -xy.x + ox,y1 + -xy.y + oy)) {
+					hits[hitCount] = s;
+					++hitCount;
+					break;
+				}
+			}
+		}
+		var arr = hits;
+		var jigs = this.jigsawx.jigs;
+		arr = arr.filter(function(i) {
+			return jigs[i].enabled;
+		});
+		if(arr.length > 1) {
+			var _gthis = this;
+			var mx = x - this.wid;
+			var my = y - this.hi;
+			var jigs1 = this.jigsawx.jigs;
+			haxe_ds_ArraySort.sort(arr,function(a,b) {
+				var j = jigs1[a].xy;
+				var k = jigs1[b].xy;
+				var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
+				var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
+				if(distA < distB) {
+					return -1;
+				} else if(distA > distB) {
+					return 1;
+				} else {
+					return 0;
+				}
+			});
+		}
+		if(arr.length > 0) {
+			var jig = jigs[arr[0]];
+			this.selected = jig;
+			var xy1 = jig.xy;
+			this.offX = x - this.wid - xy1.x;
+			this.offY = y - this.hi - xy1.y;
+		}
+		this.mouseIsDown = true;
+	}
+	,mouseUp: function(button,x,y) {
+		this.mouseIsDown = false;
+		if(this.selected != null) {
+			var id = 0;
+			var jigs = this.jigsawx.jigs;
+			var _g1 = 0;
+			var _g = jigs.length;
+			while(_g1 < _g) {
+				var i = _g1++;
+				if(jigs[i] == this.selected) {
+					id = i;
+					break;
+				}
+			}
+			if(this.jigsawBuilder.isInPlace(id,this.selected)) {
+				this.selected.enabled = false;
+				var p = this.jigsawBuilder.getShapeXY(id);
+				this.selected.xy.x = p.x;
+				this.selected.xy.y = p.y;
+			}
+		}
+		this.selected = null;
+	}
+	,mouseMove: function(x,y,movementX,movementY) {
+		if(this.mouseIsDown == false) {
+			return;
 		}
 		var _g = 0;
-		while(_g < 1) {
-			var i = _g++;
-			jigsawShape = this.jigsawShapeArray[i];
-			this.fillDraw.triangles = jigsawShape.triangles;
-			var dx = jigsawShape.x * this.scaleImg;
-			var dy = jigsawShape.y * this.scaleImg;
-			this.imageDrawing.renderImageTrianglesOffset(tablecloth,scale,dx,dy,-dx,-dy);
+		var _g1 = this.jigsawx.jigs;
+		while(_g < _g1.length) {
+			var j = _g1[_g];
+			++_g;
+			if(j == this.selected) {
+				var xy = j.xy;
+				xy.x = x - this.wid - this.offX;
+				xy.y = y - this.hi - this.offY;
+			}
 		}
-		this.imageDrawing.end();
-		return this.imageDrawing.image;
+		this.offX /= 1.025;
+		this.offY /= 1.025;
 	}
 	,__class__: Main
 };
@@ -1031,6 +1292,137 @@ haxe_crypto_BaseCode.prototype = {
 		return out;
 	}
 	,__class__: haxe_crypto_BaseCode
+};
+var haxe_ds_ArraySort = function() { };
+$hxClasses["haxe.ds.ArraySort"] = haxe_ds_ArraySort;
+haxe_ds_ArraySort.__name__ = true;
+haxe_ds_ArraySort.sort = function(a,cmp) {
+	haxe_ds_ArraySort.rec(a,cmp,0,a.length);
+};
+haxe_ds_ArraySort.rec = function(a,cmp,from,to) {
+	var middle = from + to >> 1;
+	if(to - from < 12) {
+		if(to <= from) {
+			return;
+		}
+		var _g1 = from + 1;
+		var _g = to;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var j = i;
+			while(j > from) {
+				if(cmp(a[j],a[j - 1]) < 0) {
+					haxe_ds_ArraySort.swap(a,j - 1,j);
+				} else {
+					break;
+				}
+				--j;
+			}
+		}
+		return;
+	}
+	haxe_ds_ArraySort.rec(a,cmp,from,middle);
+	haxe_ds_ArraySort.rec(a,cmp,middle,to);
+	haxe_ds_ArraySort.doMerge(a,cmp,from,middle,to,middle - from,to - middle);
+};
+haxe_ds_ArraySort.doMerge = function(a,cmp,from,pivot,to,len1,len2) {
+	var first_cut;
+	var second_cut;
+	var len11;
+	var len22;
+	var new_mid;
+	if(len1 == 0 || len2 == 0) {
+		return;
+	}
+	if(len1 + len2 == 2) {
+		if(cmp(a[pivot],a[from]) < 0) {
+			haxe_ds_ArraySort.swap(a,pivot,from);
+		}
+		return;
+	}
+	if(len1 > len2) {
+		len11 = len1 >> 1;
+		first_cut = from + len11;
+		second_cut = haxe_ds_ArraySort.lower(a,cmp,pivot,to,first_cut);
+		len22 = second_cut - pivot;
+	} else {
+		len22 = len2 >> 1;
+		second_cut = pivot + len22;
+		first_cut = haxe_ds_ArraySort.upper(a,cmp,from,pivot,second_cut);
+		len11 = first_cut - from;
+	}
+	haxe_ds_ArraySort.rotate(a,cmp,first_cut,pivot,second_cut);
+	new_mid = first_cut + len22;
+	haxe_ds_ArraySort.doMerge(a,cmp,from,first_cut,new_mid,len11,len22);
+	haxe_ds_ArraySort.doMerge(a,cmp,new_mid,second_cut,to,len1 - len11,len2 - len22);
+};
+haxe_ds_ArraySort.rotate = function(a,cmp,from,mid,to) {
+	var n;
+	if(from == mid || mid == to) {
+		return;
+	}
+	n = haxe_ds_ArraySort.gcd(to - from,mid - from);
+	while(n-- != 0) {
+		var val = a[from + n];
+		var shift = mid - from;
+		var p1 = from + n;
+		var p2 = from + n + shift;
+		while(p2 != from + n) {
+			a[p1] = a[p2];
+			p1 = p2;
+			if(to - p2 > shift) {
+				p2 += shift;
+			} else {
+				p2 = from + (shift - (to - p2));
+			}
+		}
+		a[p1] = val;
+	}
+};
+haxe_ds_ArraySort.gcd = function(m,n) {
+	while(n != 0) {
+		var t = m % n;
+		m = n;
+		n = t;
+	}
+	return m;
+};
+haxe_ds_ArraySort.upper = function(a,cmp,from,to,val) {
+	var len = to - from;
+	var half;
+	var mid;
+	while(len > 0) {
+		half = len >> 1;
+		mid = from + half;
+		if(cmp(a[val],a[mid]) < 0) {
+			len = half;
+		} else {
+			from = mid + 1;
+			len = len - half - 1;
+		}
+	}
+	return from;
+};
+haxe_ds_ArraySort.lower = function(a,cmp,from,to,val) {
+	var len = to - from;
+	var half;
+	var mid;
+	while(len > 0) {
+		half = len >> 1;
+		mid = from + half;
+		if(cmp(a[mid],a[val]) < 0) {
+			from = mid + 1;
+			len = len - half - 1;
+		} else {
+			len = half;
+		}
+	}
+	return from;
+};
+haxe_ds_ArraySort.swap = function(a,i,j) {
+	var tmp = a[i];
+	a[i] = a[j];
+	a[j] = tmp;
 };
 var haxe_ds_IntMap = function() {
 	this.h = { };
@@ -3034,11 +3426,11 @@ var jigsawx_Jigsawx = function(dx_,dy_,rows_,cols_) {
 	this.dy = dy_;
 	this.rows = rows_;
 	this.cols = cols_;
-	var xy = new jigsawx_math_Vec2(20,20);
-	var lt = new jigsawx_math_Vec2(20,20);
-	var rt = new jigsawx_math_Vec2(20 + this.dx,20);
-	var rb = new jigsawx_math_Vec2(20 + this.dx,this.dy + 20);
-	var lb = new jigsawx_math_Vec2(20,this.dy + 20);
+	var xy = new jigsawx_math_Vec2(1,1);
+	var lt = new jigsawx_math_Vec2(1,1);
+	var rt = new jigsawx_math_Vec2(1 + this.dx,1);
+	var rb = new jigsawx_math_Vec2(1 + this.dx,this.dy + 1);
+	var lb = new jigsawx_math_Vec2(1,this.dy + 1);
 	this.length = 0;
 	var last;
 	var _g1 = 0;
@@ -3097,7 +3489,7 @@ var jigsawx_Jigsawx = function(dx_,dy_,rows_,cols_) {
 			this.jigs.push(jig);
 			xy.x += this.dx;
 		}
-		xy.x = 20;
+		xy.x = 1;
 		xy.y += this.dy;
 	}
 };
@@ -3267,6 +3659,151 @@ jigsawx_math_Vec2.prototype = {
 	x: null
 	,y: null
 	,__class__: jigsawx_math_Vec2
+};
+var jigsawxKha_JigsawImageBuilder = function(jigs_) {
+	this.jigsawShapeArray = [];
+	this.scaleImg = 1;
+	this.backgroundAlpha = 0.3;
+	this.showBackground = false;
+	this.jigs = jigs_;
+	trilateralXtra_kDrawing_PolyPainter.bufferSize = 3000000;
+	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(1024,768);
+	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(this.fillDraw);
+};
+$hxClasses["jigsawxKha.JigsawImageBuilder"] = jigsawxKha_JigsawImageBuilder;
+jigsawxKha_JigsawImageBuilder.__name__ = true;
+jigsawxKha_JigsawImageBuilder.prototype = {
+	showBackground: null
+	,backgroundAlpha: null
+	,imageDrawing: null
+	,fillDraw: null
+	,scaleImg: null
+	,jigsawShapeArray: null
+	,jigs: null
+	,drawMask: function() {
+		var path = new trilateral_path_FillOnly();
+		var jig = this.jigs[0];
+		var image;
+		var ox;
+		var oy;
+		var count = 0;
+		var _g1 = 0;
+		var _g = this.jigs.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = this.jigs[i];
+			path.trilateralArray = [];
+			path.points = [];
+			path.dim = [];
+			ox = jig.xy.x;
+			oy = jig.xy.y;
+			var first = jig.getFirst();
+			path.moveTo(first.x + ox,first.y + oy);
+			var p = jig.getPoints();
+			var _g2 = 0;
+			while(_g2 < p.length) {
+				var v = p[_g2];
+				++_g2;
+				var x_ = v.x + ox;
+				var y_ = v.y + oy;
+				var repeat = path.x == x_ && path.y == y_;
+				if(!repeat) {
+					if(path.widthFunction != null) {
+						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
+					}
+					path.line(x_,y_);
+					var l = path.points.length;
+					var p1 = path.points[l - 1];
+					var l2 = p1.length;
+					p1[l2] = x_;
+					p1[l2 + 1] = y_;
+					var d = path.dim[path.dim.length - 1];
+					if(x_ < d.minX) {
+						d.minX = x_;
+					}
+					if(x_ > d.maxX) {
+						d.maxX = x_;
+					}
+					if(y_ < d.minY) {
+						d.minY = y_;
+					}
+					if(y_ > d.maxY) {
+						d.maxY = y_;
+					}
+					path.x = x_;
+					path.y = y_;
+				}
+			}
+			this.fillDraw.triangles = [];
+			this.fillDraw.fill(path.points,0);
+			this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,this.fillDraw.triangles,ox,oy);
+			++count;
+		}
+	}
+	,hitTest: function(x,y) {
+		var hits = [];
+		var hitCount = 0;
+		var jigsawShape;
+		var ox;
+		var oy;
+		var xy;
+		var _g1 = 0;
+		var _g = this.jigsawShapeArray.length;
+		while(_g1 < _g) {
+			var s = _g1++;
+			jigsawShape = this.jigsawShapeArray[s];
+			ox = jigsawShape.x;
+			oy = jigsawShape.y;
+			xy = this.jigs[s].xy;
+			var t = HxOverrides.iter(jigsawShape.triangles);
+			while(t.hasNext()) {
+				var t1 = t.next();
+				if(t1.fullHit(x + -xy.x + ox,y + -xy.y + oy)) {
+					hits[hitCount] = s;
+					++hitCount;
+					break;
+				}
+			}
+		}
+		return hits;
+	}
+	,isInPlace: function(id,jig) {
+		var shape = this.jigsawShapeArray[id];
+		var xy = jig.xy;
+		var dist = Math.pow(shape.x - xy.x,2) + Math.pow(shape.y - xy.y,2);
+		return dist < 40;
+	}
+	,getShapeXY: function(id) {
+		var shape = this.jigsawShapeArray[id];
+		return { x : shape.x, y : shape.y};
+	}
+	,distP: function(px,py,x,y) {
+		return Math.pow(x - px,2) + Math.pow(y - py,2);
+	}
+	,renderJigsaw: function(imageIn) {
+		var poly = this.imageDrawing.polyPainter;
+		var jigsawShape;
+		var scale = 1;
+		var x = 0.;
+		var y = 0.;
+		this.imageDrawing.startImage();
+		if(this.showBackground) {
+			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),this.backgroundAlpha);
+		}
+		var _g1 = 0;
+		var _g = this.jigsawShapeArray.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jigsawShape = this.jigsawShapeArray[i];
+			this.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * this.scaleImg;
+			var dy = jigsawShape.y * this.scaleImg;
+			this.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
+		}
+		this.imageDrawing.end();
+		return this.imageDrawing.image;
+	}
+	,__class__: jigsawxKha_JigsawImageBuilder
 };
 var jigsawxKha_JigsawShape = function(jig_,triangles_,x_,y_) {
 	this.jig = jig_;
@@ -5661,20 +6198,20 @@ kha_Shaders.init = function() {
 	var _g1 = 0;
 	while(_g1 < 3) {
 		var i1 = _g1++;
-		var data1 = Reflect.field(kha_Shaders,"painter_image_fragData" + i1);
+		var data1 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i1);
 		var bytes1 = haxe_Unserializer.run(data1);
 		blobs1.push(kha_internal_BytesBlob.fromBytes(bytes1));
 	}
-	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs1,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
+	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs1,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
 	var blobs2 = [];
 	var _g2 = 0;
 	while(_g2 < 3) {
 		var i2 = _g2++;
-		var data2 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i2);
+		var data2 = Reflect.field(kha_Shaders,"painter_image_fragData" + i2);
 		var bytes2 = haxe_Unserializer.run(data2);
 		blobs2.push(kha_internal_BytesBlob.fromBytes(bytes2));
 	}
-	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs2,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
+	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs2,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
 	var blobs3 = [];
 	var _g3 = 0;
 	while(_g3 < 3) {
@@ -29555,187 +30092,6 @@ trilateral_geom_Contour.prototype = {
 	}
 	,__class__: trilateral_geom_Contour
 };
-var trilateral_justPath_EllipseArc = function(arc_) {
-	this.arc = arc_;
-};
-$hxClasses["trilateral.justPath.EllipseArc"] = trilateral_justPath_EllipseArc;
-trilateral_justPath_EllipseArc.__name__ = true;
-trilateral_justPath_EllipseArc.prototype = {
-	arc: null
-	,x: null
-	,y: null
-	,alphaPoint: function() {
-		var theta = this.arc.alpha;
-		var px = this.arc.cx + this.arc.rx * Math.cos(theta);
-		var py = this.arc.cy + this.arc.ry * Math.sin(theta);
-		px -= this.arc.cx;
-		py -= this.arc.cy;
-		var dx = px;
-		var dy = py;
-		px = dx * this.arc.phiCos - dy * this.arc.phiSin;
-		py = dx * this.arc.phiSin + dy * this.arc.phiCos;
-		this.x = px + this.arc.cx;
-		this.y = py + this.arc.cy;
-	}
-	,omegaPoint: function() {
-		var theta = this.arc.omega;
-		var px = this.arc.cx + this.arc.rx * Math.cos(theta);
-		var py = this.arc.cy + this.arc.ry * Math.sin(theta);
-		px -= this.arc.cx;
-		py -= this.arc.cy;
-		var dx = px;
-		var dy = py;
-		px = dx * this.arc.phiCos - dy * this.arc.phiSin;
-		py = dx * this.arc.phiSin + dy * this.arc.phiCos;
-		this.x = px + this.arc.cx;
-		this.y = py + this.arc.cy;
-	}
-	,lineRender: function(moveTo,lineTo,dA,renderFirst) {
-		if(renderFirst == null) {
-			renderFirst = true;
-		}
-		var sign = this.arc.delta > 0 ? 1 : -1;
-		var totalSteps = Math.ceil(Math.abs(this.arc.delta) / dA);
-		var theta = this.arc.alpha;
-		var step = this.arc.delta / totalSteps;
-		if(renderFirst) {
-			var px = this.arc.cx + this.arc.rx * Math.cos(theta);
-			var py = this.arc.cy + this.arc.ry * Math.sin(theta);
-			px -= this.arc.cx;
-			py -= this.arc.cy;
-			var dx = px;
-			var dy = py;
-			px = dx * this.arc.phiCos - dy * this.arc.phiSin;
-			py = dx * this.arc.phiSin + dy * this.arc.phiCos;
-			this.x = px + this.arc.cx;
-			this.y = py + this.arc.cy;
-			moveTo(this.x,this.y);
-		}
-		var _g1 = 1;
-		var _g = totalSteps;
-		while(_g1 < _g) {
-			var i = _g1++;
-			theta += step;
-			var px1 = this.arc.cx + this.arc.rx * Math.cos(theta);
-			var py1 = this.arc.cy + this.arc.ry * Math.sin(theta);
-			px1 -= this.arc.cx;
-			py1 -= this.arc.cy;
-			var dx1 = px1;
-			var dy1 = py1;
-			px1 = dx1 * this.arc.phiCos - dy1 * this.arc.phiSin;
-			py1 = dx1 * this.arc.phiSin + dy1 * this.arc.phiCos;
-			this.x = px1 + this.arc.cx;
-			this.y = py1 + this.arc.cy;
-			lineTo(this.x,this.y);
-		}
-		var theta1 = this.arc.omega;
-		var px2 = this.arc.cx + this.arc.rx * Math.cos(theta1);
-		var py2 = this.arc.cy + this.arc.ry * Math.sin(theta1);
-		px2 -= this.arc.cx;
-		py2 -= this.arc.cy;
-		var dx2 = px2;
-		var dy2 = py2;
-		px2 = dx2 * this.arc.phiCos - dy2 * this.arc.phiSin;
-		py2 = dx2 * this.arc.phiSin + dy2 * this.arc.phiCos;
-		this.x = px2 + this.arc.cx;
-		this.y = py2 + this.arc.cy;
-		lineTo(this.x,this.y);
-	}
-	,calculatePoint: function(theta) {
-		var px = this.arc.cx + this.arc.rx * Math.cos(theta);
-		var py = this.arc.cy + this.arc.ry * Math.sin(theta);
-		px -= this.arc.cx;
-		py -= this.arc.cy;
-		var dx = px;
-		var dy = py;
-		px = dx * this.arc.phiCos - dy * this.arc.phiSin;
-		py = dx * this.arc.phiSin + dy * this.arc.phiCos;
-		this.x = px + this.arc.cx;
-		this.y = py + this.arc.cy;
-	}
-	,__class__: trilateral_justPath_EllipseArc
-};
-var trilateral_justPath__$EllipseArc_ConverterArc_$Impl_$ = {};
-$hxClasses["trilateral.justPath._EllipseArc.ConverterArc_Impl_"] = trilateral_justPath__$EllipseArc_ConverterArc_$Impl_$;
-trilateral_justPath__$EllipseArc_ConverterArc_$Impl_$.__name__ = true;
-trilateral_justPath__$EllipseArc_ConverterArc_$Impl_$._new = function(sx,sy,xr,yr,phi,large,sweep,ex,ey) {
-	var this1;
-	var mx = (sx - ex) / 2;
-	var my = (sy - ey) / 2;
-	var ax = (sx + ex) / 2;
-	var ay = (sy + ey) / 2;
-	phi %= 360;
-	phi = phi * Math.PI / 180;
-	var sin = Math.sin(phi);
-	var cos = Math.cos(phi);
-	var x1 = mx * cos + my * sin;
-	var y1 = -mx * sin + my * cos;
-	var rx = Math.abs(xr);
-	var ry = Math.abs(yr);
-	var rxx = rx * rx;
-	var ryy = ry * ry;
-	var xx1 = x1 * x1;
-	var yy1 = y1 * y1;
-	var check = xx1 / rxx + yy1 / ryy;
-	if(check > 1) {
-		rx *= Math.sqrt(check);
-		ry *= Math.sqrt(check);
-		rxx = rx * rx;
-		ryy = ry * ry;
-	}
-	var sign = large == sweep ? -1 : 1;
-	var sq = (rxx * ryy - rxx * yy1 - ryy * xx1) / (rxx * yy1 + ryy * xx1);
-	if(sq < 0) {
-		sq = 0;
-	} else {
-		sq = sq;
-	}
-	var coef = sign * Math.sqrt(sq);
-	var cx1 = coef * rx * y1 / ry;
-	var cy1 = -coef * ry * x1 / rx;
-	var cx = ax + cx1 * cos - cy1 * sin;
-	var cy = ay + cx1 * sin + cy1 * cos;
-	var phiSin = Math.sin(-phi);
-	var phiCos = Math.cos(-phi);
-	sx -= cx;
-	sy -= cy;
-	var dx = sx;
-	var dy = sy;
-	sx = dx * phiCos - dy * phiSin;
-	sy = dx * phiSin + dy * phiCos;
-	sx += cx;
-	sy += cy;
-	ex -= cx;
-	ey -= cy;
-	var dx1 = ex;
-	var dy1 = ey;
-	ex = dx1 * phiCos - dy1 * phiSin;
-	ey = dx1 * phiSin + dy1 * phiCos;
-	ex += cx;
-	ey += cy;
-	var alpha = Math.atan2(rx * (cy - sy),ry * (cx - sx)) - Math.PI;
-	var omega = Math.atan2(rx * (cy - ey),ry * (cx - ex)) - Math.PI;
-	var delta = alpha - omega;
-	if(sweep == 1 && delta > 0) {
-		delta -= 2 * Math.PI;
-	} else if(sweep == 0 && delta < 0) {
-		delta += 2 * Math.PI;
-	}
-	this1 = { cx : cx, cy : cy, rx : rx, ry : ry, alpha : alpha, omega : omega, delta : -delta, phi : phi, phiSin : Math.sin(phi), phiCos : Math.cos(phi)};
-	return this1;
-};
-trilateral_justPath__$EllipseArc_ConverterArc_$Impl_$.zeroto2pi = function(angle) {
-	if(angle >= 0 && angle > Math.PI) {
-		return angle;
-	} else {
-		var a = angle % (2 * Math.PI);
-		if(a >= 0) {
-			return a;
-		} else {
-			return a + 2 * Math.PI;
-		}
-	}
-};
 var trilateral_justPath_IPathContext = function() { };
 $hxClasses["trilateral.justPath.IPathContext"] = trilateral_justPath_IPathContext;
 trilateral_justPath_IPathContext.__name__ = true;
@@ -29745,6988 +30101,6 @@ trilateral_justPath_IPathContext.prototype = {
 	,quadTo: null
 	,curveTo: null
 	,__class__: trilateral_justPath_IPathContext
-};
-var trilateral_justPath_PathContextTrace = function() {
-};
-$hxClasses["trilateral.justPath.PathContextTrace"] = trilateral_justPath_PathContextTrace;
-trilateral_justPath_PathContextTrace.__name__ = true;
-trilateral_justPath_PathContextTrace.__interfaces__ = [trilateral_justPath_IPathContext];
-trilateral_justPath_PathContextTrace.prototype = {
-	moveTo: function(x,y) {
-		haxe_Log.trace("moveTo( " + x + ", " + y + " );",{ fileName : "PathContextTrace.hx", lineNumber : 8, className : "trilateral.justPath.PathContextTrace", methodName : "moveTo"});
-	}
-	,lineTo: function(x,y) {
-		haxe_Log.trace("lineTo( " + x + ", " + y + " );",{ fileName : "PathContextTrace.hx", lineNumber : 11, className : "trilateral.justPath.PathContextTrace", methodName : "lineTo"});
-	}
-	,quadTo: function(x1,y1,x2,y2) {
-		haxe_Log.trace("quadTo( " + x1 + ", " + y1 + ", " + x2 + ", " + y2 + " );",{ fileName : "PathContextTrace.hx", lineNumber : 14, className : "trilateral.justPath.PathContextTrace", methodName : "quadTo"});
-	}
-	,curveTo: function(x1,y1,x2,y2,x3,y3) {
-		haxe_Log.trace("curveTo( " + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ", " + x3 + ", " + y3 + " );",{ fileName : "PathContextTrace.hx", lineNumber : 17, className : "trilateral.justPath.PathContextTrace", methodName : "curveTo"});
-	}
-	,__class__: trilateral_justPath_PathContextTrace
-};
-var trilateral_justPath_StoreF6 = function() {
-	this.count = 0;
-	this.l = 0;
-};
-$hxClasses["trilateral.justPath.StoreF6"] = trilateral_justPath_StoreF6;
-trilateral_justPath_StoreF6.__name__ = true;
-trilateral_justPath_StoreF6.prototype = {
-	l: null
-	,s0: null
-	,s1: null
-	,s2: null
-	,s3: null
-	,s4: null
-	,s5: null
-	,s6: null
-	,clear: function() {
-		this.l = 0;
-		this.s0 = null;
-		this.s1 = null;
-		this.s2 = null;
-		this.s3 = null;
-		this.s4 = null;
-		this.s5 = null;
-		this.s6 = null;
-	}
-	,length: function() {
-		return this.l;
-	}
-	,push: function(v) {
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			this.s0 = v;
-			break;
-		case 1:
-			this.s1 = v;
-			break;
-		case 2:
-			this.s2 = v;
-			break;
-		case 3:
-			this.s3 = v;
-			break;
-		case 4:
-			this.s4 = v;
-			break;
-		case 5:
-			this.s5 = v;
-			break;
-		default:
-			if(this.s6 == null) {
-				this.s6 = new trilateral_justPath_StoreF6();
-			}
-			this.s6.push(v);
-		}
-		this.l++;
-	}
-	,pop: function() {
-		var out = null;
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			this.s0 = null;
-			break;
-		case 1:
-			out = this.s1;
-			this.s1 = null;
-			break;
-		case 2:
-			out = this.s2;
-			this.s2 = null;
-			break;
-		case 3:
-			out = this.s3;
-			this.s3 = null;
-			break;
-		case 4:
-			out = this.s4;
-			this.s4 = null;
-			break;
-		case 5:
-			out = this.s5;
-			this.s5 = null;
-			break;
-		default:
-			if(this.s6 != null) {
-				this.s6.pop();
-			}
-		}
-		this.l--;
-		return out;
-	}
-	,unshift: function(v) {
-		if(this.s6 == null) {
-			this.s6 = new trilateral_justPath_StoreF6();
-		}
-		this.s6.unshift(this.s5);
-		this.s5 = this.s4;
-		this.s4 = this.s3;
-		this.s3 = this.s2;
-		this.s2 = this.s1;
-		this.s0 = v;
-		this.l++;
-	}
-	,shift: function() {
-		var out = this.s0;
-		if(this.l != 0) {
-			this.s0 = this.s1;
-			this.s1 = this.s2;
-			this.s2 = this.s3;
-			this.s3 = this.s4;
-			this.s4 = this.s5;
-			this.s5 = null;
-			if(this.s6 != null) {
-				this.s5 = this.s6.shift();
-			}
-			this.l--;
-		}
-		return out;
-	}
-	,toString: function() {
-		if(this.s6 == null) {
-			return "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5;
-		} else {
-			return "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5 + this.s6.toString();
-		}
-	}
-	,populatedToString: function() {
-		var out = "";
-		var _g = this.l - 1;
-		switch(_g) {
-		case 0:
-			out = "" + this.s0;
-			break;
-		case 1:
-			out = "" + this.s0 + ", " + this.s1;
-			break;
-		case 2:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2;
-			break;
-		case 3:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3;
-			break;
-		case 4:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4;
-			break;
-		case 5:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5;
-			break;
-		default:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5;
-			if(this.s6 != null) {
-				out += this.s6.populatedToString();
-			}
-		}
-		return out;
-	}
-	,count: null
-	,hasNext: function() {
-		return this.count < this.l + 1;
-	}
-	,resetIterator: function() {
-		this.count = 0;
-		if(this.s6 != null) {
-			this.s6.resetIterator();
-		}
-	}
-	,next: function() {
-		var out = null;
-		var _g = this.count;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		default:
-			out = this.s6.next();
-		}
-		this.count++;
-		return out;
-	}
-	,first: function() {
-		return this.s0;
-	}
-	,last: function() {
-		var out = null;
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		default:
-			out = this.s6.last();
-		}
-		return out;
-	}
-	,penultimate: function() {
-		var out = null;
-		var _g = this.l - 1;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		default:
-			out = this.s6.penultimate();
-		}
-		return out;
-	}
-	,toArray: function() {
-		var arr = [];
-		this.count = 0;
-		var _g = this;
-		while(_g.count < _g.l + 1) {
-			var out = null;
-			var _g1 = _g.count;
-			switch(_g1) {
-			case 0:
-				out = _g.s0;
-				break;
-			case 1:
-				out = _g.s1;
-				break;
-			case 2:
-				out = _g.s2;
-				break;
-			case 3:
-				out = _g.s3;
-				break;
-			case 4:
-				out = _g.s4;
-				break;
-			case 5:
-				out = _g.s5;
-				break;
-			default:
-				out = _g.s6.next();
-			}
-			_g.count++;
-			var i = out;
-			arr.push(i);
-		}
-	}
-	,__class__: trilateral_justPath_StoreF6
-};
-var trilateral_justPath_StoreF8 = function() {
-	this.count = 0;
-	this.l = 0;
-};
-$hxClasses["trilateral.justPath.StoreF8"] = trilateral_justPath_StoreF8;
-trilateral_justPath_StoreF8.__name__ = true;
-trilateral_justPath_StoreF8.prototype = {
-	l: null
-	,s0: null
-	,s1: null
-	,s2: null
-	,s3: null
-	,s4: null
-	,s5: null
-	,s6: null
-	,s7: null
-	,clear: function() {
-		this.l = 0;
-		this.s0 = null;
-		this.s1 = null;
-		this.s2 = null;
-		this.s3 = null;
-		this.s4 = null;
-		this.s5 = null;
-		this.s6 = null;
-		this.s7 = null;
-	}
-	,length: function() {
-		return this.l;
-	}
-	,push: function(v) {
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			this.s0 = v;
-			break;
-		case 1:
-			this.s1 = v;
-			break;
-		case 2:
-			this.s2 = v;
-			break;
-		case 3:
-			this.s3 = v;
-			break;
-		case 4:
-			this.s4 = v;
-			break;
-		case 5:
-			this.s5 = v;
-			break;
-		case 6:
-			this.s6 = v;
-			break;
-		case 7:
-			this.s7 = v;
-			break;
-		default:
-		}
-		this.l++;
-	}
-	,pop: function() {
-		var out = null;
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			this.s0 = null;
-			break;
-		case 1:
-			out = this.s1;
-			this.s1 = null;
-			break;
-		case 2:
-			out = this.s2;
-			this.s2 = null;
-			break;
-		case 3:
-			out = this.s3;
-			this.s3 = null;
-			break;
-		case 4:
-			out = this.s4;
-			this.s4 = null;
-			break;
-		case 5:
-			out = this.s5;
-			this.s5 = null;
-			break;
-		case 6:
-			out = this.s6;
-			this.s6 = null;
-			break;
-		case 7:
-			out = this.s7;
-			this.s6 = null;
-			break;
-		default:
-		}
-		this.l--;
-		return out;
-	}
-	,unshift: function(v) {
-		this.s7 = this.s6;
-		this.s6 = this.s5;
-		this.s5 = this.s4;
-		this.s4 = this.s3;
-		this.s3 = this.s2;
-		this.s2 = this.s1;
-		this.s0 = v;
-		this.l++;
-	}
-	,shift: function() {
-		var out = this.s0;
-		if(this.l != 0) {
-			this.s0 = this.s1;
-			this.s1 = this.s2;
-			this.s2 = this.s3;
-			this.s3 = this.s4;
-			this.s4 = this.s5;
-			this.s5 = this.s6;
-			this.s6 = this.s7;
-			this.s7 = null;
-			this.l--;
-		}
-		return out;
-	}
-	,toString: function() {
-		return "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5 + ", " + this.s6 + ", " + this.s7;
-	}
-	,populatedToString: function() {
-		var out = "";
-		var _g = this.l - 1;
-		switch(_g) {
-		case 0:
-			out = "" + this.s0;
-			break;
-		case 1:
-			out = "" + this.s0 + ", " + this.s1;
-			break;
-		case 2:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2;
-			break;
-		case 3:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3;
-			break;
-		case 4:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4;
-			break;
-		case 5:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5;
-			break;
-		case 6:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5 + ", " + this.s6;
-			break;
-		case 7:
-			out = "" + this.s0 + ", " + this.s1 + ", " + this.s2 + ", " + this.s3 + ", " + this.s4 + ", " + this.s5 + ", " + this.s6 + ", " + this.s7;
-			break;
-		default:
-		}
-		return out;
-	}
-	,count: null
-	,hasNext: function() {
-		return this.count < this.l + 1;
-	}
-	,resetIterator: function() {
-		this.count = 0;
-	}
-	,next: function() {
-		var out = null;
-		var _g = this.count;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		case 6:
-			out = this.s6;
-			break;
-		case 7:
-			out = this.s7;
-			break;
-		default:
-		}
-		this.count++;
-		return out;
-	}
-	,first: function() {
-		return this.s0;
-	}
-	,last: function() {
-		var out = null;
-		var _g = this.l;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		case 6:
-			out = this.s6;
-			break;
-		case 7:
-			out = this.s7;
-			break;
-		default:
-		}
-		return out;
-	}
-	,penultimate: function() {
-		var out = null;
-		var _g = this.l - 1;
-		switch(_g) {
-		case 0:
-			out = this.s0;
-			break;
-		case 1:
-			out = this.s1;
-			break;
-		case 2:
-			out = this.s2;
-			break;
-		case 3:
-			out = this.s3;
-			break;
-		case 4:
-			out = this.s4;
-			break;
-		case 5:
-			out = this.s5;
-			break;
-		case 6:
-			out = this.s6;
-			break;
-		case 7:
-			out = this.s7;
-			break;
-		default:
-		}
-		return out;
-	}
-	,toArray: function() {
-		var arr = [];
-		this.count = 0;
-		var _g = this;
-		while(_g.count < _g.l + 1) {
-			var out = null;
-			var _g1 = _g.count;
-			switch(_g1) {
-			case 0:
-				out = _g.s0;
-				break;
-			case 1:
-				out = _g.s1;
-				break;
-			case 2:
-				out = _g.s2;
-				break;
-			case 3:
-				out = _g.s3;
-				break;
-			case 4:
-				out = _g.s4;
-				break;
-			case 5:
-				out = _g.s5;
-				break;
-			case 6:
-				out = _g.s6;
-				break;
-			case 7:
-				out = _g.s7;
-				break;
-			default:
-			}
-			_g.count++;
-			var i = out;
-			arr.push(i);
-		}
-	}
-	,__class__: trilateral_justPath_StoreF8
-};
-var trilateral_justPath_SvgPath = function(pathContext_) {
-	this.l = 0;
-	this.c = 0;
-	this.controlY = 0.;
-	this.controlX = 0.;
-	this.lastY = 0.;
-	this.lastX = 0.;
-	this.pos = 0;
-	this.str = "";
-	this.pathContext = pathContext_;
-};
-$hxClasses["trilateral.justPath.SvgPath"] = trilateral_justPath_SvgPath;
-trilateral_justPath_SvgPath.__name__ = true;
-trilateral_justPath_SvgPath.prototype = {
-	str: null
-	,pos: null
-	,lastX: null
-	,lastY: null
-	,controlX: null
-	,controlY: null
-	,c: null
-	,l: null
-	,pathContext: null
-	,store: null
-	,quickTriangle: function(x0,y0,off) {
-		this.pathContext.moveTo(x0,y0 - off);
-		this.pathContext.lineTo(x0 + off,y0 + off);
-		this.pathContext.lineTo(x0 - off,y0 + off);
-		this.pathContext.lineTo(x0,y0 - off);
-	}
-	,parse: function(str_) {
-		this.str = str_;
-		this.pos = 0;
-		this.l = this.str.length;
-		this.c = this.str.charCodeAt(this.pos++);
-		var count = 0;
-		this.store = new trilateral_justPath_StoreF6();
-		while(this.pos < this.l) {
-			var _g = this.c;
-			switch(_g) {
-			case 65:
-				var _this = this.store;
-				_this.l = 0;
-				_this.s0 = null;
-				_this.s1 = null;
-				_this.s2 = null;
-				_this.s3 = null;
-				_this.s4 = null;
-				_this.s5 = null;
-				_this.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count1 = 0;
-				var temp = "";
-				var exit = false;
-				while(true) {
-					var _g1 = this.c;
-					switch(_g1) {
-					case 32:case 44:
-						if(temp != "") {
-							if((this.store.l & 1) == 0) {
-								var _this1 = this.store;
-								var v = parseFloat(temp);
-								var _g2 = _this1.l;
-								switch(_g2) {
-								case 0:
-									_this1.s0 = v;
-									break;
-								case 1:
-									_this1.s1 = v;
-									break;
-								case 2:
-									_this1.s2 = v;
-									break;
-								case 3:
-									_this1.s3 = v;
-									break;
-								case 4:
-									_this1.s4 = v;
-									break;
-								case 5:
-									_this1.s5 = v;
-									break;
-								default:
-									if(_this1.s6 == null) {
-										_this1.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this1.s6.push(v);
-								}
-								_this1.l++;
-							} else {
-								var _this2 = this.store;
-								var v1 = parseFloat(temp);
-								var _g3 = _this2.l;
-								switch(_g3) {
-								case 0:
-									_this2.s0 = v1;
-									break;
-								case 1:
-									_this2.s1 = v1;
-									break;
-								case 2:
-									_this2.s2 = v1;
-									break;
-								case 3:
-									_this2.s3 = v1;
-									break;
-								case 4:
-									_this2.s4 = v1;
-									break;
-								case 5:
-									_this2.s5 = v1;
-									break;
-								default:
-									if(_this2.s6 == null) {
-										_this2.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this2.s6.push(v1);
-								}
-								_this2.l++;
-							}
-							temp = "";
-						}
-						break;
-					case 45:
-						if(temp != "") {
-							if((this.store.l & 1) == 0) {
-								var _this3 = this.store;
-								var v2 = parseFloat(temp);
-								var _g4 = _this3.l;
-								switch(_g4) {
-								case 0:
-									_this3.s0 = v2;
-									break;
-								case 1:
-									_this3.s1 = v2;
-									break;
-								case 2:
-									_this3.s2 = v2;
-									break;
-								case 3:
-									_this3.s3 = v2;
-									break;
-								case 4:
-									_this3.s4 = v2;
-									break;
-								case 5:
-									_this3.s5 = v2;
-									break;
-								default:
-									if(_this3.s6 == null) {
-										_this3.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this3.s6.push(v2);
-								}
-								_this3.l++;
-							} else {
-								var _this4 = this.store;
-								var v3 = parseFloat(temp);
-								var _g5 = _this4.l;
-								switch(_g5) {
-								case 0:
-									_this4.s0 = v3;
-									break;
-								case 1:
-									_this4.s1 = v3;
-									break;
-								case 2:
-									_this4.s2 = v3;
-									break;
-								case 3:
-									_this4.s3 = v3;
-									break;
-								case 4:
-									_this4.s4 = v3;
-									break;
-								case 5:
-									_this4.s5 = v3;
-									break;
-								default:
-									if(_this4.s6 == null) {
-										_this4.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this4.s6.push(v3);
-								}
-								_this4.l++;
-							}
-						}
-						temp = "-";
-						break;
-					case 46:
-						temp += ".";
-						break;
-					case 48:
-						temp += "0";
-						break;
-					case 49:
-						temp += "1";
-						break;
-					case 50:
-						temp += "2";
-						break;
-					case 51:
-						temp += "3";
-						break;
-					case 52:
-						temp += "4";
-						break;
-					case 53:
-						temp += "5";
-						break;
-					case 54:
-						temp += "6";
-						break;
-					case 55:
-						temp += "7";
-						break;
-					case 56:
-						temp += "8";
-						break;
-					case 57:
-						temp += "9";
-						break;
-					default:
-						if(temp != "") {
-							if((this.store.l & 1) == 0) {
-								var _this5 = this.store;
-								var v4 = parseFloat(temp);
-								var _g6 = _this5.l;
-								switch(_g6) {
-								case 0:
-									_this5.s0 = v4;
-									break;
-								case 1:
-									_this5.s1 = v4;
-									break;
-								case 2:
-									_this5.s2 = v4;
-									break;
-								case 3:
-									_this5.s3 = v4;
-									break;
-								case 4:
-									_this5.s4 = v4;
-									break;
-								case 5:
-									_this5.s5 = v4;
-									break;
-								default:
-									if(_this5.s6 == null) {
-										_this5.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this5.s6.push(v4);
-								}
-								_this5.l++;
-							} else {
-								var _this6 = this.store;
-								var v5 = parseFloat(temp);
-								var _g7 = _this6.l;
-								switch(_g7) {
-								case 0:
-									_this6.s0 = v5;
-									break;
-								case 1:
-									_this6.s1 = v5;
-									break;
-								case 2:
-									_this6.s2 = v5;
-									break;
-								case 3:
-									_this6.s3 = v5;
-									break;
-								case 4:
-									_this6.s4 = v5;
-									break;
-								case 5:
-									_this6.s5 = v5;
-									break;
-								default:
-									if(_this6.s6 == null) {
-										_this6.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this6.s6.push(v5);
-								}
-								_this6.l++;
-							}
-							temp = "";
-						}
-						this.pos--;
-						exit = true;
-					}
-					if(exit) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 7) {
-					var sx = this.lastX;
-					var sy = this.lastY;
-					var _this7 = this.store;
-					var out = _this7.s0;
-					if(_this7.l != 0) {
-						_this7.s0 = _this7.s1;
-						_this7.s1 = _this7.s2;
-						_this7.s2 = _this7.s3;
-						_this7.s3 = _this7.s4;
-						_this7.s4 = _this7.s5;
-						_this7.s5 = null;
-						if(_this7.s6 != null) {
-							_this7.s5 = _this7.s6.shift();
-						}
-						_this7.l--;
-					}
-					var xr = out;
-					var _this8 = this.store;
-					var out1 = _this8.s0;
-					if(_this8.l != 0) {
-						_this8.s0 = _this8.s1;
-						_this8.s1 = _this8.s2;
-						_this8.s2 = _this8.s3;
-						_this8.s3 = _this8.s4;
-						_this8.s4 = _this8.s5;
-						_this8.s5 = null;
-						if(_this8.s6 != null) {
-							_this8.s5 = _this8.s6.shift();
-						}
-						_this8.l--;
-					}
-					var yr = out1;
-					var _this9 = this.store;
-					var out2 = _this9.s0;
-					if(_this9.l != 0) {
-						_this9.s0 = _this9.s1;
-						_this9.s1 = _this9.s2;
-						_this9.s2 = _this9.s3;
-						_this9.s3 = _this9.s4;
-						_this9.s4 = _this9.s5;
-						_this9.s5 = null;
-						if(_this9.s6 != null) {
-							_this9.s5 = _this9.s6.shift();
-						}
-						_this9.l--;
-					}
-					var phi = out2;
-					var _this10 = this.store;
-					var out3 = _this10.s0;
-					if(_this10.l != 0) {
-						_this10.s0 = _this10.s1;
-						_this10.s1 = _this10.s2;
-						_this10.s2 = _this10.s3;
-						_this10.s3 = _this10.s4;
-						_this10.s4 = _this10.s5;
-						_this10.s5 = null;
-						if(_this10.s6 != null) {
-							_this10.s5 = _this10.s6.shift();
-						}
-						_this10.l--;
-					}
-					var large = out3 | 0;
-					var _this11 = this.store;
-					var out4 = _this11.s0;
-					if(_this11.l != 0) {
-						_this11.s0 = _this11.s1;
-						_this11.s1 = _this11.s2;
-						_this11.s2 = _this11.s3;
-						_this11.s3 = _this11.s4;
-						_this11.s4 = _this11.s5;
-						_this11.s5 = null;
-						if(_this11.s6 != null) {
-							_this11.s5 = _this11.s6.shift();
-						}
-						_this11.l--;
-					}
-					var sweep = out4 | 0;
-					var _this12 = this.store;
-					var out5 = _this12.s0;
-					if(_this12.l != 0) {
-						_this12.s0 = _this12.s1;
-						_this12.s1 = _this12.s2;
-						_this12.s2 = _this12.s3;
-						_this12.s3 = _this12.s4;
-						_this12.s4 = _this12.s5;
-						_this12.s5 = null;
-						if(_this12.s6 != null) {
-							_this12.s5 = _this12.s6.shift();
-						}
-						_this12.l--;
-					}
-					this.lastX = out5;
-					var _this13 = this.store;
-					var out6 = _this13.s0;
-					if(_this13.l != 0) {
-						_this13.s0 = _this13.s1;
-						_this13.s1 = _this13.s2;
-						_this13.s2 = _this13.s3;
-						_this13.s3 = _this13.s4;
-						_this13.s4 = _this13.s5;
-						_this13.s5 = null;
-						if(_this13.s6 != null) {
-							_this13.s5 = _this13.s6.shift();
-						}
-						_this13.l--;
-					}
-					this.lastY = out6;
-					var sx1 = sx;
-					var sy1 = sy;
-					var phi1 = phi;
-					var ex = this.lastX;
-					var ey = this.lastY;
-					var this1;
-					var mx = (sx1 - ex) / 2;
-					var my = (sy1 - ey) / 2;
-					var ax = (sx1 + ex) / 2;
-					var ay = (sy1 + ey) / 2;
-					phi1 %= 360;
-					phi1 = phi1 * Math.PI / 180;
-					var sin = Math.sin(phi1);
-					var cos = Math.cos(phi1);
-					var x1 = mx * cos + my * sin;
-					var y1 = -mx * sin + my * cos;
-					var rx = Math.abs(xr);
-					var ry = Math.abs(yr);
-					var rxx = rx * rx;
-					var ryy = ry * ry;
-					var xx1 = x1 * x1;
-					var yy1 = y1 * y1;
-					var check = xx1 / rxx + yy1 / ryy;
-					if(check > 1) {
-						rx *= Math.sqrt(check);
-						ry *= Math.sqrt(check);
-						rxx = rx * rx;
-						ryy = ry * ry;
-					}
-					var sign = large == sweep ? -1 : 1;
-					var sq = (rxx * ryy - rxx * yy1 - ryy * xx1) / (rxx * yy1 + ryy * xx1);
-					if(sq < 0) {
-						sq = 0;
-					} else {
-						sq = sq;
-					}
-					var coef = sign * Math.sqrt(sq);
-					var cx1 = coef * rx * y1 / ry;
-					var cy1 = -coef * ry * x1 / rx;
-					var cx = ax + cx1 * cos - cy1 * sin;
-					var cy = ay + cx1 * sin + cy1 * cos;
-					var phiSin = Math.sin(-phi1);
-					var phiCos = Math.cos(-phi1);
-					sx1 -= cx;
-					sy1 -= cy;
-					var dx = sx1;
-					var dy = sy1;
-					sx1 = dx * phiCos - dy * phiSin;
-					sy1 = dx * phiSin + dy * phiCos;
-					sx1 += cx;
-					sy1 += cy;
-					ex -= cx;
-					ey -= cy;
-					var dx1 = ex;
-					var dy1 = ey;
-					ex = dx1 * phiCos - dy1 * phiSin;
-					ey = dx1 * phiSin + dy1 * phiCos;
-					ex += cx;
-					ey += cy;
-					var alpha = Math.atan2(rx * (cy - sy1),ry * (cx - sx1)) - Math.PI;
-					var omega = Math.atan2(rx * (cy - ey),ry * (cx - ex)) - Math.PI;
-					var delta = alpha - omega;
-					if(sweep == 1 && delta > 0) {
-						delta -= 2 * Math.PI;
-					} else if(sweep == 0 && delta < 0) {
-						delta += 2 * Math.PI;
-					}
-					this1 = { cx : cx, cy : cy, rx : rx, ry : ry, alpha : alpha, omega : omega, delta : -delta, phi : phi1, phiSin : Math.sin(phi1), phiCos : Math.cos(phi1)};
-					var ellipseData = this1;
-					var ellipse = new trilateral_justPath_EllipseArc(ellipseData);
-					ellipse.lineRender(($_=this.pathContext,$bind($_,$_.moveTo)),($_=this.pathContext,$bind($_,$_.lineTo)),Math.PI / 18);
-				} else if(this.store.l > 7) {
-					while(this.store.l > 6) {
-						var sx2 = this.lastX;
-						var sy2 = this.lastY;
-						var _this14 = this.store;
-						var out7 = _this14.s0;
-						if(_this14.l != 0) {
-							_this14.s0 = _this14.s1;
-							_this14.s1 = _this14.s2;
-							_this14.s2 = _this14.s3;
-							_this14.s3 = _this14.s4;
-							_this14.s4 = _this14.s5;
-							_this14.s5 = null;
-							if(_this14.s6 != null) {
-								_this14.s5 = _this14.s6.shift();
-							}
-							_this14.l--;
-						}
-						var xr1 = out7;
-						var _this15 = this.store;
-						var out8 = _this15.s0;
-						if(_this15.l != 0) {
-							_this15.s0 = _this15.s1;
-							_this15.s1 = _this15.s2;
-							_this15.s2 = _this15.s3;
-							_this15.s3 = _this15.s4;
-							_this15.s4 = _this15.s5;
-							_this15.s5 = null;
-							if(_this15.s6 != null) {
-								_this15.s5 = _this15.s6.shift();
-							}
-							_this15.l--;
-						}
-						var yr1 = out8;
-						var _this16 = this.store;
-						var out9 = _this16.s0;
-						if(_this16.l != 0) {
-							_this16.s0 = _this16.s1;
-							_this16.s1 = _this16.s2;
-							_this16.s2 = _this16.s3;
-							_this16.s3 = _this16.s4;
-							_this16.s4 = _this16.s5;
-							_this16.s5 = null;
-							if(_this16.s6 != null) {
-								_this16.s5 = _this16.s6.shift();
-							}
-							_this16.l--;
-						}
-						var phi2 = out9;
-						var _this17 = this.store;
-						var out10 = _this17.s0;
-						if(_this17.l != 0) {
-							_this17.s0 = _this17.s1;
-							_this17.s1 = _this17.s2;
-							_this17.s2 = _this17.s3;
-							_this17.s3 = _this17.s4;
-							_this17.s4 = _this17.s5;
-							_this17.s5 = null;
-							if(_this17.s6 != null) {
-								_this17.s5 = _this17.s6.shift();
-							}
-							_this17.l--;
-						}
-						var large1 = out10 | 0;
-						var _this18 = this.store;
-						var out11 = _this18.s0;
-						if(_this18.l != 0) {
-							_this18.s0 = _this18.s1;
-							_this18.s1 = _this18.s2;
-							_this18.s2 = _this18.s3;
-							_this18.s3 = _this18.s4;
-							_this18.s4 = _this18.s5;
-							_this18.s5 = null;
-							if(_this18.s6 != null) {
-								_this18.s5 = _this18.s6.shift();
-							}
-							_this18.l--;
-						}
-						var sweep1 = out11 | 0;
-						var _this19 = this.store;
-						var out12 = _this19.s0;
-						if(_this19.l != 0) {
-							_this19.s0 = _this19.s1;
-							_this19.s1 = _this19.s2;
-							_this19.s2 = _this19.s3;
-							_this19.s3 = _this19.s4;
-							_this19.s4 = _this19.s5;
-							_this19.s5 = null;
-							if(_this19.s6 != null) {
-								_this19.s5 = _this19.s6.shift();
-							}
-							_this19.l--;
-						}
-						this.lastX = out12;
-						var _this20 = this.store;
-						var out13 = _this20.s0;
-						if(_this20.l != 0) {
-							_this20.s0 = _this20.s1;
-							_this20.s1 = _this20.s2;
-							_this20.s2 = _this20.s3;
-							_this20.s3 = _this20.s4;
-							_this20.s4 = _this20.s5;
-							_this20.s5 = null;
-							if(_this20.s6 != null) {
-								_this20.s5 = _this20.s6.shift();
-							}
-							_this20.l--;
-						}
-						this.lastY = out13;
-						var sx3 = sx2;
-						var sy3 = sy2;
-						var phi3 = phi2;
-						var ex1 = this.lastX;
-						var ey1 = this.lastY;
-						var this2;
-						var mx1 = (sx3 - ex1) / 2;
-						var my1 = (sy3 - ey1) / 2;
-						var ax1 = (sx3 + ex1) / 2;
-						var ay1 = (sy3 + ey1) / 2;
-						phi3 %= 360;
-						phi3 = phi3 * Math.PI / 180;
-						var sin1 = Math.sin(phi3);
-						var cos1 = Math.cos(phi3);
-						var x11 = mx1 * cos1 + my1 * sin1;
-						var y11 = -mx1 * sin1 + my1 * cos1;
-						var rx1 = Math.abs(xr1);
-						var ry1 = Math.abs(yr1);
-						var rxx1 = rx1 * rx1;
-						var ryy1 = ry1 * ry1;
-						var xx11 = x11 * x11;
-						var yy11 = y11 * y11;
-						var check1 = xx11 / rxx1 + yy11 / ryy1;
-						if(check1 > 1) {
-							rx1 *= Math.sqrt(check1);
-							ry1 *= Math.sqrt(check1);
-							rxx1 = rx1 * rx1;
-							ryy1 = ry1 * ry1;
-						}
-						var sign1 = large1 == sweep1 ? -1 : 1;
-						var sq1 = (rxx1 * ryy1 - rxx1 * yy11 - ryy1 * xx11) / (rxx1 * yy11 + ryy1 * xx11);
-						if(sq1 < 0) {
-							sq1 = 0;
-						} else {
-							sq1 = sq1;
-						}
-						var coef1 = sign1 * Math.sqrt(sq1);
-						var cx11 = coef1 * rx1 * y11 / ry1;
-						var cy11 = -coef1 * ry1 * x11 / rx1;
-						var cx2 = ax1 + cx11 * cos1 - cy11 * sin1;
-						var cy2 = ay1 + cx11 * sin1 + cy11 * cos1;
-						var phiSin1 = Math.sin(-phi3);
-						var phiCos1 = Math.cos(-phi3);
-						sx3 -= cx2;
-						sy3 -= cy2;
-						var dx2 = sx3;
-						var dy2 = sy3;
-						sx3 = dx2 * phiCos1 - dy2 * phiSin1;
-						sy3 = dx2 * phiSin1 + dy2 * phiCos1;
-						sx3 += cx2;
-						sy3 += cy2;
-						ex1 -= cx2;
-						ey1 -= cy2;
-						var dx3 = ex1;
-						var dy3 = ey1;
-						ex1 = dx3 * phiCos1 - dy3 * phiSin1;
-						ey1 = dx3 * phiSin1 + dy3 * phiCos1;
-						ex1 += cx2;
-						ey1 += cy2;
-						var alpha1 = Math.atan2(rx1 * (cy2 - sy3),ry1 * (cx2 - sx3)) - Math.PI;
-						var omega1 = Math.atan2(rx1 * (cy2 - ey1),ry1 * (cx2 - ex1)) - Math.PI;
-						var delta1 = alpha1 - omega1;
-						if(sweep1 == 1 && delta1 > 0) {
-							delta1 -= 2 * Math.PI;
-						} else if(sweep1 == 0 && delta1 < 0) {
-							delta1 += 2 * Math.PI;
-						}
-						this2 = { cx : cx2, cy : cy2, rx : rx1, ry : ry1, alpha : alpha1, omega : omega1, delta : -delta1, phi : phi3, phiSin : Math.sin(phi3), phiCos : Math.cos(phi3)};
-						var ellipseData1 = this2;
-						var ellipse1 = new trilateral_justPath_EllipseArc(ellipseData1);
-						ellipse1.lineRender(($_=this.pathContext,$bind($_,$_.moveTo)),($_=this.pathContext,$bind($_,$_.lineTo)),Math.PI / 18);
-					}
-				}
-				break;
-			case 66:
-				haxe_Log.trace("bearing - not implemented",{ fileName : "SvgPath.hx", lineNumber : 377, className : "trilateral.justPath.SvgPath", methodName : "parse"});
-				throw new js__$Boot_HaxeError("bearing not supported please remove");
-				break;
-			case 67:
-				var _this21 = this.store;
-				_this21.l = 0;
-				_this21.s0 = null;
-				_this21.s1 = null;
-				_this21.s2 = null;
-				_this21.s3 = null;
-				_this21.s4 = null;
-				_this21.s5 = null;
-				_this21.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count2 = 0;
-				var temp1 = "";
-				var exit1 = false;
-				while(true) {
-					var _g8 = this.c;
-					switch(_g8) {
-					case 32:case 44:
-						if(temp1 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this22 = this.store;
-								var v6 = parseFloat(temp1);
-								var _g9 = _this22.l;
-								switch(_g9) {
-								case 0:
-									_this22.s0 = v6;
-									break;
-								case 1:
-									_this22.s1 = v6;
-									break;
-								case 2:
-									_this22.s2 = v6;
-									break;
-								case 3:
-									_this22.s3 = v6;
-									break;
-								case 4:
-									_this22.s4 = v6;
-									break;
-								case 5:
-									_this22.s5 = v6;
-									break;
-								default:
-									if(_this22.s6 == null) {
-										_this22.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this22.s6.push(v6);
-								}
-								_this22.l++;
-							} else {
-								var _this23 = this.store;
-								var v7 = parseFloat(temp1);
-								var _g10 = _this23.l;
-								switch(_g10) {
-								case 0:
-									_this23.s0 = v7;
-									break;
-								case 1:
-									_this23.s1 = v7;
-									break;
-								case 2:
-									_this23.s2 = v7;
-									break;
-								case 3:
-									_this23.s3 = v7;
-									break;
-								case 4:
-									_this23.s4 = v7;
-									break;
-								case 5:
-									_this23.s5 = v7;
-									break;
-								default:
-									if(_this23.s6 == null) {
-										_this23.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this23.s6.push(v7);
-								}
-								_this23.l++;
-							}
-							temp1 = "";
-						}
-						break;
-					case 45:
-						if(temp1 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this24 = this.store;
-								var v8 = parseFloat(temp1);
-								var _g11 = _this24.l;
-								switch(_g11) {
-								case 0:
-									_this24.s0 = v8;
-									break;
-								case 1:
-									_this24.s1 = v8;
-									break;
-								case 2:
-									_this24.s2 = v8;
-									break;
-								case 3:
-									_this24.s3 = v8;
-									break;
-								case 4:
-									_this24.s4 = v8;
-									break;
-								case 5:
-									_this24.s5 = v8;
-									break;
-								default:
-									if(_this24.s6 == null) {
-										_this24.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this24.s6.push(v8);
-								}
-								_this24.l++;
-							} else {
-								var _this25 = this.store;
-								var v9 = parseFloat(temp1);
-								var _g12 = _this25.l;
-								switch(_g12) {
-								case 0:
-									_this25.s0 = v9;
-									break;
-								case 1:
-									_this25.s1 = v9;
-									break;
-								case 2:
-									_this25.s2 = v9;
-									break;
-								case 3:
-									_this25.s3 = v9;
-									break;
-								case 4:
-									_this25.s4 = v9;
-									break;
-								case 5:
-									_this25.s5 = v9;
-									break;
-								default:
-									if(_this25.s6 == null) {
-										_this25.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this25.s6.push(v9);
-								}
-								_this25.l++;
-							}
-						}
-						temp1 = "-";
-						break;
-					case 46:
-						temp1 += ".";
-						break;
-					case 48:
-						temp1 += "0";
-						break;
-					case 49:
-						temp1 += "1";
-						break;
-					case 50:
-						temp1 += "2";
-						break;
-					case 51:
-						temp1 += "3";
-						break;
-					case 52:
-						temp1 += "4";
-						break;
-					case 53:
-						temp1 += "5";
-						break;
-					case 54:
-						temp1 += "6";
-						break;
-					case 55:
-						temp1 += "7";
-						break;
-					case 56:
-						temp1 += "8";
-						break;
-					case 57:
-						temp1 += "9";
-						break;
-					default:
-						if(temp1 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this26 = this.store;
-								var v10 = parseFloat(temp1);
-								var _g13 = _this26.l;
-								switch(_g13) {
-								case 0:
-									_this26.s0 = v10;
-									break;
-								case 1:
-									_this26.s1 = v10;
-									break;
-								case 2:
-									_this26.s2 = v10;
-									break;
-								case 3:
-									_this26.s3 = v10;
-									break;
-								case 4:
-									_this26.s4 = v10;
-									break;
-								case 5:
-									_this26.s5 = v10;
-									break;
-								default:
-									if(_this26.s6 == null) {
-										_this26.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this26.s6.push(v10);
-								}
-								_this26.l++;
-							} else {
-								var _this27 = this.store;
-								var v11 = parseFloat(temp1);
-								var _g14 = _this27.l;
-								switch(_g14) {
-								case 0:
-									_this27.s0 = v11;
-									break;
-								case 1:
-									_this27.s1 = v11;
-									break;
-								case 2:
-									_this27.s2 = v11;
-									break;
-								case 3:
-									_this27.s3 = v11;
-									break;
-								case 4:
-									_this27.s4 = v11;
-									break;
-								case 5:
-									_this27.s5 = v11;
-									break;
-								default:
-									if(_this27.s6 == null) {
-										_this27.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this27.s6.push(v11);
-								}
-								_this27.l++;
-							}
-							temp1 = "";
-						}
-						this.pos--;
-						exit1 = true;
-					}
-					if(exit1) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					this.controlX = this.store.s2;
-					this.controlY = this.store.s3;
-					this.lastX = this.store.s4;
-					this.lastY = this.store.s5;
-					this.pathContext.curveTo(this.store.s0,this.store.s1,this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var _this28 = this.store;
-						var out14 = _this28.s0;
-						if(_this28.l != 0) {
-							_this28.s0 = _this28.s1;
-							_this28.s1 = _this28.s2;
-							_this28.s2 = _this28.s3;
-							_this28.s3 = _this28.s4;
-							_this28.s4 = _this28.s5;
-							_this28.s5 = null;
-							if(_this28.s6 != null) {
-								_this28.s5 = _this28.s6.shift();
-							}
-							_this28.l--;
-						}
-						var firstX = out14;
-						var _this29 = this.store;
-						var out15 = _this29.s0;
-						if(_this29.l != 0) {
-							_this29.s0 = _this29.s1;
-							_this29.s1 = _this29.s2;
-							_this29.s2 = _this29.s3;
-							_this29.s3 = _this29.s4;
-							_this29.s4 = _this29.s5;
-							_this29.s5 = null;
-							if(_this29.s6 != null) {
-								_this29.s5 = _this29.s6.shift();
-							}
-							_this29.l--;
-						}
-						var firstY = out15;
-						var _this30 = this.store;
-						var out16 = _this30.s0;
-						if(_this30.l != 0) {
-							_this30.s0 = _this30.s1;
-							_this30.s1 = _this30.s2;
-							_this30.s2 = _this30.s3;
-							_this30.s3 = _this30.s4;
-							_this30.s4 = _this30.s5;
-							_this30.s5 = null;
-							if(_this30.s6 != null) {
-								_this30.s5 = _this30.s6.shift();
-							}
-							_this30.l--;
-						}
-						this.controlX = out16;
-						var _this31 = this.store;
-						var out17 = _this31.s0;
-						if(_this31.l != 0) {
-							_this31.s0 = _this31.s1;
-							_this31.s1 = _this31.s2;
-							_this31.s2 = _this31.s3;
-							_this31.s3 = _this31.s4;
-							_this31.s4 = _this31.s5;
-							_this31.s5 = null;
-							if(_this31.s6 != null) {
-								_this31.s5 = _this31.s6.shift();
-							}
-							_this31.l--;
-						}
-						this.controlY = out17;
-						var _this32 = this.store;
-						var out18 = _this32.s0;
-						if(_this32.l != 0) {
-							_this32.s0 = _this32.s1;
-							_this32.s1 = _this32.s2;
-							_this32.s2 = _this32.s3;
-							_this32.s3 = _this32.s4;
-							_this32.s4 = _this32.s5;
-							_this32.s5 = null;
-							if(_this32.s6 != null) {
-								_this32.s5 = _this32.s6.shift();
-							}
-							_this32.l--;
-						}
-						this.lastX = out18;
-						var _this33 = this.store;
-						var out19 = _this33.s0;
-						if(_this33.l != 0) {
-							_this33.s0 = _this33.s1;
-							_this33.s1 = _this33.s2;
-							_this33.s2 = _this33.s3;
-							_this33.s3 = _this33.s4;
-							_this33.s4 = _this33.s5;
-							_this33.s5 = null;
-							if(_this33.s6 != null) {
-								_this33.s5 = _this33.s6.shift();
-							}
-							_this33.l--;
-						}
-						this.lastY = out19;
-						this.pathContext.curveTo(firstX,firstY,this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 72:
-				var _this34 = this.store;
-				_this34.l = 0;
-				_this34.s0 = null;
-				_this34.s1 = null;
-				_this34.s2 = null;
-				_this34.s3 = null;
-				_this34.s4 = null;
-				_this34.s5 = null;
-				_this34.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count3 = 0;
-				var temp2 = "";
-				var exit2 = false;
-				while(true) {
-					var _g15 = this.c;
-					switch(_g15) {
-					case 32:case 44:
-						if(temp2 != "") {
-							var _this35 = this.store;
-							var v12 = parseFloat(temp2);
-							var _g16 = _this35.l;
-							switch(_g16) {
-							case 0:
-								_this35.s0 = v12;
-								break;
-							case 1:
-								_this35.s1 = v12;
-								break;
-							case 2:
-								_this35.s2 = v12;
-								break;
-							case 3:
-								_this35.s3 = v12;
-								break;
-							case 4:
-								_this35.s4 = v12;
-								break;
-							case 5:
-								_this35.s5 = v12;
-								break;
-							default:
-								if(_this35.s6 == null) {
-									_this35.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this35.s6.push(v12);
-							}
-							_this35.l++;
-							temp2 = "";
-						}
-						break;
-					case 45:
-						if(temp2 != "") {
-							var _this36 = this.store;
-							var v13 = parseFloat(temp2);
-							var _g17 = _this36.l;
-							switch(_g17) {
-							case 0:
-								_this36.s0 = v13;
-								break;
-							case 1:
-								_this36.s1 = v13;
-								break;
-							case 2:
-								_this36.s2 = v13;
-								break;
-							case 3:
-								_this36.s3 = v13;
-								break;
-							case 4:
-								_this36.s4 = v13;
-								break;
-							case 5:
-								_this36.s5 = v13;
-								break;
-							default:
-								if(_this36.s6 == null) {
-									_this36.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this36.s6.push(v13);
-							}
-							_this36.l++;
-						}
-						temp2 = "-";
-						break;
-					case 46:
-						temp2 += ".";
-						break;
-					case 48:
-						temp2 += "0";
-						break;
-					case 49:
-						temp2 += "1";
-						break;
-					case 50:
-						temp2 += "2";
-						break;
-					case 51:
-						temp2 += "3";
-						break;
-					case 52:
-						temp2 += "4";
-						break;
-					case 53:
-						temp2 += "5";
-						break;
-					case 54:
-						temp2 += "6";
-						break;
-					case 55:
-						temp2 += "7";
-						break;
-					case 56:
-						temp2 += "8";
-						break;
-					case 57:
-						temp2 += "9";
-						break;
-					default:
-						if(temp2 != "") {
-							var _this37 = this.store;
-							var v14 = parseFloat(temp2);
-							var _g18 = _this37.l;
-							switch(_g18) {
-							case 0:
-								_this37.s0 = v14;
-								break;
-							case 1:
-								_this37.s1 = v14;
-								break;
-							case 2:
-								_this37.s2 = v14;
-								break;
-							case 3:
-								_this37.s3 = v14;
-								break;
-							case 4:
-								_this37.s4 = v14;
-								break;
-							case 5:
-								_this37.s5 = v14;
-								break;
-							default:
-								if(_this37.s6 == null) {
-									_this37.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this37.s6.push(v14);
-							}
-							_this37.l++;
-							temp2 = "";
-						}
-						this.pos--;
-						exit2 = true;
-					}
-					if(exit2) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 1) {
-					this.lastX = this.store.s0;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 1) {
-					while(this.store.l > 0) {
-						var _this38 = this.store;
-						var out20 = _this38.s0;
-						if(_this38.l != 0) {
-							_this38.s0 = _this38.s1;
-							_this38.s1 = _this38.s2;
-							_this38.s2 = _this38.s3;
-							_this38.s3 = _this38.s4;
-							_this38.s4 = _this38.s5;
-							_this38.s5 = null;
-							if(_this38.s6 != null) {
-								_this38.s5 = _this38.s6.shift();
-							}
-							_this38.l--;
-						}
-						this.lastX = out20;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 76:
-				var _this39 = this.store;
-				_this39.l = 0;
-				_this39.s0 = null;
-				_this39.s1 = null;
-				_this39.s2 = null;
-				_this39.s3 = null;
-				_this39.s4 = null;
-				_this39.s5 = null;
-				_this39.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count4 = 0;
-				var temp3 = "";
-				var exit3 = false;
-				while(true) {
-					var _g19 = this.c;
-					switch(_g19) {
-					case 32:case 44:
-						if(temp3 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this40 = this.store;
-								var v15 = parseFloat(temp3);
-								var _g20 = _this40.l;
-								switch(_g20) {
-								case 0:
-									_this40.s0 = v15;
-									break;
-								case 1:
-									_this40.s1 = v15;
-									break;
-								case 2:
-									_this40.s2 = v15;
-									break;
-								case 3:
-									_this40.s3 = v15;
-									break;
-								case 4:
-									_this40.s4 = v15;
-									break;
-								case 5:
-									_this40.s5 = v15;
-									break;
-								default:
-									if(_this40.s6 == null) {
-										_this40.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this40.s6.push(v15);
-								}
-								_this40.l++;
-							} else {
-								var _this41 = this.store;
-								var v16 = parseFloat(temp3);
-								var _g21 = _this41.l;
-								switch(_g21) {
-								case 0:
-									_this41.s0 = v16;
-									break;
-								case 1:
-									_this41.s1 = v16;
-									break;
-								case 2:
-									_this41.s2 = v16;
-									break;
-								case 3:
-									_this41.s3 = v16;
-									break;
-								case 4:
-									_this41.s4 = v16;
-									break;
-								case 5:
-									_this41.s5 = v16;
-									break;
-								default:
-									if(_this41.s6 == null) {
-										_this41.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this41.s6.push(v16);
-								}
-								_this41.l++;
-							}
-							temp3 = "";
-						}
-						break;
-					case 45:
-						if(temp3 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this42 = this.store;
-								var v17 = parseFloat(temp3);
-								var _g22 = _this42.l;
-								switch(_g22) {
-								case 0:
-									_this42.s0 = v17;
-									break;
-								case 1:
-									_this42.s1 = v17;
-									break;
-								case 2:
-									_this42.s2 = v17;
-									break;
-								case 3:
-									_this42.s3 = v17;
-									break;
-								case 4:
-									_this42.s4 = v17;
-									break;
-								case 5:
-									_this42.s5 = v17;
-									break;
-								default:
-									if(_this42.s6 == null) {
-										_this42.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this42.s6.push(v17);
-								}
-								_this42.l++;
-							} else {
-								var _this43 = this.store;
-								var v18 = parseFloat(temp3);
-								var _g23 = _this43.l;
-								switch(_g23) {
-								case 0:
-									_this43.s0 = v18;
-									break;
-								case 1:
-									_this43.s1 = v18;
-									break;
-								case 2:
-									_this43.s2 = v18;
-									break;
-								case 3:
-									_this43.s3 = v18;
-									break;
-								case 4:
-									_this43.s4 = v18;
-									break;
-								case 5:
-									_this43.s5 = v18;
-									break;
-								default:
-									if(_this43.s6 == null) {
-										_this43.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this43.s6.push(v18);
-								}
-								_this43.l++;
-							}
-						}
-						temp3 = "-";
-						break;
-					case 46:
-						temp3 += ".";
-						break;
-					case 48:
-						temp3 += "0";
-						break;
-					case 49:
-						temp3 += "1";
-						break;
-					case 50:
-						temp3 += "2";
-						break;
-					case 51:
-						temp3 += "3";
-						break;
-					case 52:
-						temp3 += "4";
-						break;
-					case 53:
-						temp3 += "5";
-						break;
-					case 54:
-						temp3 += "6";
-						break;
-					case 55:
-						temp3 += "7";
-						break;
-					case 56:
-						temp3 += "8";
-						break;
-					case 57:
-						temp3 += "9";
-						break;
-					default:
-						if(temp3 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this44 = this.store;
-								var v19 = parseFloat(temp3);
-								var _g24 = _this44.l;
-								switch(_g24) {
-								case 0:
-									_this44.s0 = v19;
-									break;
-								case 1:
-									_this44.s1 = v19;
-									break;
-								case 2:
-									_this44.s2 = v19;
-									break;
-								case 3:
-									_this44.s3 = v19;
-									break;
-								case 4:
-									_this44.s4 = v19;
-									break;
-								case 5:
-									_this44.s5 = v19;
-									break;
-								default:
-									if(_this44.s6 == null) {
-										_this44.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this44.s6.push(v19);
-								}
-								_this44.l++;
-							} else {
-								var _this45 = this.store;
-								var v20 = parseFloat(temp3);
-								var _g25 = _this45.l;
-								switch(_g25) {
-								case 0:
-									_this45.s0 = v20;
-									break;
-								case 1:
-									_this45.s1 = v20;
-									break;
-								case 2:
-									_this45.s2 = v20;
-									break;
-								case 3:
-									_this45.s3 = v20;
-									break;
-								case 4:
-									_this45.s4 = v20;
-									break;
-								case 5:
-									_this45.s5 = v20;
-									break;
-								default:
-									if(_this45.s6 == null) {
-										_this45.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this45.s6.push(v20);
-								}
-								_this45.l++;
-							}
-							temp3 = "";
-						}
-						this.pos--;
-						exit3 = true;
-					}
-					if(exit3) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.lastX = this.store.s0;
-					this.lastY = this.store.s1;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					while(this.store.l > 1) {
-						var _this46 = this.store;
-						var out21 = _this46.s0;
-						if(_this46.l != 0) {
-							_this46.s0 = _this46.s1;
-							_this46.s1 = _this46.s2;
-							_this46.s2 = _this46.s3;
-							_this46.s3 = _this46.s4;
-							_this46.s4 = _this46.s5;
-							_this46.s5 = null;
-							if(_this46.s6 != null) {
-								_this46.s5 = _this46.s6.shift();
-							}
-							_this46.l--;
-						}
-						this.lastX = out21;
-						var _this47 = this.store;
-						var out22 = _this47.s0;
-						if(_this47.l != 0) {
-							_this47.s0 = _this47.s1;
-							_this47.s1 = _this47.s2;
-							_this47.s2 = _this47.s3;
-							_this47.s3 = _this47.s4;
-							_this47.s4 = _this47.s5;
-							_this47.s5 = null;
-							if(_this47.s6 != null) {
-								_this47.s5 = _this47.s6.shift();
-							}
-							_this47.l--;
-						}
-						this.lastY = out22;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 77:
-				var _this48 = this.store;
-				_this48.l = 0;
-				_this48.s0 = null;
-				_this48.s1 = null;
-				_this48.s2 = null;
-				_this48.s3 = null;
-				_this48.s4 = null;
-				_this48.s5 = null;
-				_this48.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count5 = 0;
-				var temp4 = "";
-				var exit4 = false;
-				while(true) {
-					var _g26 = this.c;
-					switch(_g26) {
-					case 32:case 44:
-						if(temp4 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this49 = this.store;
-								var v21 = parseFloat(temp4);
-								var _g27 = _this49.l;
-								switch(_g27) {
-								case 0:
-									_this49.s0 = v21;
-									break;
-								case 1:
-									_this49.s1 = v21;
-									break;
-								case 2:
-									_this49.s2 = v21;
-									break;
-								case 3:
-									_this49.s3 = v21;
-									break;
-								case 4:
-									_this49.s4 = v21;
-									break;
-								case 5:
-									_this49.s5 = v21;
-									break;
-								default:
-									if(_this49.s6 == null) {
-										_this49.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this49.s6.push(v21);
-								}
-								_this49.l++;
-							} else {
-								var _this50 = this.store;
-								var v22 = parseFloat(temp4);
-								var _g28 = _this50.l;
-								switch(_g28) {
-								case 0:
-									_this50.s0 = v22;
-									break;
-								case 1:
-									_this50.s1 = v22;
-									break;
-								case 2:
-									_this50.s2 = v22;
-									break;
-								case 3:
-									_this50.s3 = v22;
-									break;
-								case 4:
-									_this50.s4 = v22;
-									break;
-								case 5:
-									_this50.s5 = v22;
-									break;
-								default:
-									if(_this50.s6 == null) {
-										_this50.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this50.s6.push(v22);
-								}
-								_this50.l++;
-							}
-							temp4 = "";
-						}
-						break;
-					case 45:
-						if(temp4 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this51 = this.store;
-								var v23 = parseFloat(temp4);
-								var _g29 = _this51.l;
-								switch(_g29) {
-								case 0:
-									_this51.s0 = v23;
-									break;
-								case 1:
-									_this51.s1 = v23;
-									break;
-								case 2:
-									_this51.s2 = v23;
-									break;
-								case 3:
-									_this51.s3 = v23;
-									break;
-								case 4:
-									_this51.s4 = v23;
-									break;
-								case 5:
-									_this51.s5 = v23;
-									break;
-								default:
-									if(_this51.s6 == null) {
-										_this51.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this51.s6.push(v23);
-								}
-								_this51.l++;
-							} else {
-								var _this52 = this.store;
-								var v24 = parseFloat(temp4);
-								var _g30 = _this52.l;
-								switch(_g30) {
-								case 0:
-									_this52.s0 = v24;
-									break;
-								case 1:
-									_this52.s1 = v24;
-									break;
-								case 2:
-									_this52.s2 = v24;
-									break;
-								case 3:
-									_this52.s3 = v24;
-									break;
-								case 4:
-									_this52.s4 = v24;
-									break;
-								case 5:
-									_this52.s5 = v24;
-									break;
-								default:
-									if(_this52.s6 == null) {
-										_this52.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this52.s6.push(v24);
-								}
-								_this52.l++;
-							}
-						}
-						temp4 = "-";
-						break;
-					case 46:
-						temp4 += ".";
-						break;
-					case 48:
-						temp4 += "0";
-						break;
-					case 49:
-						temp4 += "1";
-						break;
-					case 50:
-						temp4 += "2";
-						break;
-					case 51:
-						temp4 += "3";
-						break;
-					case 52:
-						temp4 += "4";
-						break;
-					case 53:
-						temp4 += "5";
-						break;
-					case 54:
-						temp4 += "6";
-						break;
-					case 55:
-						temp4 += "7";
-						break;
-					case 56:
-						temp4 += "8";
-						break;
-					case 57:
-						temp4 += "9";
-						break;
-					default:
-						if(temp4 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this53 = this.store;
-								var v25 = parseFloat(temp4);
-								var _g31 = _this53.l;
-								switch(_g31) {
-								case 0:
-									_this53.s0 = v25;
-									break;
-								case 1:
-									_this53.s1 = v25;
-									break;
-								case 2:
-									_this53.s2 = v25;
-									break;
-								case 3:
-									_this53.s3 = v25;
-									break;
-								case 4:
-									_this53.s4 = v25;
-									break;
-								case 5:
-									_this53.s5 = v25;
-									break;
-								default:
-									if(_this53.s6 == null) {
-										_this53.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this53.s6.push(v25);
-								}
-								_this53.l++;
-							} else {
-								var _this54 = this.store;
-								var v26 = parseFloat(temp4);
-								var _g32 = _this54.l;
-								switch(_g32) {
-								case 0:
-									_this54.s0 = v26;
-									break;
-								case 1:
-									_this54.s1 = v26;
-									break;
-								case 2:
-									_this54.s2 = v26;
-									break;
-								case 3:
-									_this54.s3 = v26;
-									break;
-								case 4:
-									_this54.s4 = v26;
-									break;
-								case 5:
-									_this54.s5 = v26;
-									break;
-								default:
-									if(_this54.s6 == null) {
-										_this54.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this54.s6.push(v26);
-								}
-								_this54.l++;
-							}
-							temp4 = "";
-						}
-						this.pos--;
-						exit4 = true;
-					}
-					if(exit4) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.lastX = this.store.s0;
-					this.lastY = this.store.s1;
-					this.pathContext.moveTo(this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					var _this55 = this.store;
-					var out23 = _this55.s0;
-					if(_this55.l != 0) {
-						_this55.s0 = _this55.s1;
-						_this55.s1 = _this55.s2;
-						_this55.s2 = _this55.s3;
-						_this55.s3 = _this55.s4;
-						_this55.s4 = _this55.s5;
-						_this55.s5 = null;
-						if(_this55.s6 != null) {
-							_this55.s5 = _this55.s6.shift();
-						}
-						_this55.l--;
-					}
-					this.lastX = out23;
-					var _this56 = this.store;
-					var out24 = _this56.s0;
-					if(_this56.l != 0) {
-						_this56.s0 = _this56.s1;
-						_this56.s1 = _this56.s2;
-						_this56.s2 = _this56.s3;
-						_this56.s3 = _this56.s4;
-						_this56.s4 = _this56.s5;
-						_this56.s5 = null;
-						if(_this56.s6 != null) {
-							_this56.s5 = _this56.s6.shift();
-						}
-						_this56.l--;
-					}
-					this.lastY = out24;
-					this.pathContext.moveTo(this.lastX,this.lastY);
-					while(this.store.l > 1) {
-						var _this57 = this.store;
-						var out25 = _this57.s0;
-						if(_this57.l != 0) {
-							_this57.s0 = _this57.s1;
-							_this57.s1 = _this57.s2;
-							_this57.s2 = _this57.s3;
-							_this57.s3 = _this57.s4;
-							_this57.s4 = _this57.s5;
-							_this57.s5 = null;
-							if(_this57.s6 != null) {
-								_this57.s5 = _this57.s6.shift();
-							}
-							_this57.l--;
-						}
-						this.lastX = out25;
-						var _this58 = this.store;
-						var out26 = _this58.s0;
-						if(_this58.l != 0) {
-							_this58.s0 = _this58.s1;
-							_this58.s1 = _this58.s2;
-							_this58.s2 = _this58.s3;
-							_this58.s3 = _this58.s4;
-							_this58.s4 = _this58.s5;
-							_this58.s5 = null;
-							if(_this58.s6 != null) {
-								_this58.s5 = _this58.s6.shift();
-							}
-							_this58.l--;
-						}
-						this.lastY = out26;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 81:
-				var _this59 = this.store;
-				_this59.l = 0;
-				_this59.s0 = null;
-				_this59.s1 = null;
-				_this59.s2 = null;
-				_this59.s3 = null;
-				_this59.s4 = null;
-				_this59.s5 = null;
-				_this59.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count6 = 0;
-				var temp5 = "";
-				var exit5 = false;
-				while(true) {
-					var _g33 = this.c;
-					switch(_g33) {
-					case 32:case 44:
-						if(temp5 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this60 = this.store;
-								var v27 = parseFloat(temp5);
-								var _g34 = _this60.l;
-								switch(_g34) {
-								case 0:
-									_this60.s0 = v27;
-									break;
-								case 1:
-									_this60.s1 = v27;
-									break;
-								case 2:
-									_this60.s2 = v27;
-									break;
-								case 3:
-									_this60.s3 = v27;
-									break;
-								case 4:
-									_this60.s4 = v27;
-									break;
-								case 5:
-									_this60.s5 = v27;
-									break;
-								default:
-									if(_this60.s6 == null) {
-										_this60.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this60.s6.push(v27);
-								}
-								_this60.l++;
-							} else {
-								var _this61 = this.store;
-								var v28 = parseFloat(temp5);
-								var _g35 = _this61.l;
-								switch(_g35) {
-								case 0:
-									_this61.s0 = v28;
-									break;
-								case 1:
-									_this61.s1 = v28;
-									break;
-								case 2:
-									_this61.s2 = v28;
-									break;
-								case 3:
-									_this61.s3 = v28;
-									break;
-								case 4:
-									_this61.s4 = v28;
-									break;
-								case 5:
-									_this61.s5 = v28;
-									break;
-								default:
-									if(_this61.s6 == null) {
-										_this61.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this61.s6.push(v28);
-								}
-								_this61.l++;
-							}
-							temp5 = "";
-						}
-						break;
-					case 45:
-						if(temp5 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this62 = this.store;
-								var v29 = parseFloat(temp5);
-								var _g36 = _this62.l;
-								switch(_g36) {
-								case 0:
-									_this62.s0 = v29;
-									break;
-								case 1:
-									_this62.s1 = v29;
-									break;
-								case 2:
-									_this62.s2 = v29;
-									break;
-								case 3:
-									_this62.s3 = v29;
-									break;
-								case 4:
-									_this62.s4 = v29;
-									break;
-								case 5:
-									_this62.s5 = v29;
-									break;
-								default:
-									if(_this62.s6 == null) {
-										_this62.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this62.s6.push(v29);
-								}
-								_this62.l++;
-							} else {
-								var _this63 = this.store;
-								var v30 = parseFloat(temp5);
-								var _g37 = _this63.l;
-								switch(_g37) {
-								case 0:
-									_this63.s0 = v30;
-									break;
-								case 1:
-									_this63.s1 = v30;
-									break;
-								case 2:
-									_this63.s2 = v30;
-									break;
-								case 3:
-									_this63.s3 = v30;
-									break;
-								case 4:
-									_this63.s4 = v30;
-									break;
-								case 5:
-									_this63.s5 = v30;
-									break;
-								default:
-									if(_this63.s6 == null) {
-										_this63.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this63.s6.push(v30);
-								}
-								_this63.l++;
-							}
-						}
-						temp5 = "-";
-						break;
-					case 46:
-						temp5 += ".";
-						break;
-					case 48:
-						temp5 += "0";
-						break;
-					case 49:
-						temp5 += "1";
-						break;
-					case 50:
-						temp5 += "2";
-						break;
-					case 51:
-						temp5 += "3";
-						break;
-					case 52:
-						temp5 += "4";
-						break;
-					case 53:
-						temp5 += "5";
-						break;
-					case 54:
-						temp5 += "6";
-						break;
-					case 55:
-						temp5 += "7";
-						break;
-					case 56:
-						temp5 += "8";
-						break;
-					case 57:
-						temp5 += "9";
-						break;
-					default:
-						if(temp5 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this64 = this.store;
-								var v31 = parseFloat(temp5);
-								var _g38 = _this64.l;
-								switch(_g38) {
-								case 0:
-									_this64.s0 = v31;
-									break;
-								case 1:
-									_this64.s1 = v31;
-									break;
-								case 2:
-									_this64.s2 = v31;
-									break;
-								case 3:
-									_this64.s3 = v31;
-									break;
-								case 4:
-									_this64.s4 = v31;
-									break;
-								case 5:
-									_this64.s5 = v31;
-									break;
-								default:
-									if(_this64.s6 == null) {
-										_this64.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this64.s6.push(v31);
-								}
-								_this64.l++;
-							} else {
-								var _this65 = this.store;
-								var v32 = parseFloat(temp5);
-								var _g39 = _this65.l;
-								switch(_g39) {
-								case 0:
-									_this65.s0 = v32;
-									break;
-								case 1:
-									_this65.s1 = v32;
-									break;
-								case 2:
-									_this65.s2 = v32;
-									break;
-								case 3:
-									_this65.s3 = v32;
-									break;
-								case 4:
-									_this65.s4 = v32;
-									break;
-								case 5:
-									_this65.s5 = v32;
-									break;
-								default:
-									if(_this65.s6 == null) {
-										_this65.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this65.s6.push(v32);
-								}
-								_this65.l++;
-							}
-							temp5 = "";
-						}
-						this.pos--;
-						exit5 = true;
-					}
-					if(exit5) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					this.controlX = this.store.s0;
-					this.controlY = this.store.s1;
-					this.lastX = this.store.s2;
-					this.lastY = this.store.s3;
-					this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var _this66 = this.store;
-						var out27 = _this66.s0;
-						if(_this66.l != 0) {
-							_this66.s0 = _this66.s1;
-							_this66.s1 = _this66.s2;
-							_this66.s2 = _this66.s3;
-							_this66.s3 = _this66.s4;
-							_this66.s4 = _this66.s5;
-							_this66.s5 = null;
-							if(_this66.s6 != null) {
-								_this66.s5 = _this66.s6.shift();
-							}
-							_this66.l--;
-						}
-						this.controlX = out27;
-						var _this67 = this.store;
-						var out28 = _this67.s0;
-						if(_this67.l != 0) {
-							_this67.s0 = _this67.s1;
-							_this67.s1 = _this67.s2;
-							_this67.s2 = _this67.s3;
-							_this67.s3 = _this67.s4;
-							_this67.s4 = _this67.s5;
-							_this67.s5 = null;
-							if(_this67.s6 != null) {
-								_this67.s5 = _this67.s6.shift();
-							}
-							_this67.l--;
-						}
-						this.controlY = out28;
-						var _this68 = this.store;
-						var out29 = _this68.s0;
-						if(_this68.l != 0) {
-							_this68.s0 = _this68.s1;
-							_this68.s1 = _this68.s2;
-							_this68.s2 = _this68.s3;
-							_this68.s3 = _this68.s4;
-							_this68.s4 = _this68.s5;
-							_this68.s5 = null;
-							if(_this68.s6 != null) {
-								_this68.s5 = _this68.s6.shift();
-							}
-							_this68.l--;
-						}
-						this.lastX = out29;
-						var _this69 = this.store;
-						var out30 = _this69.s0;
-						if(_this69.l != 0) {
-							_this69.s0 = _this69.s1;
-							_this69.s1 = _this69.s2;
-							_this69.s2 = _this69.s3;
-							_this69.s3 = _this69.s4;
-							_this69.s4 = _this69.s5;
-							_this69.s5 = null;
-							if(_this69.s6 != null) {
-								_this69.s5 = _this69.s6.shift();
-							}
-							_this69.l--;
-						}
-						this.lastY = out30;
-						this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 83:
-				var _this70 = this.store;
-				_this70.l = 0;
-				_this70.s0 = null;
-				_this70.s1 = null;
-				_this70.s2 = null;
-				_this70.s3 = null;
-				_this70.s4 = null;
-				_this70.s5 = null;
-				_this70.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count7 = 0;
-				var temp6 = "";
-				var exit6 = false;
-				while(true) {
-					var _g40 = this.c;
-					switch(_g40) {
-					case 32:case 44:
-						if(temp6 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this71 = this.store;
-								var v33 = parseFloat(temp6);
-								var _g41 = _this71.l;
-								switch(_g41) {
-								case 0:
-									_this71.s0 = v33;
-									break;
-								case 1:
-									_this71.s1 = v33;
-									break;
-								case 2:
-									_this71.s2 = v33;
-									break;
-								case 3:
-									_this71.s3 = v33;
-									break;
-								case 4:
-									_this71.s4 = v33;
-									break;
-								case 5:
-									_this71.s5 = v33;
-									break;
-								default:
-									if(_this71.s6 == null) {
-										_this71.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this71.s6.push(v33);
-								}
-								_this71.l++;
-							} else {
-								var _this72 = this.store;
-								var v34 = parseFloat(temp6);
-								var _g42 = _this72.l;
-								switch(_g42) {
-								case 0:
-									_this72.s0 = v34;
-									break;
-								case 1:
-									_this72.s1 = v34;
-									break;
-								case 2:
-									_this72.s2 = v34;
-									break;
-								case 3:
-									_this72.s3 = v34;
-									break;
-								case 4:
-									_this72.s4 = v34;
-									break;
-								case 5:
-									_this72.s5 = v34;
-									break;
-								default:
-									if(_this72.s6 == null) {
-										_this72.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this72.s6.push(v34);
-								}
-								_this72.l++;
-							}
-							temp6 = "";
-						}
-						break;
-					case 45:
-						if(temp6 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this73 = this.store;
-								var v35 = parseFloat(temp6);
-								var _g43 = _this73.l;
-								switch(_g43) {
-								case 0:
-									_this73.s0 = v35;
-									break;
-								case 1:
-									_this73.s1 = v35;
-									break;
-								case 2:
-									_this73.s2 = v35;
-									break;
-								case 3:
-									_this73.s3 = v35;
-									break;
-								case 4:
-									_this73.s4 = v35;
-									break;
-								case 5:
-									_this73.s5 = v35;
-									break;
-								default:
-									if(_this73.s6 == null) {
-										_this73.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this73.s6.push(v35);
-								}
-								_this73.l++;
-							} else {
-								var _this74 = this.store;
-								var v36 = parseFloat(temp6);
-								var _g44 = _this74.l;
-								switch(_g44) {
-								case 0:
-									_this74.s0 = v36;
-									break;
-								case 1:
-									_this74.s1 = v36;
-									break;
-								case 2:
-									_this74.s2 = v36;
-									break;
-								case 3:
-									_this74.s3 = v36;
-									break;
-								case 4:
-									_this74.s4 = v36;
-									break;
-								case 5:
-									_this74.s5 = v36;
-									break;
-								default:
-									if(_this74.s6 == null) {
-										_this74.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this74.s6.push(v36);
-								}
-								_this74.l++;
-							}
-						}
-						temp6 = "-";
-						break;
-					case 46:
-						temp6 += ".";
-						break;
-					case 48:
-						temp6 += "0";
-						break;
-					case 49:
-						temp6 += "1";
-						break;
-					case 50:
-						temp6 += "2";
-						break;
-					case 51:
-						temp6 += "3";
-						break;
-					case 52:
-						temp6 += "4";
-						break;
-					case 53:
-						temp6 += "5";
-						break;
-					case 54:
-						temp6 += "6";
-						break;
-					case 55:
-						temp6 += "7";
-						break;
-					case 56:
-						temp6 += "8";
-						break;
-					case 57:
-						temp6 += "9";
-						break;
-					default:
-						if(temp6 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this75 = this.store;
-								var v37 = parseFloat(temp6);
-								var _g45 = _this75.l;
-								switch(_g45) {
-								case 0:
-									_this75.s0 = v37;
-									break;
-								case 1:
-									_this75.s1 = v37;
-									break;
-								case 2:
-									_this75.s2 = v37;
-									break;
-								case 3:
-									_this75.s3 = v37;
-									break;
-								case 4:
-									_this75.s4 = v37;
-									break;
-								case 5:
-									_this75.s5 = v37;
-									break;
-								default:
-									if(_this75.s6 == null) {
-										_this75.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this75.s6.push(v37);
-								}
-								_this75.l++;
-							} else {
-								var _this76 = this.store;
-								var v38 = parseFloat(temp6);
-								var _g46 = _this76.l;
-								switch(_g46) {
-								case 0:
-									_this76.s0 = v38;
-									break;
-								case 1:
-									_this76.s1 = v38;
-									break;
-								case 2:
-									_this76.s2 = v38;
-									break;
-								case 3:
-									_this76.s3 = v38;
-									break;
-								case 4:
-									_this76.s4 = v38;
-									break;
-								case 5:
-									_this76.s5 = v38;
-									break;
-								default:
-									if(_this76.s6 == null) {
-										_this76.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this76.s6.push(v38);
-								}
-								_this76.l++;
-							}
-							temp6 = "";
-						}
-						this.pos--;
-						exit6 = true;
-					}
-					if(exit6) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					var firstX1 = this.store.s0;
-					var firstY1 = this.store.s1;
-					this.controlX = 2 * this.lastX - this.controlX;
-					this.controlY = 2 * this.lastY - this.controlY;
-					var endX = this.store.s2;
-					var endY = this.store.s3;
-					this.pathContext.curveTo(this.controlX,this.controlY,firstX1,firstY1,endX,endY);
-					this.controlX = this.store.s0;
-					this.controlY = this.store.s1;
-					this.lastX = endX;
-					this.lastY = endY;
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var _this77 = this.store;
-						var out31 = _this77.s0;
-						if(_this77.l != 0) {
-							_this77.s0 = _this77.s1;
-							_this77.s1 = _this77.s2;
-							_this77.s2 = _this77.s3;
-							_this77.s3 = _this77.s4;
-							_this77.s4 = _this77.s5;
-							_this77.s5 = null;
-							if(_this77.s6 != null) {
-								_this77.s5 = _this77.s6.shift();
-							}
-							_this77.l--;
-						}
-						var firstX2 = out31;
-						var _this78 = this.store;
-						var out32 = _this78.s0;
-						if(_this78.l != 0) {
-							_this78.s0 = _this78.s1;
-							_this78.s1 = _this78.s2;
-							_this78.s2 = _this78.s3;
-							_this78.s3 = _this78.s4;
-							_this78.s4 = _this78.s5;
-							_this78.s5 = null;
-							if(_this78.s6 != null) {
-								_this78.s5 = _this78.s6.shift();
-							}
-							_this78.l--;
-						}
-						var firstY2 = out32;
-						this.controlX = 2 * this.lastX - this.controlX;
-						this.controlY = 2 * this.lastY - this.controlY;
-						var _this79 = this.store;
-						var out33 = _this79.s0;
-						if(_this79.l != 0) {
-							_this79.s0 = _this79.s1;
-							_this79.s1 = _this79.s2;
-							_this79.s2 = _this79.s3;
-							_this79.s3 = _this79.s4;
-							_this79.s4 = _this79.s5;
-							_this79.s5 = null;
-							if(_this79.s6 != null) {
-								_this79.s5 = _this79.s6.shift();
-							}
-							_this79.l--;
-						}
-						this.lastX = out33;
-						var _this80 = this.store;
-						var out34 = _this80.s0;
-						if(_this80.l != 0) {
-							_this80.s0 = _this80.s1;
-							_this80.s1 = _this80.s2;
-							_this80.s2 = _this80.s3;
-							_this80.s3 = _this80.s4;
-							_this80.s4 = _this80.s5;
-							_this80.s5 = null;
-							if(_this80.s6 != null) {
-								_this80.s5 = _this80.s6.shift();
-							}
-							_this80.l--;
-						}
-						this.lastY = out34;
-						this.pathContext.curveTo(this.controlX,this.controlY,firstX2,firstY2,this.lastX,this.lastY);
-						this.controlX = firstX2;
-						this.controlY = firstY2;
-					}
-				}
-				break;
-			case 84:
-				var _this81 = this.store;
-				_this81.l = 0;
-				_this81.s0 = null;
-				_this81.s1 = null;
-				_this81.s2 = null;
-				_this81.s3 = null;
-				_this81.s4 = null;
-				_this81.s5 = null;
-				_this81.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count8 = 0;
-				var temp7 = "";
-				var exit7 = false;
-				while(true) {
-					var _g47 = this.c;
-					switch(_g47) {
-					case 32:case 44:
-						if(temp7 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this82 = this.store;
-								var v39 = parseFloat(temp7);
-								var _g48 = _this82.l;
-								switch(_g48) {
-								case 0:
-									_this82.s0 = v39;
-									break;
-								case 1:
-									_this82.s1 = v39;
-									break;
-								case 2:
-									_this82.s2 = v39;
-									break;
-								case 3:
-									_this82.s3 = v39;
-									break;
-								case 4:
-									_this82.s4 = v39;
-									break;
-								case 5:
-									_this82.s5 = v39;
-									break;
-								default:
-									if(_this82.s6 == null) {
-										_this82.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this82.s6.push(v39);
-								}
-								_this82.l++;
-							} else {
-								var _this83 = this.store;
-								var v40 = parseFloat(temp7);
-								var _g49 = _this83.l;
-								switch(_g49) {
-								case 0:
-									_this83.s0 = v40;
-									break;
-								case 1:
-									_this83.s1 = v40;
-									break;
-								case 2:
-									_this83.s2 = v40;
-									break;
-								case 3:
-									_this83.s3 = v40;
-									break;
-								case 4:
-									_this83.s4 = v40;
-									break;
-								case 5:
-									_this83.s5 = v40;
-									break;
-								default:
-									if(_this83.s6 == null) {
-										_this83.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this83.s6.push(v40);
-								}
-								_this83.l++;
-							}
-							temp7 = "";
-						}
-						break;
-					case 45:
-						if(temp7 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this84 = this.store;
-								var v41 = parseFloat(temp7);
-								var _g50 = _this84.l;
-								switch(_g50) {
-								case 0:
-									_this84.s0 = v41;
-									break;
-								case 1:
-									_this84.s1 = v41;
-									break;
-								case 2:
-									_this84.s2 = v41;
-									break;
-								case 3:
-									_this84.s3 = v41;
-									break;
-								case 4:
-									_this84.s4 = v41;
-									break;
-								case 5:
-									_this84.s5 = v41;
-									break;
-								default:
-									if(_this84.s6 == null) {
-										_this84.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this84.s6.push(v41);
-								}
-								_this84.l++;
-							} else {
-								var _this85 = this.store;
-								var v42 = parseFloat(temp7);
-								var _g51 = _this85.l;
-								switch(_g51) {
-								case 0:
-									_this85.s0 = v42;
-									break;
-								case 1:
-									_this85.s1 = v42;
-									break;
-								case 2:
-									_this85.s2 = v42;
-									break;
-								case 3:
-									_this85.s3 = v42;
-									break;
-								case 4:
-									_this85.s4 = v42;
-									break;
-								case 5:
-									_this85.s5 = v42;
-									break;
-								default:
-									if(_this85.s6 == null) {
-										_this85.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this85.s6.push(v42);
-								}
-								_this85.l++;
-							}
-						}
-						temp7 = "-";
-						break;
-					case 46:
-						temp7 += ".";
-						break;
-					case 48:
-						temp7 += "0";
-						break;
-					case 49:
-						temp7 += "1";
-						break;
-					case 50:
-						temp7 += "2";
-						break;
-					case 51:
-						temp7 += "3";
-						break;
-					case 52:
-						temp7 += "4";
-						break;
-					case 53:
-						temp7 += "5";
-						break;
-					case 54:
-						temp7 += "6";
-						break;
-					case 55:
-						temp7 += "7";
-						break;
-					case 56:
-						temp7 += "8";
-						break;
-					case 57:
-						temp7 += "9";
-						break;
-					default:
-						if(temp7 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this86 = this.store;
-								var v43 = parseFloat(temp7);
-								var _g52 = _this86.l;
-								switch(_g52) {
-								case 0:
-									_this86.s0 = v43;
-									break;
-								case 1:
-									_this86.s1 = v43;
-									break;
-								case 2:
-									_this86.s2 = v43;
-									break;
-								case 3:
-									_this86.s3 = v43;
-									break;
-								case 4:
-									_this86.s4 = v43;
-									break;
-								case 5:
-									_this86.s5 = v43;
-									break;
-								default:
-									if(_this86.s6 == null) {
-										_this86.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this86.s6.push(v43);
-								}
-								_this86.l++;
-							} else {
-								var _this87 = this.store;
-								var v44 = parseFloat(temp7);
-								var _g53 = _this87.l;
-								switch(_g53) {
-								case 0:
-									_this87.s0 = v44;
-									break;
-								case 1:
-									_this87.s1 = v44;
-									break;
-								case 2:
-									_this87.s2 = v44;
-									break;
-								case 3:
-									_this87.s3 = v44;
-									break;
-								case 4:
-									_this87.s4 = v44;
-									break;
-								case 5:
-									_this87.s5 = v44;
-									break;
-								default:
-									if(_this87.s6 == null) {
-										_this87.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this87.s6.push(v44);
-								}
-								_this87.l++;
-							}
-							temp7 = "";
-						}
-						this.pos--;
-						exit7 = true;
-					}
-					if(exit7) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.controlX = 2 * this.lastX - this.controlX;
-					this.controlY = 2 * this.lastY - this.controlY;
-					this.lastX = this.store.s0;
-					this.lastY = this.store.s1;
-					this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					while(this.store.l > 1) {
-						this.controlX = 2 * this.lastX - this.controlX;
-						this.controlY = 2 * this.lastY - this.controlY;
-						var _this88 = this.store;
-						var out35 = _this88.s0;
-						if(_this88.l != 0) {
-							_this88.s0 = _this88.s1;
-							_this88.s1 = _this88.s2;
-							_this88.s2 = _this88.s3;
-							_this88.s3 = _this88.s4;
-							_this88.s4 = _this88.s5;
-							_this88.s5 = null;
-							if(_this88.s6 != null) {
-								_this88.s5 = _this88.s6.shift();
-							}
-							_this88.l--;
-						}
-						this.lastX = out35;
-						var _this89 = this.store;
-						var out36 = _this89.s0;
-						if(_this89.l != 0) {
-							_this89.s0 = _this89.s1;
-							_this89.s1 = _this89.s2;
-							_this89.s2 = _this89.s3;
-							_this89.s3 = _this89.s4;
-							_this89.s4 = _this89.s5;
-							_this89.s5 = null;
-							if(_this89.s6 != null) {
-								_this89.s5 = _this89.s6.shift();
-							}
-							_this89.l--;
-						}
-						this.lastY = out36;
-						this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 86:
-				var _this90 = this.store;
-				_this90.l = 0;
-				_this90.s0 = null;
-				_this90.s1 = null;
-				_this90.s2 = null;
-				_this90.s3 = null;
-				_this90.s4 = null;
-				_this90.s5 = null;
-				_this90.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count9 = 0;
-				var temp8 = "";
-				var exit8 = false;
-				while(true) {
-					var _g54 = this.c;
-					switch(_g54) {
-					case 32:case 44:
-						if(temp8 != "") {
-							var _this91 = this.store;
-							var v45 = parseFloat(temp8);
-							var _g55 = _this91.l;
-							switch(_g55) {
-							case 0:
-								_this91.s0 = v45;
-								break;
-							case 1:
-								_this91.s1 = v45;
-								break;
-							case 2:
-								_this91.s2 = v45;
-								break;
-							case 3:
-								_this91.s3 = v45;
-								break;
-							case 4:
-								_this91.s4 = v45;
-								break;
-							case 5:
-								_this91.s5 = v45;
-								break;
-							default:
-								if(_this91.s6 == null) {
-									_this91.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this91.s6.push(v45);
-							}
-							_this91.l++;
-							temp8 = "";
-						}
-						break;
-					case 45:
-						if(temp8 != "") {
-							var _this92 = this.store;
-							var v46 = parseFloat(temp8);
-							var _g56 = _this92.l;
-							switch(_g56) {
-							case 0:
-								_this92.s0 = v46;
-								break;
-							case 1:
-								_this92.s1 = v46;
-								break;
-							case 2:
-								_this92.s2 = v46;
-								break;
-							case 3:
-								_this92.s3 = v46;
-								break;
-							case 4:
-								_this92.s4 = v46;
-								break;
-							case 5:
-								_this92.s5 = v46;
-								break;
-							default:
-								if(_this92.s6 == null) {
-									_this92.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this92.s6.push(v46);
-							}
-							_this92.l++;
-						}
-						temp8 = "-";
-						break;
-					case 46:
-						temp8 += ".";
-						break;
-					case 48:
-						temp8 += "0";
-						break;
-					case 49:
-						temp8 += "1";
-						break;
-					case 50:
-						temp8 += "2";
-						break;
-					case 51:
-						temp8 += "3";
-						break;
-					case 52:
-						temp8 += "4";
-						break;
-					case 53:
-						temp8 += "5";
-						break;
-					case 54:
-						temp8 += "6";
-						break;
-					case 55:
-						temp8 += "7";
-						break;
-					case 56:
-						temp8 += "8";
-						break;
-					case 57:
-						temp8 += "9";
-						break;
-					default:
-						if(temp8 != "") {
-							var _this93 = this.store;
-							var v47 = parseFloat(temp8);
-							var _g57 = _this93.l;
-							switch(_g57) {
-							case 0:
-								_this93.s0 = v47;
-								break;
-							case 1:
-								_this93.s1 = v47;
-								break;
-							case 2:
-								_this93.s2 = v47;
-								break;
-							case 3:
-								_this93.s3 = v47;
-								break;
-							case 4:
-								_this93.s4 = v47;
-								break;
-							case 5:
-								_this93.s5 = v47;
-								break;
-							default:
-								if(_this93.s6 == null) {
-									_this93.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this93.s6.push(v47);
-							}
-							_this93.l++;
-							temp8 = "";
-						}
-						this.pos--;
-						exit8 = true;
-					}
-					if(exit8) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 1) {
-					var _this94 = this.store;
-					var out37 = _this94.s0;
-					if(_this94.l != 0) {
-						_this94.s0 = _this94.s1;
-						_this94.s1 = _this94.s2;
-						_this94.s2 = _this94.s3;
-						_this94.s3 = _this94.s4;
-						_this94.s4 = _this94.s5;
-						_this94.s5 = null;
-						if(_this94.s6 != null) {
-							_this94.s5 = _this94.s6.shift();
-						}
-						_this94.l--;
-					}
-					this.lastY = out37;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 1) {
-					while(this.store.l > 0) {
-						var _this95 = this.store;
-						var out38 = _this95.s0;
-						if(_this95.l != 0) {
-							_this95.s0 = _this95.s1;
-							_this95.s1 = _this95.s2;
-							_this95.s2 = _this95.s3;
-							_this95.s3 = _this95.s4;
-							_this95.s4 = _this95.s5;
-							_this95.s5 = null;
-							if(_this95.s6 != null) {
-								_this95.s5 = _this95.s6.shift();
-							}
-							_this95.l--;
-						}
-						this.lastY = out38;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 90:case 122:
-				this.lastX = 0;
-				this.lastY = 0;
-				break;
-			case 97:
-				var _this96 = this.store;
-				_this96.l = 0;
-				_this96.s0 = null;
-				_this96.s1 = null;
-				_this96.s2 = null;
-				_this96.s3 = null;
-				_this96.s4 = null;
-				_this96.s5 = null;
-				_this96.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count10 = 0;
-				var temp9 = "";
-				var exit9 = false;
-				while(true) {
-					var _g58 = this.c;
-					switch(_g58) {
-					case 32:case 44:
-						if(temp9 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this97 = this.store;
-								var v48 = parseFloat(temp9);
-								var _g59 = _this97.l;
-								switch(_g59) {
-								case 0:
-									_this97.s0 = v48;
-									break;
-								case 1:
-									_this97.s1 = v48;
-									break;
-								case 2:
-									_this97.s2 = v48;
-									break;
-								case 3:
-									_this97.s3 = v48;
-									break;
-								case 4:
-									_this97.s4 = v48;
-									break;
-								case 5:
-									_this97.s5 = v48;
-									break;
-								default:
-									if(_this97.s6 == null) {
-										_this97.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this97.s6.push(v48);
-								}
-								_this97.l++;
-							} else {
-								var _this98 = this.store;
-								var v49 = parseFloat(temp9);
-								var _g60 = _this98.l;
-								switch(_g60) {
-								case 0:
-									_this98.s0 = v49;
-									break;
-								case 1:
-									_this98.s1 = v49;
-									break;
-								case 2:
-									_this98.s2 = v49;
-									break;
-								case 3:
-									_this98.s3 = v49;
-									break;
-								case 4:
-									_this98.s4 = v49;
-									break;
-								case 5:
-									_this98.s5 = v49;
-									break;
-								default:
-									if(_this98.s6 == null) {
-										_this98.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this98.s6.push(v49);
-								}
-								_this98.l++;
-							}
-							temp9 = "";
-						}
-						break;
-					case 45:
-						if(temp9 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this99 = this.store;
-								var v50 = parseFloat(temp9);
-								var _g61 = _this99.l;
-								switch(_g61) {
-								case 0:
-									_this99.s0 = v50;
-									break;
-								case 1:
-									_this99.s1 = v50;
-									break;
-								case 2:
-									_this99.s2 = v50;
-									break;
-								case 3:
-									_this99.s3 = v50;
-									break;
-								case 4:
-									_this99.s4 = v50;
-									break;
-								case 5:
-									_this99.s5 = v50;
-									break;
-								default:
-									if(_this99.s6 == null) {
-										_this99.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this99.s6.push(v50);
-								}
-								_this99.l++;
-							} else {
-								var _this100 = this.store;
-								var v51 = parseFloat(temp9);
-								var _g62 = _this100.l;
-								switch(_g62) {
-								case 0:
-									_this100.s0 = v51;
-									break;
-								case 1:
-									_this100.s1 = v51;
-									break;
-								case 2:
-									_this100.s2 = v51;
-									break;
-								case 3:
-									_this100.s3 = v51;
-									break;
-								case 4:
-									_this100.s4 = v51;
-									break;
-								case 5:
-									_this100.s5 = v51;
-									break;
-								default:
-									if(_this100.s6 == null) {
-										_this100.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this100.s6.push(v51);
-								}
-								_this100.l++;
-							}
-						}
-						temp9 = "-";
-						break;
-					case 46:
-						temp9 += ".";
-						break;
-					case 48:
-						temp9 += "0";
-						break;
-					case 49:
-						temp9 += "1";
-						break;
-					case 50:
-						temp9 += "2";
-						break;
-					case 51:
-						temp9 += "3";
-						break;
-					case 52:
-						temp9 += "4";
-						break;
-					case 53:
-						temp9 += "5";
-						break;
-					case 54:
-						temp9 += "6";
-						break;
-					case 55:
-						temp9 += "7";
-						break;
-					case 56:
-						temp9 += "8";
-						break;
-					case 57:
-						temp9 += "9";
-						break;
-					default:
-						if(temp9 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this101 = this.store;
-								var v52 = parseFloat(temp9);
-								var _g63 = _this101.l;
-								switch(_g63) {
-								case 0:
-									_this101.s0 = v52;
-									break;
-								case 1:
-									_this101.s1 = v52;
-									break;
-								case 2:
-									_this101.s2 = v52;
-									break;
-								case 3:
-									_this101.s3 = v52;
-									break;
-								case 4:
-									_this101.s4 = v52;
-									break;
-								case 5:
-									_this101.s5 = v52;
-									break;
-								default:
-									if(_this101.s6 == null) {
-										_this101.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this101.s6.push(v52);
-								}
-								_this101.l++;
-							} else {
-								var _this102 = this.store;
-								var v53 = parseFloat(temp9);
-								var _g64 = _this102.l;
-								switch(_g64) {
-								case 0:
-									_this102.s0 = v53;
-									break;
-								case 1:
-									_this102.s1 = v53;
-									break;
-								case 2:
-									_this102.s2 = v53;
-									break;
-								case 3:
-									_this102.s3 = v53;
-									break;
-								case 4:
-									_this102.s4 = v53;
-									break;
-								case 5:
-									_this102.s5 = v53;
-									break;
-								default:
-									if(_this102.s6 == null) {
-										_this102.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this102.s6.push(v53);
-								}
-								_this102.l++;
-							}
-							temp9 = "";
-						}
-						this.pos--;
-						exit9 = true;
-					}
-					if(exit9) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 7) {
-					var sx4 = this.lastX;
-					var sy4 = this.lastY;
-					var _this103 = this.store;
-					var out39 = _this103.s0;
-					if(_this103.l != 0) {
-						_this103.s0 = _this103.s1;
-						_this103.s1 = _this103.s2;
-						_this103.s2 = _this103.s3;
-						_this103.s3 = _this103.s4;
-						_this103.s4 = _this103.s5;
-						_this103.s5 = null;
-						if(_this103.s6 != null) {
-							_this103.s5 = _this103.s6.shift();
-						}
-						_this103.l--;
-					}
-					var xr2 = out39;
-					var _this104 = this.store;
-					var out40 = _this104.s0;
-					if(_this104.l != 0) {
-						_this104.s0 = _this104.s1;
-						_this104.s1 = _this104.s2;
-						_this104.s2 = _this104.s3;
-						_this104.s3 = _this104.s4;
-						_this104.s4 = _this104.s5;
-						_this104.s5 = null;
-						if(_this104.s6 != null) {
-							_this104.s5 = _this104.s6.shift();
-						}
-						_this104.l--;
-					}
-					var yr2 = out40;
-					var _this105 = this.store;
-					var out41 = _this105.s0;
-					if(_this105.l != 0) {
-						_this105.s0 = _this105.s1;
-						_this105.s1 = _this105.s2;
-						_this105.s2 = _this105.s3;
-						_this105.s3 = _this105.s4;
-						_this105.s4 = _this105.s5;
-						_this105.s5 = null;
-						if(_this105.s6 != null) {
-							_this105.s5 = _this105.s6.shift();
-						}
-						_this105.l--;
-					}
-					var phi4 = out41;
-					var _this106 = this.store;
-					var out42 = _this106.s0;
-					if(_this106.l != 0) {
-						_this106.s0 = _this106.s1;
-						_this106.s1 = _this106.s2;
-						_this106.s2 = _this106.s3;
-						_this106.s3 = _this106.s4;
-						_this106.s4 = _this106.s5;
-						_this106.s5 = null;
-						if(_this106.s6 != null) {
-							_this106.s5 = _this106.s6.shift();
-						}
-						_this106.l--;
-					}
-					var large2 = out42 | 0;
-					var _this107 = this.store;
-					var out43 = _this107.s0;
-					if(_this107.l != 0) {
-						_this107.s0 = _this107.s1;
-						_this107.s1 = _this107.s2;
-						_this107.s2 = _this107.s3;
-						_this107.s3 = _this107.s4;
-						_this107.s4 = _this107.s5;
-						_this107.s5 = null;
-						if(_this107.s6 != null) {
-							_this107.s5 = _this107.s6.shift();
-						}
-						_this107.l--;
-					}
-					var sweep2 = out43 | 0;
-					var _this108 = this.store;
-					var out44 = _this108.s0;
-					if(_this108.l != 0) {
-						_this108.s0 = _this108.s1;
-						_this108.s1 = _this108.s2;
-						_this108.s2 = _this108.s3;
-						_this108.s3 = _this108.s4;
-						_this108.s4 = _this108.s5;
-						_this108.s5 = null;
-						if(_this108.s6 != null) {
-							_this108.s5 = _this108.s6.shift();
-						}
-						_this108.l--;
-					}
-					this.lastX = out44 + this.lastX;
-					var _this109 = this.store;
-					var out45 = _this109.s0;
-					if(_this109.l != 0) {
-						_this109.s0 = _this109.s1;
-						_this109.s1 = _this109.s2;
-						_this109.s2 = _this109.s3;
-						_this109.s3 = _this109.s4;
-						_this109.s4 = _this109.s5;
-						_this109.s5 = null;
-						if(_this109.s6 != null) {
-							_this109.s5 = _this109.s6.shift();
-						}
-						_this109.l--;
-					}
-					this.lastY = out45 + this.lastY;
-					var sx5 = sx4;
-					var sy5 = sy4;
-					var phi5 = phi4;
-					var ex2 = this.lastX;
-					var ey2 = this.lastY;
-					var this3;
-					var mx2 = (sx5 - ex2) / 2;
-					var my2 = (sy5 - ey2) / 2;
-					var ax2 = (sx5 + ex2) / 2;
-					var ay2 = (sy5 + ey2) / 2;
-					phi5 %= 360;
-					phi5 = phi5 * Math.PI / 180;
-					var sin2 = Math.sin(phi5);
-					var cos2 = Math.cos(phi5);
-					var x12 = mx2 * cos2 + my2 * sin2;
-					var y12 = -mx2 * sin2 + my2 * cos2;
-					var rx2 = Math.abs(xr2);
-					var ry2 = Math.abs(yr2);
-					var rxx2 = rx2 * rx2;
-					var ryy2 = ry2 * ry2;
-					var xx12 = x12 * x12;
-					var yy12 = y12 * y12;
-					var check2 = xx12 / rxx2 + yy12 / ryy2;
-					if(check2 > 1) {
-						rx2 *= Math.sqrt(check2);
-						ry2 *= Math.sqrt(check2);
-						rxx2 = rx2 * rx2;
-						ryy2 = ry2 * ry2;
-					}
-					var sign2 = large2 == sweep2 ? -1 : 1;
-					var sq2 = (rxx2 * ryy2 - rxx2 * yy12 - ryy2 * xx12) / (rxx2 * yy12 + ryy2 * xx12);
-					if(sq2 < 0) {
-						sq2 = 0;
-					} else {
-						sq2 = sq2;
-					}
-					var coef2 = sign2 * Math.sqrt(sq2);
-					var cx12 = coef2 * rx2 * y12 / ry2;
-					var cy12 = -coef2 * ry2 * x12 / rx2;
-					var cx3 = ax2 + cx12 * cos2 - cy12 * sin2;
-					var cy3 = ay2 + cx12 * sin2 + cy12 * cos2;
-					var phiSin2 = Math.sin(-phi5);
-					var phiCos2 = Math.cos(-phi5);
-					sx5 -= cx3;
-					sy5 -= cy3;
-					var dx4 = sx5;
-					var dy4 = sy5;
-					sx5 = dx4 * phiCos2 - dy4 * phiSin2;
-					sy5 = dx4 * phiSin2 + dy4 * phiCos2;
-					sx5 += cx3;
-					sy5 += cy3;
-					ex2 -= cx3;
-					ey2 -= cy3;
-					var dx5 = ex2;
-					var dy5 = ey2;
-					ex2 = dx5 * phiCos2 - dy5 * phiSin2;
-					ey2 = dx5 * phiSin2 + dy5 * phiCos2;
-					ex2 += cx3;
-					ey2 += cy3;
-					var alpha2 = Math.atan2(rx2 * (cy3 - sy5),ry2 * (cx3 - sx5)) - Math.PI;
-					var omega2 = Math.atan2(rx2 * (cy3 - ey2),ry2 * (cx3 - ex2)) - Math.PI;
-					var delta2 = alpha2 - omega2;
-					if(sweep2 == 1 && delta2 > 0) {
-						delta2 -= 2 * Math.PI;
-					} else if(sweep2 == 0 && delta2 < 0) {
-						delta2 += 2 * Math.PI;
-					}
-					this3 = { cx : cx3, cy : cy3, rx : rx2, ry : ry2, alpha : alpha2, omega : omega2, delta : -delta2, phi : phi5, phiSin : Math.sin(phi5), phiCos : Math.cos(phi5)};
-					var ellipseData2 = this3;
-					var ellipse2 = new trilateral_justPath_EllipseArc(ellipseData2);
-					ellipse2.lineRender(($_=this.pathContext,$bind($_,$_.moveTo)),($_=this.pathContext,$bind($_,$_.lineTo)),Math.PI / 18);
-				} else if(this.store.l > 7) {
-					while(this.store.l > 6) {
-						var sx6 = this.lastX;
-						var sy6 = this.lastY;
-						var _this110 = this.store;
-						var out46 = _this110.s0;
-						if(_this110.l != 0) {
-							_this110.s0 = _this110.s1;
-							_this110.s1 = _this110.s2;
-							_this110.s2 = _this110.s3;
-							_this110.s3 = _this110.s4;
-							_this110.s4 = _this110.s5;
-							_this110.s5 = null;
-							if(_this110.s6 != null) {
-								_this110.s5 = _this110.s6.shift();
-							}
-							_this110.l--;
-						}
-						var xr3 = out46;
-						var _this111 = this.store;
-						var out47 = _this111.s0;
-						if(_this111.l != 0) {
-							_this111.s0 = _this111.s1;
-							_this111.s1 = _this111.s2;
-							_this111.s2 = _this111.s3;
-							_this111.s3 = _this111.s4;
-							_this111.s4 = _this111.s5;
-							_this111.s5 = null;
-							if(_this111.s6 != null) {
-								_this111.s5 = _this111.s6.shift();
-							}
-							_this111.l--;
-						}
-						var yr3 = out47;
-						var _this112 = this.store;
-						var out48 = _this112.s0;
-						if(_this112.l != 0) {
-							_this112.s0 = _this112.s1;
-							_this112.s1 = _this112.s2;
-							_this112.s2 = _this112.s3;
-							_this112.s3 = _this112.s4;
-							_this112.s4 = _this112.s5;
-							_this112.s5 = null;
-							if(_this112.s6 != null) {
-								_this112.s5 = _this112.s6.shift();
-							}
-							_this112.l--;
-						}
-						var phi6 = out48;
-						var _this113 = this.store;
-						var out49 = _this113.s0;
-						if(_this113.l != 0) {
-							_this113.s0 = _this113.s1;
-							_this113.s1 = _this113.s2;
-							_this113.s2 = _this113.s3;
-							_this113.s3 = _this113.s4;
-							_this113.s4 = _this113.s5;
-							_this113.s5 = null;
-							if(_this113.s6 != null) {
-								_this113.s5 = _this113.s6.shift();
-							}
-							_this113.l--;
-						}
-						var large3 = out49 | 0;
-						var _this114 = this.store;
-						var out50 = _this114.s0;
-						if(_this114.l != 0) {
-							_this114.s0 = _this114.s1;
-							_this114.s1 = _this114.s2;
-							_this114.s2 = _this114.s3;
-							_this114.s3 = _this114.s4;
-							_this114.s4 = _this114.s5;
-							_this114.s5 = null;
-							if(_this114.s6 != null) {
-								_this114.s5 = _this114.s6.shift();
-							}
-							_this114.l--;
-						}
-						var sweep3 = out50 | 0;
-						var _this115 = this.store;
-						var out51 = _this115.s0;
-						if(_this115.l != 0) {
-							_this115.s0 = _this115.s1;
-							_this115.s1 = _this115.s2;
-							_this115.s2 = _this115.s3;
-							_this115.s3 = _this115.s4;
-							_this115.s4 = _this115.s5;
-							_this115.s5 = null;
-							if(_this115.s6 != null) {
-								_this115.s5 = _this115.s6.shift();
-							}
-							_this115.l--;
-						}
-						this.lastX = out51 + this.lastX;
-						var _this116 = this.store;
-						var out52 = _this116.s0;
-						if(_this116.l != 0) {
-							_this116.s0 = _this116.s1;
-							_this116.s1 = _this116.s2;
-							_this116.s2 = _this116.s3;
-							_this116.s3 = _this116.s4;
-							_this116.s4 = _this116.s5;
-							_this116.s5 = null;
-							if(_this116.s6 != null) {
-								_this116.s5 = _this116.s6.shift();
-							}
-							_this116.l--;
-						}
-						this.lastY = out52 + this.lastY;
-						var sx7 = sx6;
-						var sy7 = sy6;
-						var phi7 = phi6;
-						var ex3 = this.lastX;
-						var ey3 = this.lastY;
-						var this4;
-						var mx3 = (sx7 - ex3) / 2;
-						var my3 = (sy7 - ey3) / 2;
-						var ax3 = (sx7 + ex3) / 2;
-						var ay3 = (sy7 + ey3) / 2;
-						phi7 %= 360;
-						phi7 = phi7 * Math.PI / 180;
-						var sin3 = Math.sin(phi7);
-						var cos3 = Math.cos(phi7);
-						var x13 = mx3 * cos3 + my3 * sin3;
-						var y13 = -mx3 * sin3 + my3 * cos3;
-						var rx3 = Math.abs(xr3);
-						var ry3 = Math.abs(yr3);
-						var rxx3 = rx3 * rx3;
-						var ryy3 = ry3 * ry3;
-						var xx13 = x13 * x13;
-						var yy13 = y13 * y13;
-						var check3 = xx13 / rxx3 + yy13 / ryy3;
-						if(check3 > 1) {
-							rx3 *= Math.sqrt(check3);
-							ry3 *= Math.sqrt(check3);
-							rxx3 = rx3 * rx3;
-							ryy3 = ry3 * ry3;
-						}
-						var sign3 = large3 == sweep3 ? -1 : 1;
-						var sq3 = (rxx3 * ryy3 - rxx3 * yy13 - ryy3 * xx13) / (rxx3 * yy13 + ryy3 * xx13);
-						if(sq3 < 0) {
-							sq3 = 0;
-						} else {
-							sq3 = sq3;
-						}
-						var coef3 = sign3 * Math.sqrt(sq3);
-						var cx13 = coef3 * rx3 * y13 / ry3;
-						var cy13 = -coef3 * ry3 * x13 / rx3;
-						var cx4 = ax3 + cx13 * cos3 - cy13 * sin3;
-						var cy4 = ay3 + cx13 * sin3 + cy13 * cos3;
-						var phiSin3 = Math.sin(-phi7);
-						var phiCos3 = Math.cos(-phi7);
-						sx7 -= cx4;
-						sy7 -= cy4;
-						var dx6 = sx7;
-						var dy6 = sy7;
-						sx7 = dx6 * phiCos3 - dy6 * phiSin3;
-						sy7 = dx6 * phiSin3 + dy6 * phiCos3;
-						sx7 += cx4;
-						sy7 += cy4;
-						ex3 -= cx4;
-						ey3 -= cy4;
-						var dx7 = ex3;
-						var dy7 = ey3;
-						ex3 = dx7 * phiCos3 - dy7 * phiSin3;
-						ey3 = dx7 * phiSin3 + dy7 * phiCos3;
-						ex3 += cx4;
-						ey3 += cy4;
-						var alpha3 = Math.atan2(rx3 * (cy4 - sy7),ry3 * (cx4 - sx7)) - Math.PI;
-						var omega3 = Math.atan2(rx3 * (cy4 - ey3),ry3 * (cx4 - ex3)) - Math.PI;
-						var delta3 = alpha3 - omega3;
-						if(sweep3 == 1 && delta3 > 0) {
-							delta3 -= 2 * Math.PI;
-						} else if(sweep3 == 0 && delta3 < 0) {
-							delta3 += 2 * Math.PI;
-						}
-						this4 = { cx : cx4, cy : cy4, rx : rx3, ry : ry3, alpha : alpha3, omega : omega3, delta : -delta3, phi : phi7, phiSin : Math.sin(phi7), phiCos : Math.cos(phi7)};
-						var ellipseData3 = this4;
-						var ellipse3 = new trilateral_justPath_EllipseArc(ellipseData3);
-						ellipse3.lineRender(($_=this.pathContext,$bind($_,$_.moveTo)),($_=this.pathContext,$bind($_,$_.lineTo)),Math.PI / 18);
-					}
-				}
-				break;
-			case 99:
-				var _this117 = this.store;
-				_this117.l = 0;
-				_this117.s0 = null;
-				_this117.s1 = null;
-				_this117.s2 = null;
-				_this117.s3 = null;
-				_this117.s4 = null;
-				_this117.s5 = null;
-				_this117.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count11 = 0;
-				var temp10 = "";
-				var exit10 = false;
-				while(true) {
-					var _g65 = this.c;
-					switch(_g65) {
-					case 32:case 44:
-						if(temp10 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this118 = this.store;
-								var v54 = parseFloat(temp10);
-								var _g66 = _this118.l;
-								switch(_g66) {
-								case 0:
-									_this118.s0 = v54;
-									break;
-								case 1:
-									_this118.s1 = v54;
-									break;
-								case 2:
-									_this118.s2 = v54;
-									break;
-								case 3:
-									_this118.s3 = v54;
-									break;
-								case 4:
-									_this118.s4 = v54;
-									break;
-								case 5:
-									_this118.s5 = v54;
-									break;
-								default:
-									if(_this118.s6 == null) {
-										_this118.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this118.s6.push(v54);
-								}
-								_this118.l++;
-							} else {
-								var _this119 = this.store;
-								var v55 = parseFloat(temp10);
-								var _g67 = _this119.l;
-								switch(_g67) {
-								case 0:
-									_this119.s0 = v55;
-									break;
-								case 1:
-									_this119.s1 = v55;
-									break;
-								case 2:
-									_this119.s2 = v55;
-									break;
-								case 3:
-									_this119.s3 = v55;
-									break;
-								case 4:
-									_this119.s4 = v55;
-									break;
-								case 5:
-									_this119.s5 = v55;
-									break;
-								default:
-									if(_this119.s6 == null) {
-										_this119.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this119.s6.push(v55);
-								}
-								_this119.l++;
-							}
-							temp10 = "";
-						}
-						break;
-					case 45:
-						if(temp10 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this120 = this.store;
-								var v56 = parseFloat(temp10);
-								var _g68 = _this120.l;
-								switch(_g68) {
-								case 0:
-									_this120.s0 = v56;
-									break;
-								case 1:
-									_this120.s1 = v56;
-									break;
-								case 2:
-									_this120.s2 = v56;
-									break;
-								case 3:
-									_this120.s3 = v56;
-									break;
-								case 4:
-									_this120.s4 = v56;
-									break;
-								case 5:
-									_this120.s5 = v56;
-									break;
-								default:
-									if(_this120.s6 == null) {
-										_this120.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this120.s6.push(v56);
-								}
-								_this120.l++;
-							} else {
-								var _this121 = this.store;
-								var v57 = parseFloat(temp10);
-								var _g69 = _this121.l;
-								switch(_g69) {
-								case 0:
-									_this121.s0 = v57;
-									break;
-								case 1:
-									_this121.s1 = v57;
-									break;
-								case 2:
-									_this121.s2 = v57;
-									break;
-								case 3:
-									_this121.s3 = v57;
-									break;
-								case 4:
-									_this121.s4 = v57;
-									break;
-								case 5:
-									_this121.s5 = v57;
-									break;
-								default:
-									if(_this121.s6 == null) {
-										_this121.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this121.s6.push(v57);
-								}
-								_this121.l++;
-							}
-						}
-						temp10 = "-";
-						break;
-					case 46:
-						temp10 += ".";
-						break;
-					case 48:
-						temp10 += "0";
-						break;
-					case 49:
-						temp10 += "1";
-						break;
-					case 50:
-						temp10 += "2";
-						break;
-					case 51:
-						temp10 += "3";
-						break;
-					case 52:
-						temp10 += "4";
-						break;
-					case 53:
-						temp10 += "5";
-						break;
-					case 54:
-						temp10 += "6";
-						break;
-					case 55:
-						temp10 += "7";
-						break;
-					case 56:
-						temp10 += "8";
-						break;
-					case 57:
-						temp10 += "9";
-						break;
-					default:
-						if(temp10 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this122 = this.store;
-								var v58 = parseFloat(temp10);
-								var _g70 = _this122.l;
-								switch(_g70) {
-								case 0:
-									_this122.s0 = v58;
-									break;
-								case 1:
-									_this122.s1 = v58;
-									break;
-								case 2:
-									_this122.s2 = v58;
-									break;
-								case 3:
-									_this122.s3 = v58;
-									break;
-								case 4:
-									_this122.s4 = v58;
-									break;
-								case 5:
-									_this122.s5 = v58;
-									break;
-								default:
-									if(_this122.s6 == null) {
-										_this122.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this122.s6.push(v58);
-								}
-								_this122.l++;
-							} else {
-								var _this123 = this.store;
-								var v59 = parseFloat(temp10);
-								var _g71 = _this123.l;
-								switch(_g71) {
-								case 0:
-									_this123.s0 = v59;
-									break;
-								case 1:
-									_this123.s1 = v59;
-									break;
-								case 2:
-									_this123.s2 = v59;
-									break;
-								case 3:
-									_this123.s3 = v59;
-									break;
-								case 4:
-									_this123.s4 = v59;
-									break;
-								case 5:
-									_this123.s5 = v59;
-									break;
-								default:
-									if(_this123.s6 == null) {
-										_this123.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this123.s6.push(v59);
-								}
-								_this123.l++;
-							}
-							temp10 = "";
-						}
-						this.pos--;
-						exit10 = true;
-					}
-					if(exit10) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					var firstX3 = this.store.s0 + this.lastX;
-					var firstY3 = this.store.s1 + this.lastY;
-					this.controlX = this.store.s2 + this.lastX;
-					this.controlY = this.store.s3 + this.lastY;
-					this.lastX = this.store.s4 + this.lastX;
-					this.lastY = this.store.s5 + this.lastY;
-					this.pathContext.curveTo(firstX3,firstY3,this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var _this124 = this.store;
-						var out53 = _this124.s0;
-						if(_this124.l != 0) {
-							_this124.s0 = _this124.s1;
-							_this124.s1 = _this124.s2;
-							_this124.s2 = _this124.s3;
-							_this124.s3 = _this124.s4;
-							_this124.s4 = _this124.s5;
-							_this124.s5 = null;
-							if(_this124.s6 != null) {
-								_this124.s5 = _this124.s6.shift();
-							}
-							_this124.l--;
-						}
-						var firstX4 = out53 + this.lastX;
-						var _this125 = this.store;
-						var out54 = _this125.s0;
-						if(_this125.l != 0) {
-							_this125.s0 = _this125.s1;
-							_this125.s1 = _this125.s2;
-							_this125.s2 = _this125.s3;
-							_this125.s3 = _this125.s4;
-							_this125.s4 = _this125.s5;
-							_this125.s5 = null;
-							if(_this125.s6 != null) {
-								_this125.s5 = _this125.s6.shift();
-							}
-							_this125.l--;
-						}
-						var firstY4 = out54 + this.lastY;
-						var _this126 = this.store;
-						var out55 = _this126.s0;
-						if(_this126.l != 0) {
-							_this126.s0 = _this126.s1;
-							_this126.s1 = _this126.s2;
-							_this126.s2 = _this126.s3;
-							_this126.s3 = _this126.s4;
-							_this126.s4 = _this126.s5;
-							_this126.s5 = null;
-							if(_this126.s6 != null) {
-								_this126.s5 = _this126.s6.shift();
-							}
-							_this126.l--;
-						}
-						this.controlX = out55 + this.lastX;
-						var _this127 = this.store;
-						var out56 = _this127.s0;
-						if(_this127.l != 0) {
-							_this127.s0 = _this127.s1;
-							_this127.s1 = _this127.s2;
-							_this127.s2 = _this127.s3;
-							_this127.s3 = _this127.s4;
-							_this127.s4 = _this127.s5;
-							_this127.s5 = null;
-							if(_this127.s6 != null) {
-								_this127.s5 = _this127.s6.shift();
-							}
-							_this127.l--;
-						}
-						this.controlY = out56 + this.lastY;
-						var _this128 = this.store;
-						var out57 = _this128.s0;
-						if(_this128.l != 0) {
-							_this128.s0 = _this128.s1;
-							_this128.s1 = _this128.s2;
-							_this128.s2 = _this128.s3;
-							_this128.s3 = _this128.s4;
-							_this128.s4 = _this128.s5;
-							_this128.s5 = null;
-							if(_this128.s6 != null) {
-								_this128.s5 = _this128.s6.shift();
-							}
-							_this128.l--;
-						}
-						this.lastX = out57 + this.lastX;
-						var _this129 = this.store;
-						var out58 = _this129.s0;
-						if(_this129.l != 0) {
-							_this129.s0 = _this129.s1;
-							_this129.s1 = _this129.s2;
-							_this129.s2 = _this129.s3;
-							_this129.s3 = _this129.s4;
-							_this129.s4 = _this129.s5;
-							_this129.s5 = null;
-							if(_this129.s6 != null) {
-								_this129.s5 = _this129.s6.shift();
-							}
-							_this129.l--;
-						}
-						this.lastY = out58 + this.lastY;
-						this.pathContext.curveTo(firstX4,firstY4,this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 104:
-				var _this130 = this.store;
-				_this130.l = 0;
-				_this130.s0 = null;
-				_this130.s1 = null;
-				_this130.s2 = null;
-				_this130.s3 = null;
-				_this130.s4 = null;
-				_this130.s5 = null;
-				_this130.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count12 = 0;
-				var temp11 = "";
-				var exit11 = false;
-				while(true) {
-					var _g72 = this.c;
-					switch(_g72) {
-					case 32:case 44:
-						if(temp11 != "") {
-							var _this131 = this.store;
-							var v60 = parseFloat(temp11);
-							var _g73 = _this131.l;
-							switch(_g73) {
-							case 0:
-								_this131.s0 = v60;
-								break;
-							case 1:
-								_this131.s1 = v60;
-								break;
-							case 2:
-								_this131.s2 = v60;
-								break;
-							case 3:
-								_this131.s3 = v60;
-								break;
-							case 4:
-								_this131.s4 = v60;
-								break;
-							case 5:
-								_this131.s5 = v60;
-								break;
-							default:
-								if(_this131.s6 == null) {
-									_this131.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this131.s6.push(v60);
-							}
-							_this131.l++;
-							temp11 = "";
-						}
-						break;
-					case 45:
-						if(temp11 != "") {
-							var _this132 = this.store;
-							var v61 = parseFloat(temp11);
-							var _g74 = _this132.l;
-							switch(_g74) {
-							case 0:
-								_this132.s0 = v61;
-								break;
-							case 1:
-								_this132.s1 = v61;
-								break;
-							case 2:
-								_this132.s2 = v61;
-								break;
-							case 3:
-								_this132.s3 = v61;
-								break;
-							case 4:
-								_this132.s4 = v61;
-								break;
-							case 5:
-								_this132.s5 = v61;
-								break;
-							default:
-								if(_this132.s6 == null) {
-									_this132.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this132.s6.push(v61);
-							}
-							_this132.l++;
-						}
-						temp11 = "-";
-						break;
-					case 46:
-						temp11 += ".";
-						break;
-					case 48:
-						temp11 += "0";
-						break;
-					case 49:
-						temp11 += "1";
-						break;
-					case 50:
-						temp11 += "2";
-						break;
-					case 51:
-						temp11 += "3";
-						break;
-					case 52:
-						temp11 += "4";
-						break;
-					case 53:
-						temp11 += "5";
-						break;
-					case 54:
-						temp11 += "6";
-						break;
-					case 55:
-						temp11 += "7";
-						break;
-					case 56:
-						temp11 += "8";
-						break;
-					case 57:
-						temp11 += "9";
-						break;
-					default:
-						if(temp11 != "") {
-							var _this133 = this.store;
-							var v62 = parseFloat(temp11);
-							var _g75 = _this133.l;
-							switch(_g75) {
-							case 0:
-								_this133.s0 = v62;
-								break;
-							case 1:
-								_this133.s1 = v62;
-								break;
-							case 2:
-								_this133.s2 = v62;
-								break;
-							case 3:
-								_this133.s3 = v62;
-								break;
-							case 4:
-								_this133.s4 = v62;
-								break;
-							case 5:
-								_this133.s5 = v62;
-								break;
-							default:
-								if(_this133.s6 == null) {
-									_this133.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this133.s6.push(v62);
-							}
-							_this133.l++;
-							temp11 = "";
-						}
-						this.pos--;
-						exit11 = true;
-					}
-					if(exit11) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 1) {
-					this.lastX += this.store.s0;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 1) {
-					while(this.store.l > 0) {
-						var tmp = this.lastX;
-						var _this134 = this.store;
-						var out59 = _this134.s0;
-						if(_this134.l != 0) {
-							_this134.s0 = _this134.s1;
-							_this134.s1 = _this134.s2;
-							_this134.s2 = _this134.s3;
-							_this134.s3 = _this134.s4;
-							_this134.s4 = _this134.s5;
-							_this134.s5 = null;
-							if(_this134.s6 != null) {
-								_this134.s5 = _this134.s6.shift();
-							}
-							_this134.l--;
-						}
-						this.lastX = tmp + out59;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 108:
-				var _this135 = this.store;
-				_this135.l = 0;
-				_this135.s0 = null;
-				_this135.s1 = null;
-				_this135.s2 = null;
-				_this135.s3 = null;
-				_this135.s4 = null;
-				_this135.s5 = null;
-				_this135.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count13 = 0;
-				var temp12 = "";
-				var exit12 = false;
-				while(true) {
-					var _g76 = this.c;
-					switch(_g76) {
-					case 32:case 44:
-						if(temp12 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this136 = this.store;
-								var v63 = parseFloat(temp12);
-								var _g77 = _this136.l;
-								switch(_g77) {
-								case 0:
-									_this136.s0 = v63;
-									break;
-								case 1:
-									_this136.s1 = v63;
-									break;
-								case 2:
-									_this136.s2 = v63;
-									break;
-								case 3:
-									_this136.s3 = v63;
-									break;
-								case 4:
-									_this136.s4 = v63;
-									break;
-								case 5:
-									_this136.s5 = v63;
-									break;
-								default:
-									if(_this136.s6 == null) {
-										_this136.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this136.s6.push(v63);
-								}
-								_this136.l++;
-							} else {
-								var _this137 = this.store;
-								var v64 = parseFloat(temp12);
-								var _g78 = _this137.l;
-								switch(_g78) {
-								case 0:
-									_this137.s0 = v64;
-									break;
-								case 1:
-									_this137.s1 = v64;
-									break;
-								case 2:
-									_this137.s2 = v64;
-									break;
-								case 3:
-									_this137.s3 = v64;
-									break;
-								case 4:
-									_this137.s4 = v64;
-									break;
-								case 5:
-									_this137.s5 = v64;
-									break;
-								default:
-									if(_this137.s6 == null) {
-										_this137.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this137.s6.push(v64);
-								}
-								_this137.l++;
-							}
-							temp12 = "";
-						}
-						break;
-					case 45:
-						if(temp12 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this138 = this.store;
-								var v65 = parseFloat(temp12);
-								var _g79 = _this138.l;
-								switch(_g79) {
-								case 0:
-									_this138.s0 = v65;
-									break;
-								case 1:
-									_this138.s1 = v65;
-									break;
-								case 2:
-									_this138.s2 = v65;
-									break;
-								case 3:
-									_this138.s3 = v65;
-									break;
-								case 4:
-									_this138.s4 = v65;
-									break;
-								case 5:
-									_this138.s5 = v65;
-									break;
-								default:
-									if(_this138.s6 == null) {
-										_this138.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this138.s6.push(v65);
-								}
-								_this138.l++;
-							} else {
-								var _this139 = this.store;
-								var v66 = parseFloat(temp12);
-								var _g80 = _this139.l;
-								switch(_g80) {
-								case 0:
-									_this139.s0 = v66;
-									break;
-								case 1:
-									_this139.s1 = v66;
-									break;
-								case 2:
-									_this139.s2 = v66;
-									break;
-								case 3:
-									_this139.s3 = v66;
-									break;
-								case 4:
-									_this139.s4 = v66;
-									break;
-								case 5:
-									_this139.s5 = v66;
-									break;
-								default:
-									if(_this139.s6 == null) {
-										_this139.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this139.s6.push(v66);
-								}
-								_this139.l++;
-							}
-						}
-						temp12 = "-";
-						break;
-					case 46:
-						temp12 += ".";
-						break;
-					case 48:
-						temp12 += "0";
-						break;
-					case 49:
-						temp12 += "1";
-						break;
-					case 50:
-						temp12 += "2";
-						break;
-					case 51:
-						temp12 += "3";
-						break;
-					case 52:
-						temp12 += "4";
-						break;
-					case 53:
-						temp12 += "5";
-						break;
-					case 54:
-						temp12 += "6";
-						break;
-					case 55:
-						temp12 += "7";
-						break;
-					case 56:
-						temp12 += "8";
-						break;
-					case 57:
-						temp12 += "9";
-						break;
-					default:
-						if(temp12 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this140 = this.store;
-								var v67 = parseFloat(temp12);
-								var _g81 = _this140.l;
-								switch(_g81) {
-								case 0:
-									_this140.s0 = v67;
-									break;
-								case 1:
-									_this140.s1 = v67;
-									break;
-								case 2:
-									_this140.s2 = v67;
-									break;
-								case 3:
-									_this140.s3 = v67;
-									break;
-								case 4:
-									_this140.s4 = v67;
-									break;
-								case 5:
-									_this140.s5 = v67;
-									break;
-								default:
-									if(_this140.s6 == null) {
-										_this140.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this140.s6.push(v67);
-								}
-								_this140.l++;
-							} else {
-								var _this141 = this.store;
-								var v68 = parseFloat(temp12);
-								var _g82 = _this141.l;
-								switch(_g82) {
-								case 0:
-									_this141.s0 = v68;
-									break;
-								case 1:
-									_this141.s1 = v68;
-									break;
-								case 2:
-									_this141.s2 = v68;
-									break;
-								case 3:
-									_this141.s3 = v68;
-									break;
-								case 4:
-									_this141.s4 = v68;
-									break;
-								case 5:
-									_this141.s5 = v68;
-									break;
-								default:
-									if(_this141.s6 == null) {
-										_this141.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this141.s6.push(v68);
-								}
-								_this141.l++;
-							}
-							temp12 = "";
-						}
-						this.pos--;
-						exit12 = true;
-					}
-					if(exit12) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.lastX = this.store.s0 + this.lastX;
-					this.lastY = this.store.s1 + this.lastY;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					while(this.store.l > 2) {
-						var _this142 = this.store;
-						var out60 = _this142.s0;
-						if(_this142.l != 0) {
-							_this142.s0 = _this142.s1;
-							_this142.s1 = _this142.s2;
-							_this142.s2 = _this142.s3;
-							_this142.s3 = _this142.s4;
-							_this142.s4 = _this142.s5;
-							_this142.s5 = null;
-							if(_this142.s6 != null) {
-								_this142.s5 = _this142.s6.shift();
-							}
-							_this142.l--;
-						}
-						this.lastX = out60 + this.lastX;
-						var _this143 = this.store;
-						var out61 = _this143.s0;
-						if(_this143.l != 0) {
-							_this143.s0 = _this143.s1;
-							_this143.s1 = _this143.s2;
-							_this143.s2 = _this143.s3;
-							_this143.s3 = _this143.s4;
-							_this143.s4 = _this143.s5;
-							_this143.s5 = null;
-							if(_this143.s6 != null) {
-								_this143.s5 = _this143.s6.shift();
-							}
-							_this143.l--;
-						}
-						this.lastY = out61 + this.lastY;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 109:
-				var _this144 = this.store;
-				_this144.l = 0;
-				_this144.s0 = null;
-				_this144.s1 = null;
-				_this144.s2 = null;
-				_this144.s3 = null;
-				_this144.s4 = null;
-				_this144.s5 = null;
-				_this144.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count14 = 0;
-				var temp13 = "";
-				var exit13 = false;
-				while(true) {
-					var _g83 = this.c;
-					switch(_g83) {
-					case 32:case 44:
-						if(temp13 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this145 = this.store;
-								var v69 = parseFloat(temp13);
-								var _g84 = _this145.l;
-								switch(_g84) {
-								case 0:
-									_this145.s0 = v69;
-									break;
-								case 1:
-									_this145.s1 = v69;
-									break;
-								case 2:
-									_this145.s2 = v69;
-									break;
-								case 3:
-									_this145.s3 = v69;
-									break;
-								case 4:
-									_this145.s4 = v69;
-									break;
-								case 5:
-									_this145.s5 = v69;
-									break;
-								default:
-									if(_this145.s6 == null) {
-										_this145.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this145.s6.push(v69);
-								}
-								_this145.l++;
-							} else {
-								var _this146 = this.store;
-								var v70 = parseFloat(temp13);
-								var _g85 = _this146.l;
-								switch(_g85) {
-								case 0:
-									_this146.s0 = v70;
-									break;
-								case 1:
-									_this146.s1 = v70;
-									break;
-								case 2:
-									_this146.s2 = v70;
-									break;
-								case 3:
-									_this146.s3 = v70;
-									break;
-								case 4:
-									_this146.s4 = v70;
-									break;
-								case 5:
-									_this146.s5 = v70;
-									break;
-								default:
-									if(_this146.s6 == null) {
-										_this146.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this146.s6.push(v70);
-								}
-								_this146.l++;
-							}
-							temp13 = "";
-						}
-						break;
-					case 45:
-						if(temp13 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this147 = this.store;
-								var v71 = parseFloat(temp13);
-								var _g86 = _this147.l;
-								switch(_g86) {
-								case 0:
-									_this147.s0 = v71;
-									break;
-								case 1:
-									_this147.s1 = v71;
-									break;
-								case 2:
-									_this147.s2 = v71;
-									break;
-								case 3:
-									_this147.s3 = v71;
-									break;
-								case 4:
-									_this147.s4 = v71;
-									break;
-								case 5:
-									_this147.s5 = v71;
-									break;
-								default:
-									if(_this147.s6 == null) {
-										_this147.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this147.s6.push(v71);
-								}
-								_this147.l++;
-							} else {
-								var _this148 = this.store;
-								var v72 = parseFloat(temp13);
-								var _g87 = _this148.l;
-								switch(_g87) {
-								case 0:
-									_this148.s0 = v72;
-									break;
-								case 1:
-									_this148.s1 = v72;
-									break;
-								case 2:
-									_this148.s2 = v72;
-									break;
-								case 3:
-									_this148.s3 = v72;
-									break;
-								case 4:
-									_this148.s4 = v72;
-									break;
-								case 5:
-									_this148.s5 = v72;
-									break;
-								default:
-									if(_this148.s6 == null) {
-										_this148.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this148.s6.push(v72);
-								}
-								_this148.l++;
-							}
-						}
-						temp13 = "-";
-						break;
-					case 46:
-						temp13 += ".";
-						break;
-					case 48:
-						temp13 += "0";
-						break;
-					case 49:
-						temp13 += "1";
-						break;
-					case 50:
-						temp13 += "2";
-						break;
-					case 51:
-						temp13 += "3";
-						break;
-					case 52:
-						temp13 += "4";
-						break;
-					case 53:
-						temp13 += "5";
-						break;
-					case 54:
-						temp13 += "6";
-						break;
-					case 55:
-						temp13 += "7";
-						break;
-					case 56:
-						temp13 += "8";
-						break;
-					case 57:
-						temp13 += "9";
-						break;
-					default:
-						if(temp13 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this149 = this.store;
-								var v73 = parseFloat(temp13);
-								var _g88 = _this149.l;
-								switch(_g88) {
-								case 0:
-									_this149.s0 = v73;
-									break;
-								case 1:
-									_this149.s1 = v73;
-									break;
-								case 2:
-									_this149.s2 = v73;
-									break;
-								case 3:
-									_this149.s3 = v73;
-									break;
-								case 4:
-									_this149.s4 = v73;
-									break;
-								case 5:
-									_this149.s5 = v73;
-									break;
-								default:
-									if(_this149.s6 == null) {
-										_this149.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this149.s6.push(v73);
-								}
-								_this149.l++;
-							} else {
-								var _this150 = this.store;
-								var v74 = parseFloat(temp13);
-								var _g89 = _this150.l;
-								switch(_g89) {
-								case 0:
-									_this150.s0 = v74;
-									break;
-								case 1:
-									_this150.s1 = v74;
-									break;
-								case 2:
-									_this150.s2 = v74;
-									break;
-								case 3:
-									_this150.s3 = v74;
-									break;
-								case 4:
-									_this150.s4 = v74;
-									break;
-								case 5:
-									_this150.s5 = v74;
-									break;
-								default:
-									if(_this150.s6 == null) {
-										_this150.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this150.s6.push(v74);
-								}
-								_this150.l++;
-							}
-							temp13 = "";
-						}
-						this.pos--;
-						exit13 = true;
-					}
-					if(exit13) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.lastX = this.store.s0 + this.lastX;
-					this.lastY = this.store.s1 + this.lastY;
-					this.pathContext.moveTo(this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					var _this151 = this.store;
-					var out62 = _this151.s0;
-					if(_this151.l != 0) {
-						_this151.s0 = _this151.s1;
-						_this151.s1 = _this151.s2;
-						_this151.s2 = _this151.s3;
-						_this151.s3 = _this151.s4;
-						_this151.s4 = _this151.s5;
-						_this151.s5 = null;
-						if(_this151.s6 != null) {
-							_this151.s5 = _this151.s6.shift();
-						}
-						_this151.l--;
-					}
-					this.lastX = out62 + this.lastX;
-					var _this152 = this.store;
-					var out63 = _this152.s0;
-					if(_this152.l != 0) {
-						_this152.s0 = _this152.s1;
-						_this152.s1 = _this152.s2;
-						_this152.s2 = _this152.s3;
-						_this152.s3 = _this152.s4;
-						_this152.s4 = _this152.s5;
-						_this152.s5 = null;
-						if(_this152.s6 != null) {
-							_this152.s5 = _this152.s6.shift();
-						}
-						_this152.l--;
-					}
-					this.lastY = out63 + this.lastY;
-					this.pathContext.moveTo(this.lastX,this.lastY);
-					while(this.store.l > 1) {
-						var _this153 = this.store;
-						var out64 = _this153.s0;
-						if(_this153.l != 0) {
-							_this153.s0 = _this153.s1;
-							_this153.s1 = _this153.s2;
-							_this153.s2 = _this153.s3;
-							_this153.s3 = _this153.s4;
-							_this153.s4 = _this153.s5;
-							_this153.s5 = null;
-							if(_this153.s6 != null) {
-								_this153.s5 = _this153.s6.shift();
-							}
-							_this153.l--;
-						}
-						this.lastX = out64 + this.lastX;
-						var _this154 = this.store;
-						var out65 = _this154.s0;
-						if(_this154.l != 0) {
-							_this154.s0 = _this154.s1;
-							_this154.s1 = _this154.s2;
-							_this154.s2 = _this154.s3;
-							_this154.s3 = _this154.s4;
-							_this154.s4 = _this154.s5;
-							_this154.s5 = null;
-							if(_this154.s6 != null) {
-								_this154.s5 = _this154.s6.shift();
-							}
-							_this154.l--;
-						}
-						this.lastY = out65 + this.lastY;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 113:
-				var _this155 = this.store;
-				_this155.l = 0;
-				_this155.s0 = null;
-				_this155.s1 = null;
-				_this155.s2 = null;
-				_this155.s3 = null;
-				_this155.s4 = null;
-				_this155.s5 = null;
-				_this155.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count15 = 0;
-				var temp14 = "";
-				var exit14 = false;
-				while(true) {
-					var _g90 = this.c;
-					switch(_g90) {
-					case 32:case 44:
-						if(temp14 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this156 = this.store;
-								var v75 = parseFloat(temp14);
-								var _g91 = _this156.l;
-								switch(_g91) {
-								case 0:
-									_this156.s0 = v75;
-									break;
-								case 1:
-									_this156.s1 = v75;
-									break;
-								case 2:
-									_this156.s2 = v75;
-									break;
-								case 3:
-									_this156.s3 = v75;
-									break;
-								case 4:
-									_this156.s4 = v75;
-									break;
-								case 5:
-									_this156.s5 = v75;
-									break;
-								default:
-									if(_this156.s6 == null) {
-										_this156.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this156.s6.push(v75);
-								}
-								_this156.l++;
-							} else {
-								var _this157 = this.store;
-								var v76 = parseFloat(temp14);
-								var _g92 = _this157.l;
-								switch(_g92) {
-								case 0:
-									_this157.s0 = v76;
-									break;
-								case 1:
-									_this157.s1 = v76;
-									break;
-								case 2:
-									_this157.s2 = v76;
-									break;
-								case 3:
-									_this157.s3 = v76;
-									break;
-								case 4:
-									_this157.s4 = v76;
-									break;
-								case 5:
-									_this157.s5 = v76;
-									break;
-								default:
-									if(_this157.s6 == null) {
-										_this157.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this157.s6.push(v76);
-								}
-								_this157.l++;
-							}
-							temp14 = "";
-						}
-						break;
-					case 45:
-						if(temp14 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this158 = this.store;
-								var v77 = parseFloat(temp14);
-								var _g93 = _this158.l;
-								switch(_g93) {
-								case 0:
-									_this158.s0 = v77;
-									break;
-								case 1:
-									_this158.s1 = v77;
-									break;
-								case 2:
-									_this158.s2 = v77;
-									break;
-								case 3:
-									_this158.s3 = v77;
-									break;
-								case 4:
-									_this158.s4 = v77;
-									break;
-								case 5:
-									_this158.s5 = v77;
-									break;
-								default:
-									if(_this158.s6 == null) {
-										_this158.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this158.s6.push(v77);
-								}
-								_this158.l++;
-							} else {
-								var _this159 = this.store;
-								var v78 = parseFloat(temp14);
-								var _g94 = _this159.l;
-								switch(_g94) {
-								case 0:
-									_this159.s0 = v78;
-									break;
-								case 1:
-									_this159.s1 = v78;
-									break;
-								case 2:
-									_this159.s2 = v78;
-									break;
-								case 3:
-									_this159.s3 = v78;
-									break;
-								case 4:
-									_this159.s4 = v78;
-									break;
-								case 5:
-									_this159.s5 = v78;
-									break;
-								default:
-									if(_this159.s6 == null) {
-										_this159.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this159.s6.push(v78);
-								}
-								_this159.l++;
-							}
-						}
-						temp14 = "-";
-						break;
-					case 46:
-						temp14 += ".";
-						break;
-					case 48:
-						temp14 += "0";
-						break;
-					case 49:
-						temp14 += "1";
-						break;
-					case 50:
-						temp14 += "2";
-						break;
-					case 51:
-						temp14 += "3";
-						break;
-					case 52:
-						temp14 += "4";
-						break;
-					case 53:
-						temp14 += "5";
-						break;
-					case 54:
-						temp14 += "6";
-						break;
-					case 55:
-						temp14 += "7";
-						break;
-					case 56:
-						temp14 += "8";
-						break;
-					case 57:
-						temp14 += "9";
-						break;
-					default:
-						if(temp14 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this160 = this.store;
-								var v79 = parseFloat(temp14);
-								var _g95 = _this160.l;
-								switch(_g95) {
-								case 0:
-									_this160.s0 = v79;
-									break;
-								case 1:
-									_this160.s1 = v79;
-									break;
-								case 2:
-									_this160.s2 = v79;
-									break;
-								case 3:
-									_this160.s3 = v79;
-									break;
-								case 4:
-									_this160.s4 = v79;
-									break;
-								case 5:
-									_this160.s5 = v79;
-									break;
-								default:
-									if(_this160.s6 == null) {
-										_this160.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this160.s6.push(v79);
-								}
-								_this160.l++;
-							} else {
-								var _this161 = this.store;
-								var v80 = parseFloat(temp14);
-								var _g96 = _this161.l;
-								switch(_g96) {
-								case 0:
-									_this161.s0 = v80;
-									break;
-								case 1:
-									_this161.s1 = v80;
-									break;
-								case 2:
-									_this161.s2 = v80;
-									break;
-								case 3:
-									_this161.s3 = v80;
-									break;
-								case 4:
-									_this161.s4 = v80;
-									break;
-								case 5:
-									_this161.s5 = v80;
-									break;
-								default:
-									if(_this161.s6 == null) {
-										_this161.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this161.s6.push(v80);
-								}
-								_this161.l++;
-							}
-							temp14 = "";
-						}
-						this.pos--;
-						exit14 = true;
-					}
-					if(exit14) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					this.controlX = this.lastX + this.store.s0;
-					this.controlY = this.lastY + this.store.s1;
-					this.lastX = this.store.s0 + this.lastX;
-					this.lastY = this.store.s1 + this.lastY;
-					this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var tmp1 = this.lastX;
-						var _this162 = this.store;
-						var out66 = _this162.s0;
-						if(_this162.l != 0) {
-							_this162.s0 = _this162.s1;
-							_this162.s1 = _this162.s2;
-							_this162.s2 = _this162.s3;
-							_this162.s3 = _this162.s4;
-							_this162.s4 = _this162.s5;
-							_this162.s5 = null;
-							if(_this162.s6 != null) {
-								_this162.s5 = _this162.s6.shift();
-							}
-							_this162.l--;
-						}
-						this.controlX = tmp1 + out66;
-						var tmp2 = this.lastY;
-						var _this163 = this.store;
-						var out67 = _this163.s0;
-						if(_this163.l != 0) {
-							_this163.s0 = _this163.s1;
-							_this163.s1 = _this163.s2;
-							_this163.s2 = _this163.s3;
-							_this163.s3 = _this163.s4;
-							_this163.s4 = _this163.s5;
-							_this163.s5 = null;
-							if(_this163.s6 != null) {
-								_this163.s5 = _this163.s6.shift();
-							}
-							_this163.l--;
-						}
-						this.controlY = tmp2 + out67;
-						var _this164 = this.store;
-						var out68 = _this164.s0;
-						if(_this164.l != 0) {
-							_this164.s0 = _this164.s1;
-							_this164.s1 = _this164.s2;
-							_this164.s2 = _this164.s3;
-							_this164.s3 = _this164.s4;
-							_this164.s4 = _this164.s5;
-							_this164.s5 = null;
-							if(_this164.s6 != null) {
-								_this164.s5 = _this164.s6.shift();
-							}
-							_this164.l--;
-						}
-						this.lastX = out68 + this.lastX;
-						var _this165 = this.store;
-						var out69 = _this165.s0;
-						if(_this165.l != 0) {
-							_this165.s0 = _this165.s1;
-							_this165.s1 = _this165.s2;
-							_this165.s2 = _this165.s3;
-							_this165.s3 = _this165.s4;
-							_this165.s4 = _this165.s5;
-							_this165.s5 = null;
-							if(_this165.s6 != null) {
-								_this165.s5 = _this165.s6.shift();
-							}
-							_this165.l--;
-						}
-						this.lastY = out69 + this.lastY;
-						this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 115:
-				var _this166 = this.store;
-				_this166.l = 0;
-				_this166.s0 = null;
-				_this166.s1 = null;
-				_this166.s2 = null;
-				_this166.s3 = null;
-				_this166.s4 = null;
-				_this166.s5 = null;
-				_this166.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count16 = 0;
-				var temp15 = "";
-				var exit15 = false;
-				while(true) {
-					var _g97 = this.c;
-					switch(_g97) {
-					case 32:case 44:
-						if(temp15 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this167 = this.store;
-								var v81 = parseFloat(temp15);
-								var _g98 = _this167.l;
-								switch(_g98) {
-								case 0:
-									_this167.s0 = v81;
-									break;
-								case 1:
-									_this167.s1 = v81;
-									break;
-								case 2:
-									_this167.s2 = v81;
-									break;
-								case 3:
-									_this167.s3 = v81;
-									break;
-								case 4:
-									_this167.s4 = v81;
-									break;
-								case 5:
-									_this167.s5 = v81;
-									break;
-								default:
-									if(_this167.s6 == null) {
-										_this167.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this167.s6.push(v81);
-								}
-								_this167.l++;
-							} else {
-								var _this168 = this.store;
-								var v82 = parseFloat(temp15);
-								var _g99 = _this168.l;
-								switch(_g99) {
-								case 0:
-									_this168.s0 = v82;
-									break;
-								case 1:
-									_this168.s1 = v82;
-									break;
-								case 2:
-									_this168.s2 = v82;
-									break;
-								case 3:
-									_this168.s3 = v82;
-									break;
-								case 4:
-									_this168.s4 = v82;
-									break;
-								case 5:
-									_this168.s5 = v82;
-									break;
-								default:
-									if(_this168.s6 == null) {
-										_this168.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this168.s6.push(v82);
-								}
-								_this168.l++;
-							}
-							temp15 = "";
-						}
-						break;
-					case 45:
-						if(temp15 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this169 = this.store;
-								var v83 = parseFloat(temp15);
-								var _g100 = _this169.l;
-								switch(_g100) {
-								case 0:
-									_this169.s0 = v83;
-									break;
-								case 1:
-									_this169.s1 = v83;
-									break;
-								case 2:
-									_this169.s2 = v83;
-									break;
-								case 3:
-									_this169.s3 = v83;
-									break;
-								case 4:
-									_this169.s4 = v83;
-									break;
-								case 5:
-									_this169.s5 = v83;
-									break;
-								default:
-									if(_this169.s6 == null) {
-										_this169.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this169.s6.push(v83);
-								}
-								_this169.l++;
-							} else {
-								var _this170 = this.store;
-								var v84 = parseFloat(temp15);
-								var _g101 = _this170.l;
-								switch(_g101) {
-								case 0:
-									_this170.s0 = v84;
-									break;
-								case 1:
-									_this170.s1 = v84;
-									break;
-								case 2:
-									_this170.s2 = v84;
-									break;
-								case 3:
-									_this170.s3 = v84;
-									break;
-								case 4:
-									_this170.s4 = v84;
-									break;
-								case 5:
-									_this170.s5 = v84;
-									break;
-								default:
-									if(_this170.s6 == null) {
-										_this170.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this170.s6.push(v84);
-								}
-								_this170.l++;
-							}
-						}
-						temp15 = "-";
-						break;
-					case 46:
-						temp15 += ".";
-						break;
-					case 48:
-						temp15 += "0";
-						break;
-					case 49:
-						temp15 += "1";
-						break;
-					case 50:
-						temp15 += "2";
-						break;
-					case 51:
-						temp15 += "3";
-						break;
-					case 52:
-						temp15 += "4";
-						break;
-					case 53:
-						temp15 += "5";
-						break;
-					case 54:
-						temp15 += "6";
-						break;
-					case 55:
-						temp15 += "7";
-						break;
-					case 56:
-						temp15 += "8";
-						break;
-					case 57:
-						temp15 += "9";
-						break;
-					default:
-						if(temp15 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this171 = this.store;
-								var v85 = parseFloat(temp15);
-								var _g102 = _this171.l;
-								switch(_g102) {
-								case 0:
-									_this171.s0 = v85;
-									break;
-								case 1:
-									_this171.s1 = v85;
-									break;
-								case 2:
-									_this171.s2 = v85;
-									break;
-								case 3:
-									_this171.s3 = v85;
-									break;
-								case 4:
-									_this171.s4 = v85;
-									break;
-								case 5:
-									_this171.s5 = v85;
-									break;
-								default:
-									if(_this171.s6 == null) {
-										_this171.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this171.s6.push(v85);
-								}
-								_this171.l++;
-							} else {
-								var _this172 = this.store;
-								var v86 = parseFloat(temp15);
-								var _g103 = _this172.l;
-								switch(_g103) {
-								case 0:
-									_this172.s0 = v86;
-									break;
-								case 1:
-									_this172.s1 = v86;
-									break;
-								case 2:
-									_this172.s2 = v86;
-									break;
-								case 3:
-									_this172.s3 = v86;
-									break;
-								case 4:
-									_this172.s4 = v86;
-									break;
-								case 5:
-									_this172.s5 = v86;
-									break;
-								default:
-									if(_this172.s6 == null) {
-										_this172.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this172.s6.push(v86);
-								}
-								_this172.l++;
-							}
-							temp15 = "";
-						}
-						this.pos--;
-						exit15 = true;
-					}
-					if(exit15) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 4) {
-					var firstX5 = this.store.s0 + this.lastX;
-					var firstY5 = this.store.s1 + this.lastY;
-					this.controlX = 2 * this.lastX - this.controlX;
-					this.controlY = 2 * this.lastY - this.controlY;
-					this.lastX = this.store.s2 + this.lastX;
-					this.lastY = this.store.s3 + this.lastY;
-					this.pathContext.curveTo(this.controlX,this.controlY,firstX5,firstY5,this.lastX,this.lastY);
-					this.controlX = firstX5;
-					this.controlY = firstY5;
-				} else if(this.store.l > 4) {
-					while(this.store.l > 3) {
-						var _this173 = this.store;
-						var out70 = _this173.s0;
-						if(_this173.l != 0) {
-							_this173.s0 = _this173.s1;
-							_this173.s1 = _this173.s2;
-							_this173.s2 = _this173.s3;
-							_this173.s3 = _this173.s4;
-							_this173.s4 = _this173.s5;
-							_this173.s5 = null;
-							if(_this173.s6 != null) {
-								_this173.s5 = _this173.s6.shift();
-							}
-							_this173.l--;
-						}
-						var firstX6 = out70 + this.lastX;
-						var _this174 = this.store;
-						var out71 = _this174.s0;
-						if(_this174.l != 0) {
-							_this174.s0 = _this174.s1;
-							_this174.s1 = _this174.s2;
-							_this174.s2 = _this174.s3;
-							_this174.s3 = _this174.s4;
-							_this174.s4 = _this174.s5;
-							_this174.s5 = null;
-							if(_this174.s6 != null) {
-								_this174.s5 = _this174.s6.shift();
-							}
-							_this174.l--;
-						}
-						var firstY6 = out71 + this.lastY;
-						this.controlX = 2 * this.lastX - this.controlX;
-						this.controlY = 2 * this.lastY - this.controlY;
-						var _this175 = this.store;
-						var out72 = _this175.s0;
-						if(_this175.l != 0) {
-							_this175.s0 = _this175.s1;
-							_this175.s1 = _this175.s2;
-							_this175.s2 = _this175.s3;
-							_this175.s3 = _this175.s4;
-							_this175.s4 = _this175.s5;
-							_this175.s5 = null;
-							if(_this175.s6 != null) {
-								_this175.s5 = _this175.s6.shift();
-							}
-							_this175.l--;
-						}
-						this.lastX = out72 + this.lastX;
-						var _this176 = this.store;
-						var out73 = _this176.s0;
-						if(_this176.l != 0) {
-							_this176.s0 = _this176.s1;
-							_this176.s1 = _this176.s2;
-							_this176.s2 = _this176.s3;
-							_this176.s3 = _this176.s4;
-							_this176.s4 = _this176.s5;
-							_this176.s5 = null;
-							if(_this176.s6 != null) {
-								_this176.s5 = _this176.s6.shift();
-							}
-							_this176.l--;
-						}
-						this.lastY = out73 + this.lastY;
-						this.pathContext.curveTo(this.controlX,this.controlY,firstX6,firstY6,this.lastX,this.lastY);
-						this.controlX = firstX6;
-						this.controlY = firstY6;
-					}
-				}
-				break;
-			case 116:
-				var _this177 = this.store;
-				_this177.l = 0;
-				_this177.s0 = null;
-				_this177.s1 = null;
-				_this177.s2 = null;
-				_this177.s3 = null;
-				_this177.s4 = null;
-				_this177.s5 = null;
-				_this177.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count17 = 0;
-				var temp16 = "";
-				var exit16 = false;
-				while(true) {
-					var _g104 = this.c;
-					switch(_g104) {
-					case 32:case 44:
-						if(temp16 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this178 = this.store;
-								var v87 = parseFloat(temp16);
-								var _g105 = _this178.l;
-								switch(_g105) {
-								case 0:
-									_this178.s0 = v87;
-									break;
-								case 1:
-									_this178.s1 = v87;
-									break;
-								case 2:
-									_this178.s2 = v87;
-									break;
-								case 3:
-									_this178.s3 = v87;
-									break;
-								case 4:
-									_this178.s4 = v87;
-									break;
-								case 5:
-									_this178.s5 = v87;
-									break;
-								default:
-									if(_this178.s6 == null) {
-										_this178.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this178.s6.push(v87);
-								}
-								_this178.l++;
-							} else {
-								var _this179 = this.store;
-								var v88 = parseFloat(temp16);
-								var _g106 = _this179.l;
-								switch(_g106) {
-								case 0:
-									_this179.s0 = v88;
-									break;
-								case 1:
-									_this179.s1 = v88;
-									break;
-								case 2:
-									_this179.s2 = v88;
-									break;
-								case 3:
-									_this179.s3 = v88;
-									break;
-								case 4:
-									_this179.s4 = v88;
-									break;
-								case 5:
-									_this179.s5 = v88;
-									break;
-								default:
-									if(_this179.s6 == null) {
-										_this179.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this179.s6.push(v88);
-								}
-								_this179.l++;
-							}
-							temp16 = "";
-						}
-						break;
-					case 45:
-						if(temp16 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this180 = this.store;
-								var v89 = parseFloat(temp16);
-								var _g107 = _this180.l;
-								switch(_g107) {
-								case 0:
-									_this180.s0 = v89;
-									break;
-								case 1:
-									_this180.s1 = v89;
-									break;
-								case 2:
-									_this180.s2 = v89;
-									break;
-								case 3:
-									_this180.s3 = v89;
-									break;
-								case 4:
-									_this180.s4 = v89;
-									break;
-								case 5:
-									_this180.s5 = v89;
-									break;
-								default:
-									if(_this180.s6 == null) {
-										_this180.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this180.s6.push(v89);
-								}
-								_this180.l++;
-							} else {
-								var _this181 = this.store;
-								var v90 = parseFloat(temp16);
-								var _g108 = _this181.l;
-								switch(_g108) {
-								case 0:
-									_this181.s0 = v90;
-									break;
-								case 1:
-									_this181.s1 = v90;
-									break;
-								case 2:
-									_this181.s2 = v90;
-									break;
-								case 3:
-									_this181.s3 = v90;
-									break;
-								case 4:
-									_this181.s4 = v90;
-									break;
-								case 5:
-									_this181.s5 = v90;
-									break;
-								default:
-									if(_this181.s6 == null) {
-										_this181.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this181.s6.push(v90);
-								}
-								_this181.l++;
-							}
-						}
-						temp16 = "-";
-						break;
-					case 46:
-						temp16 += ".";
-						break;
-					case 48:
-						temp16 += "0";
-						break;
-					case 49:
-						temp16 += "1";
-						break;
-					case 50:
-						temp16 += "2";
-						break;
-					case 51:
-						temp16 += "3";
-						break;
-					case 52:
-						temp16 += "4";
-						break;
-					case 53:
-						temp16 += "5";
-						break;
-					case 54:
-						temp16 += "6";
-						break;
-					case 55:
-						temp16 += "7";
-						break;
-					case 56:
-						temp16 += "8";
-						break;
-					case 57:
-						temp16 += "9";
-						break;
-					default:
-						if(temp16 != "") {
-							if((this.store.l & 1) == 0) {
-								var _this182 = this.store;
-								var v91 = parseFloat(temp16);
-								var _g109 = _this182.l;
-								switch(_g109) {
-								case 0:
-									_this182.s0 = v91;
-									break;
-								case 1:
-									_this182.s1 = v91;
-									break;
-								case 2:
-									_this182.s2 = v91;
-									break;
-								case 3:
-									_this182.s3 = v91;
-									break;
-								case 4:
-									_this182.s4 = v91;
-									break;
-								case 5:
-									_this182.s5 = v91;
-									break;
-								default:
-									if(_this182.s6 == null) {
-										_this182.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this182.s6.push(v91);
-								}
-								_this182.l++;
-							} else {
-								var _this183 = this.store;
-								var v92 = parseFloat(temp16);
-								var _g110 = _this183.l;
-								switch(_g110) {
-								case 0:
-									_this183.s0 = v92;
-									break;
-								case 1:
-									_this183.s1 = v92;
-									break;
-								case 2:
-									_this183.s2 = v92;
-									break;
-								case 3:
-									_this183.s3 = v92;
-									break;
-								case 4:
-									_this183.s4 = v92;
-									break;
-								case 5:
-									_this183.s5 = v92;
-									break;
-								default:
-									if(_this183.s6 == null) {
-										_this183.s6 = new trilateral_justPath_StoreF6();
-									}
-									_this183.s6.push(v92);
-								}
-								_this183.l++;
-							}
-							temp16 = "";
-						}
-						this.pos--;
-						exit16 = true;
-					}
-					if(exit16) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 2) {
-					this.controlX = 2 * this.lastX - this.controlX;
-					this.controlY = 2 * this.lastY - this.controlY;
-					this.lastX = this.store.s0 + this.lastY;
-					this.lastY = this.store.s1 + this.lastX;
-					this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-				} else if(this.store.l > 2) {
-					while(this.store.l > 1) {
-						this.controlX = 2 * this.lastX - this.controlX;
-						this.controlY = 2 * this.lastY - this.controlY;
-						var _this184 = this.store;
-						var out74 = _this184.s0;
-						if(_this184.l != 0) {
-							_this184.s0 = _this184.s1;
-							_this184.s1 = _this184.s2;
-							_this184.s2 = _this184.s3;
-							_this184.s3 = _this184.s4;
-							_this184.s4 = _this184.s5;
-							_this184.s5 = null;
-							if(_this184.s6 != null) {
-								_this184.s5 = _this184.s6.shift();
-							}
-							_this184.l--;
-						}
-						this.lastX = out74 + this.lastY;
-						var _this185 = this.store;
-						var out75 = _this185.s0;
-						if(_this185.l != 0) {
-							_this185.s0 = _this185.s1;
-							_this185.s1 = _this185.s2;
-							_this185.s2 = _this185.s3;
-							_this185.s3 = _this185.s4;
-							_this185.s4 = _this185.s5;
-							_this185.s5 = null;
-							if(_this185.s6 != null) {
-								_this185.s5 = _this185.s6.shift();
-							}
-							_this185.l--;
-						}
-						this.lastY = out75 + this.lastX;
-						this.pathContext.quadTo(this.controlX,this.controlY,this.lastX,this.lastY);
-					}
-				}
-				break;
-			case 118:
-				var _this186 = this.store;
-				_this186.l = 0;
-				_this186.s0 = null;
-				_this186.s1 = null;
-				_this186.s2 = null;
-				_this186.s3 = null;
-				_this186.s4 = null;
-				_this186.s5 = null;
-				_this186.s6 = null;
-				this.c = this.str.charCodeAt(this.pos++);
-				var count18 = 0;
-				var temp17 = "";
-				var exit17 = false;
-				while(true) {
-					var _g111 = this.c;
-					switch(_g111) {
-					case 32:case 44:
-						if(temp17 != "") {
-							var _this187 = this.store;
-							var v93 = parseFloat(temp17);
-							var _g112 = _this187.l;
-							switch(_g112) {
-							case 0:
-								_this187.s0 = v93;
-								break;
-							case 1:
-								_this187.s1 = v93;
-								break;
-							case 2:
-								_this187.s2 = v93;
-								break;
-							case 3:
-								_this187.s3 = v93;
-								break;
-							case 4:
-								_this187.s4 = v93;
-								break;
-							case 5:
-								_this187.s5 = v93;
-								break;
-							default:
-								if(_this187.s6 == null) {
-									_this187.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this187.s6.push(v93);
-							}
-							_this187.l++;
-							temp17 = "";
-						}
-						break;
-					case 45:
-						if(temp17 != "") {
-							var _this188 = this.store;
-							var v94 = parseFloat(temp17);
-							var _g113 = _this188.l;
-							switch(_g113) {
-							case 0:
-								_this188.s0 = v94;
-								break;
-							case 1:
-								_this188.s1 = v94;
-								break;
-							case 2:
-								_this188.s2 = v94;
-								break;
-							case 3:
-								_this188.s3 = v94;
-								break;
-							case 4:
-								_this188.s4 = v94;
-								break;
-							case 5:
-								_this188.s5 = v94;
-								break;
-							default:
-								if(_this188.s6 == null) {
-									_this188.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this188.s6.push(v94);
-							}
-							_this188.l++;
-						}
-						temp17 = "-";
-						break;
-					case 46:
-						temp17 += ".";
-						break;
-					case 48:
-						temp17 += "0";
-						break;
-					case 49:
-						temp17 += "1";
-						break;
-					case 50:
-						temp17 += "2";
-						break;
-					case 51:
-						temp17 += "3";
-						break;
-					case 52:
-						temp17 += "4";
-						break;
-					case 53:
-						temp17 += "5";
-						break;
-					case 54:
-						temp17 += "6";
-						break;
-					case 55:
-						temp17 += "7";
-						break;
-					case 56:
-						temp17 += "8";
-						break;
-					case 57:
-						temp17 += "9";
-						break;
-					default:
-						if(temp17 != "") {
-							var _this189 = this.store;
-							var v95 = parseFloat(temp17);
-							var _g114 = _this189.l;
-							switch(_g114) {
-							case 0:
-								_this189.s0 = v95;
-								break;
-							case 1:
-								_this189.s1 = v95;
-								break;
-							case 2:
-								_this189.s2 = v95;
-								break;
-							case 3:
-								_this189.s3 = v95;
-								break;
-							case 4:
-								_this189.s4 = v95;
-								break;
-							case 5:
-								_this189.s5 = v95;
-								break;
-							default:
-								if(_this189.s6 == null) {
-									_this189.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this189.s6.push(v95);
-							}
-							_this189.l++;
-							temp17 = "";
-						}
-						this.pos--;
-						exit17 = true;
-					}
-					if(exit17) {
-						break;
-					}
-					this.c = this.str.charCodeAt(this.pos++);
-				}
-				if(this.store.l == 1) {
-					this.lastY += this.store.s0;
-					this.pathContext.lineTo(this.lastX,this.lastY);
-				} else if(this.store.l > 1) {
-					while(this.store.l > 0) {
-						var tmp3 = this.lastY;
-						var _this190 = this.store;
-						var out76 = _this190.s0;
-						if(_this190.l != 0) {
-							_this190.s0 = _this190.s1;
-							_this190.s1 = _this190.s2;
-							_this190.s2 = _this190.s3;
-							_this190.s3 = _this190.s4;
-							_this190.s4 = _this190.s5;
-							_this190.s5 = null;
-							if(_this190.s6 != null) {
-								_this190.s5 = _this190.s6.shift();
-							}
-							_this190.l--;
-						}
-						this.lastY = tmp3 + out76;
-						this.pathContext.lineTo(this.lastX,this.lastY);
-					}
-				}
-				break;
-			default:
-				++count;
-			}
-			this.c = this.str.charCodeAt(this.pos++);
-		}
-		return str_;
-	}
-	,extractArgs: function(process) {
-		if(process == null) {
-			process = true;
-		}
-		var _this = this.store;
-		_this.l = 0;
-		_this.s0 = null;
-		_this.s1 = null;
-		_this.s2 = null;
-		_this.s3 = null;
-		_this.s4 = null;
-		_this.s5 = null;
-		_this.s6 = null;
-		this.c = this.str.charCodeAt(this.pos++);
-		var count = 0;
-		var temp = "";
-		var exit = false;
-		while(true) {
-			var _g = this.c;
-			switch(_g) {
-			case 32:case 44:
-				if(temp != "") {
-					if(process) {
-						if((this.store.l & 1) == 0) {
-							var _this1 = this.store;
-							var v = parseFloat(temp);
-							var _g1 = _this1.l;
-							switch(_g1) {
-							case 0:
-								_this1.s0 = v;
-								break;
-							case 1:
-								_this1.s1 = v;
-								break;
-							case 2:
-								_this1.s2 = v;
-								break;
-							case 3:
-								_this1.s3 = v;
-								break;
-							case 4:
-								_this1.s4 = v;
-								break;
-							case 5:
-								_this1.s5 = v;
-								break;
-							default:
-								if(_this1.s6 == null) {
-									_this1.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this1.s6.push(v);
-							}
-							_this1.l++;
-						} else {
-							var _this2 = this.store;
-							var v1 = parseFloat(temp);
-							var _g2 = _this2.l;
-							switch(_g2) {
-							case 0:
-								_this2.s0 = v1;
-								break;
-							case 1:
-								_this2.s1 = v1;
-								break;
-							case 2:
-								_this2.s2 = v1;
-								break;
-							case 3:
-								_this2.s3 = v1;
-								break;
-							case 4:
-								_this2.s4 = v1;
-								break;
-							case 5:
-								_this2.s5 = v1;
-								break;
-							default:
-								if(_this2.s6 == null) {
-									_this2.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this2.s6.push(v1);
-							}
-							_this2.l++;
-						}
-					} else {
-						var _this3 = this.store;
-						var v2 = parseFloat(temp);
-						var _g3 = _this3.l;
-						switch(_g3) {
-						case 0:
-							_this3.s0 = v2;
-							break;
-						case 1:
-							_this3.s1 = v2;
-							break;
-						case 2:
-							_this3.s2 = v2;
-							break;
-						case 3:
-							_this3.s3 = v2;
-							break;
-						case 4:
-							_this3.s4 = v2;
-							break;
-						case 5:
-							_this3.s5 = v2;
-							break;
-						default:
-							if(_this3.s6 == null) {
-								_this3.s6 = new trilateral_justPath_StoreF6();
-							}
-							_this3.s6.push(v2);
-						}
-						_this3.l++;
-					}
-					temp = "";
-				}
-				break;
-			case 45:
-				if(temp != "") {
-					if(process) {
-						if((this.store.l & 1) == 0) {
-							var _this4 = this.store;
-							var v3 = parseFloat(temp);
-							var _g4 = _this4.l;
-							switch(_g4) {
-							case 0:
-								_this4.s0 = v3;
-								break;
-							case 1:
-								_this4.s1 = v3;
-								break;
-							case 2:
-								_this4.s2 = v3;
-								break;
-							case 3:
-								_this4.s3 = v3;
-								break;
-							case 4:
-								_this4.s4 = v3;
-								break;
-							case 5:
-								_this4.s5 = v3;
-								break;
-							default:
-								if(_this4.s6 == null) {
-									_this4.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this4.s6.push(v3);
-							}
-							_this4.l++;
-						} else {
-							var _this5 = this.store;
-							var v4 = parseFloat(temp);
-							var _g5 = _this5.l;
-							switch(_g5) {
-							case 0:
-								_this5.s0 = v4;
-								break;
-							case 1:
-								_this5.s1 = v4;
-								break;
-							case 2:
-								_this5.s2 = v4;
-								break;
-							case 3:
-								_this5.s3 = v4;
-								break;
-							case 4:
-								_this5.s4 = v4;
-								break;
-							case 5:
-								_this5.s5 = v4;
-								break;
-							default:
-								if(_this5.s6 == null) {
-									_this5.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this5.s6.push(v4);
-							}
-							_this5.l++;
-						}
-					} else {
-						var _this6 = this.store;
-						var v5 = parseFloat(temp);
-						var _g6 = _this6.l;
-						switch(_g6) {
-						case 0:
-							_this6.s0 = v5;
-							break;
-						case 1:
-							_this6.s1 = v5;
-							break;
-						case 2:
-							_this6.s2 = v5;
-							break;
-						case 3:
-							_this6.s3 = v5;
-							break;
-						case 4:
-							_this6.s4 = v5;
-							break;
-						case 5:
-							_this6.s5 = v5;
-							break;
-						default:
-							if(_this6.s6 == null) {
-								_this6.s6 = new trilateral_justPath_StoreF6();
-							}
-							_this6.s6.push(v5);
-						}
-						_this6.l++;
-					}
-				}
-				temp = "-";
-				break;
-			case 46:
-				temp += ".";
-				break;
-			case 48:
-				temp += "0";
-				break;
-			case 49:
-				temp += "1";
-				break;
-			case 50:
-				temp += "2";
-				break;
-			case 51:
-				temp += "3";
-				break;
-			case 52:
-				temp += "4";
-				break;
-			case 53:
-				temp += "5";
-				break;
-			case 54:
-				temp += "6";
-				break;
-			case 55:
-				temp += "7";
-				break;
-			case 56:
-				temp += "8";
-				break;
-			case 57:
-				temp += "9";
-				break;
-			default:
-				if(temp != "") {
-					if(process) {
-						if((this.store.l & 1) == 0) {
-							var _this7 = this.store;
-							var v6 = parseFloat(temp);
-							var _g7 = _this7.l;
-							switch(_g7) {
-							case 0:
-								_this7.s0 = v6;
-								break;
-							case 1:
-								_this7.s1 = v6;
-								break;
-							case 2:
-								_this7.s2 = v6;
-								break;
-							case 3:
-								_this7.s3 = v6;
-								break;
-							case 4:
-								_this7.s4 = v6;
-								break;
-							case 5:
-								_this7.s5 = v6;
-								break;
-							default:
-								if(_this7.s6 == null) {
-									_this7.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this7.s6.push(v6);
-							}
-							_this7.l++;
-						} else {
-							var _this8 = this.store;
-							var v7 = parseFloat(temp);
-							var _g8 = _this8.l;
-							switch(_g8) {
-							case 0:
-								_this8.s0 = v7;
-								break;
-							case 1:
-								_this8.s1 = v7;
-								break;
-							case 2:
-								_this8.s2 = v7;
-								break;
-							case 3:
-								_this8.s3 = v7;
-								break;
-							case 4:
-								_this8.s4 = v7;
-								break;
-							case 5:
-								_this8.s5 = v7;
-								break;
-							default:
-								if(_this8.s6 == null) {
-									_this8.s6 = new trilateral_justPath_StoreF6();
-								}
-								_this8.s6.push(v7);
-							}
-							_this8.l++;
-						}
-					} else {
-						var _this9 = this.store;
-						var v8 = parseFloat(temp);
-						var _g9 = _this9.l;
-						switch(_g9) {
-						case 0:
-							_this9.s0 = v8;
-							break;
-						case 1:
-							_this9.s1 = v8;
-							break;
-						case 2:
-							_this9.s2 = v8;
-							break;
-						case 3:
-							_this9.s3 = v8;
-							break;
-						case 4:
-							_this9.s4 = v8;
-							break;
-						case 5:
-							_this9.s5 = v8;
-							break;
-						default:
-							if(_this9.s6 == null) {
-								_this9.s6 = new trilateral_justPath_StoreF6();
-							}
-							_this9.s6.push(v8);
-						}
-						_this9.l++;
-					}
-					temp = "";
-				}
-				this.pos--;
-				exit = true;
-			}
-			if(exit) {
-				break;
-			}
-			this.c = this.str.charCodeAt(this.pos++);
-		}
-	}
-	,nextChar: function() {
-		return this.str.charCodeAt(this.pos++);
-	}
-	,__class__: trilateral_justPath_SvgPath
-};
-var trilateral_justPath_transform_ScaleContext = function(pathContext_,sx_,sy_) {
-	this.pathContext = pathContext_;
-	this.sx = sx_;
-	this.sy = sy_;
-};
-$hxClasses["trilateral.justPath.transform.ScaleContext"] = trilateral_justPath_transform_ScaleContext;
-trilateral_justPath_transform_ScaleContext.__name__ = true;
-trilateral_justPath_transform_ScaleContext.__interfaces__ = [trilateral_justPath_IPathContext];
-trilateral_justPath_transform_ScaleContext.prototype = {
-	pathContext: null
-	,sx: null
-	,sy: null
-	,moveTo: function(x,y) {
-		this.pathContext.moveTo(x * this.sx,y * this.sy);
-	}
-	,lineTo: function(x,y) {
-		this.pathContext.lineTo(x * this.sx,y * this.sy);
-	}
-	,quadTo: function(x1,y1,x2,y2) {
-		this.pathContext.quadTo(x1 * this.sx,y1 * this.sy,x2 * this.sx,y2 * this.sy);
-	}
-	,curveTo: function(x1,y1,x2,y2,x3,y3) {
-		this.pathContext.curveTo(x1 * this.sx,y1 * this.sy,x2 * this.sx,y2 * this.sy,x3 * this.sx,y3 * this.sy);
-	}
-	,__class__: trilateral_justPath_transform_ScaleContext
-};
-var trilateral_justPath_transform_ScaleTranslateContext = function(pathContext_,dx_,dy_,sx_,sy_) {
-	this.pathContext = pathContext_;
-	this.dx = dx_;
-	this.dy = dy_;
-	this.sx = sx_;
-	this.sy = sy_;
-};
-$hxClasses["trilateral.justPath.transform.ScaleTranslateContext"] = trilateral_justPath_transform_ScaleTranslateContext;
-trilateral_justPath_transform_ScaleTranslateContext.__name__ = true;
-trilateral_justPath_transform_ScaleTranslateContext.__interfaces__ = [trilateral_justPath_IPathContext];
-trilateral_justPath_transform_ScaleTranslateContext.prototype = {
-	pathContext: null
-	,dx: null
-	,dy: null
-	,sx: null
-	,sy: null
-	,moveTo: function(x,y) {
-		this.pathContext.moveTo(x * this.sx + this.dx,y * this.sy + this.dy);
-	}
-	,lineTo: function(x,y) {
-		this.pathContext.lineTo(x * this.sx + this.dx,y * this.sy + this.dy);
-	}
-	,quadTo: function(x1,y1,x2,y2) {
-		this.pathContext.quadTo(x1 * this.sx + this.dx,y1 * this.sy + this.dy,x2 * this.sx + this.dx,y2 * this.sy + this.dy);
-	}
-	,curveTo: function(x1,y1,x2,y2,x3,y3) {
-		this.pathContext.curveTo(x1 * this.sx + this.dx,y1 * this.sy + this.dy,x2 * this.sx + this.dx,y2 * this.sy + this.dy,x3 * this.sx + this.dx,y3 * this.sy + this.dy);
-	}
-	,__class__: trilateral_justPath_transform_ScaleTranslateContext
-};
-var trilateral_justPath_transform_TranslationContext = function(pathContext_,dx_,dy_) {
-	this.pathContext = pathContext_;
-	this.dx = dx_;
-	this.dy = dy_;
-};
-$hxClasses["trilateral.justPath.transform.TranslationContext"] = trilateral_justPath_transform_TranslationContext;
-trilateral_justPath_transform_TranslationContext.__name__ = true;
-trilateral_justPath_transform_TranslationContext.__interfaces__ = [trilateral_justPath_IPathContext];
-trilateral_justPath_transform_TranslationContext.prototype = {
-	pathContext: null
-	,dx: null
-	,dy: null
-	,moveTo: function(x,y) {
-		this.pathContext.moveTo(x + this.dx,y + this.dy);
-	}
-	,lineTo: function(x,y) {
-		this.pathContext.lineTo(x + this.dx,y + this.dy);
-	}
-	,quadTo: function(x1,y1,x2,y2) {
-		this.pathContext.quadTo(x1 + this.dx,y1 + this.dy,x2 + this.dx,y2 + this.dy);
-	}
-	,curveTo: function(x1,y1,x2,y2,x3,y3) {
-		this.pathContext.curveTo(x1 + this.dx,y1 + this.dy,x2 + this.dx,y2 + this.dy,x3 + this.dx,y3 + this.dy);
-	}
-	,__class__: trilateral_justPath_transform_TranslationContext
 };
 var trilateral_pairs_Quad = function() { };
 $hxClasses["trilateral.pairs.Quad"] = trilateral_pairs_Quad;
@@ -42135,364 +35509,6 @@ trilateral_tri__$TriangleArray_TriangleArray_$Impl_$.getHitTriangles = function(
 	}
 	return out;
 };
-var trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$ = {};
-$hxClasses["trilateral.tri._TriangleGradient.TriangleGradient_Impl_"] = trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$;
-trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$.__name__ = true;
-trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$._new = function(id_,A_,B_,C_,depth_,colorID_,colorID2_,gradCorner_) {
-	var this1 = new trilateral_tri_Triangle(id_,A_,B_,C_,depth_,colorID_);
-	switch(gradCorner_) {
-	case 0:
-		this1.colorA = colorID2_;
-		this1.colorB = colorID_;
-		this1.colorC = colorID_;
-		break;
-	case 1:
-		if(this1.windingAdjusted) {
-			this1.colorA = colorID_;
-			this1.colorB = colorID_;
-			this1.colorC = colorID2_;
-		} else {
-			this1.colorA = colorID_;
-			this1.colorB = colorID2_;
-			this1.colorC = colorID_;
-		}
-		break;
-	case 2:
-		if(this1.windingAdjusted) {
-			this1.colorA = colorID_;
-			this1.colorB = colorID2_;
-			this1.colorC = colorID_;
-		} else {
-			this1.colorA = colorID_;
-			this1.colorB = colorID_;
-			this1.colorC = colorID2_;
-		}
-		break;
-	}
-	return this1;
-};
-trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$.quadGradient = function(id_,pos_,dim_,depth_,colorID_,colorID2_,horizontal,theta,pivotX,pivotY) {
-	if(pivotY == null) {
-		pivotY = 0.;
-	}
-	if(pivotX == null) {
-		pivotX = 0.;
-	}
-	if(theta == null) {
-		theta = 0.;
-	}
-	var line_D;
-	var line_C;
-	var line_B;
-	var line_A;
-	var px = pos_.x;
-	var py = pos_.y;
-	var dx = dim_.x;
-	var dy = dim_.y;
-	var A_ = { x : px, y : py};
-	var B_ = { x : px + dx, y : py};
-	var C_ = { x : px + dx, y : py + dy};
-	var D_ = { x : px, y : py + dy};
-	if(theta != 0.) {
-		var sin = Math.sin(theta);
-		var cos = Math.cos(theta);
-		var px1 = A_.x - pivotX;
-		var py1 = A_.y - pivotY;
-		var px2 = px1 * cos - py1 * sin;
-		py1 = py1 * cos + px1 * sin;
-		A_ = { x : px2 + pivotX, y : py1 + pivotY};
-		var px3 = B_.x - pivotX;
-		var py2 = B_.y - pivotY;
-		var px21 = px3 * cos - py2 * sin;
-		py2 = py2 * cos + px3 * sin;
-		B_ = { x : px21 + pivotX, y : py2 + pivotY};
-		var px4 = C_.x - pivotX;
-		var py3 = C_.y - pivotY;
-		var px22 = px4 * cos - py3 * sin;
-		py3 = py3 * cos + px4 * sin;
-		C_ = { x : px22 + pivotX, y : py3 + pivotY};
-		var px5 = D_.x - pivotX;
-		var py4 = D_.y - pivotY;
-		var px23 = px5 * cos - py4 * sin;
-		py4 = py4 * cos + px5 * sin;
-		D_ = { x : px23 + pivotX, y : py4 + pivotY};
-	}
-	line_A = A_;
-	line_B = B_;
-	line_C = C_;
-	line_D = D_;
-	if(horizontal) {
-		var this1 = new trilateral_tri_Triangle(id_,line_A,line_B,line_D,depth_,colorID_);
-		if(this1.windingAdjusted) {
-			this1.colorA = colorID_;
-			this1.colorB = colorID_;
-			this1.colorC = colorID2_;
-		} else {
-			this1.colorA = colorID_;
-			this1.colorB = colorID2_;
-			this1.colorC = colorID_;
-		}
-		var this2 = new trilateral_tri_Triangle(id_,line_B,line_C,line_D,depth_,colorID2_);
-		if(this2.windingAdjusted) {
-			this2.colorA = colorID2_;
-			this2.colorB = colorID_;
-			this2.colorC = colorID2_;
-		} else {
-			this2.colorA = colorID2_;
-			this2.colorB = colorID2_;
-			this2.colorC = colorID_;
-		}
-		return { t0 : this1, t1 : this2};
-	} else {
-		var this3 = new trilateral_tri_Triangle(id_,line_A,line_B,line_D,depth_,colorID_);
-		if(this3.windingAdjusted) {
-			this3.colorA = colorID_;
-			this3.colorB = colorID2_;
-			this3.colorC = colorID_;
-		} else {
-			this3.colorA = colorID_;
-			this3.colorB = colorID_;
-			this3.colorC = colorID2_;
-		}
-		var this4 = new trilateral_tri_Triangle(id_,line_B,line_C,line_D,depth_,colorID2_);
-		this4.colorA = colorID_;
-		this4.colorB = colorID2_;
-		this4.colorC = colorID2_;
-		return { t0 : this3, t1 : this4};
-	}
-};
-trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$.gradientFunction = function(tweenEquation) {
-	return function(t) {
-		return tweenEquation(t,0,1,1);
-	};
-};
-trilateral_tri__$TriangleGradient_TriangleGradient_$Impl_$.multiGradient = function(id_,horizontal_,x_,y_,wid_,hi_,triangles,colors,func,theta,pivotX,pivotY) {
-	if(pivotY == null) {
-		pivotY = 0.;
-	}
-	if(pivotX == null) {
-		pivotX = 0.;
-	}
-	if(theta == null) {
-		theta = 0.;
-	}
-	if(colors.length == 0) {
-		return;
-	}
-	var left = x_;
-	var top = y_;
-	var wid = wid_;
-	var hi = hi_;
-	if(colors.length == 1) {
-		colors.push(colors[0]);
-	}
-	var sections = colors.length - 1;
-	var loops = colors.length - 1;
-	if(func == null) {
-		func = function(v) {
-			return v;
-		};
-	}
-	if(horizontal_) {
-		var step = 1 / sections;
-		var x0;
-		var x1;
-		var _g1 = 0;
-		var _g = loops;
-		while(_g1 < _g) {
-			var i = _g1++;
-			x0 = func(i * step);
-			x1 = func((i + 1) * step);
-			var pos_y;
-			var pos_x = left + x0 * wid;
-			pos_y = top;
-			var dim_y;
-			var dim_x = wid * (x1 - x0);
-			dim_y = hi;
-			var colorID_ = colors[i];
-			var colorID2_ = colors[i + 1];
-			var line_D;
-			var line_C;
-			var line_B;
-			var line_A;
-			var px = pos_x;
-			var py = pos_y;
-			var dx = dim_x;
-			var dy = dim_y;
-			var A_ = { x : px, y : py};
-			var B_ = { x : px + dx, y : py};
-			var C_ = { x : px + dx, y : py + dy};
-			var D_ = { x : px, y : py + dy};
-			if(theta != 0.) {
-				var sin = Math.sin(theta);
-				var cos = Math.cos(theta);
-				var px1 = A_.x - pivotX;
-				var py1 = A_.y - pivotY;
-				var px2 = px1 * cos - py1 * sin;
-				py1 = py1 * cos + px1 * sin;
-				A_ = { x : px2 + pivotX, y : py1 + pivotY};
-				var px3 = B_.x - pivotX;
-				var py2 = B_.y - pivotY;
-				var px21 = px3 * cos - py2 * sin;
-				py2 = py2 * cos + px3 * sin;
-				B_ = { x : px21 + pivotX, y : py2 + pivotY};
-				var px4 = C_.x - pivotX;
-				var py3 = C_.y - pivotY;
-				var px22 = px4 * cos - py3 * sin;
-				py3 = py3 * cos + px4 * sin;
-				C_ = { x : px22 + pivotX, y : py3 + pivotY};
-				var px5 = D_.x - pivotX;
-				var py4 = D_.y - pivotY;
-				var px23 = px5 * cos - py4 * sin;
-				py4 = py4 * cos + px5 * sin;
-				D_ = { x : px23 + pivotX, y : py4 + pivotY};
-			}
-			line_A = A_;
-			line_B = B_;
-			line_C = C_;
-			line_D = D_;
-			var tp;
-			if(horizontal_) {
-				var this1 = new trilateral_tri_Triangle(id_,line_A,line_B,line_D,0,colorID_);
-				if(this1.windingAdjusted) {
-					this1.colorA = colorID_;
-					this1.colorB = colorID_;
-					this1.colorC = colorID2_;
-				} else {
-					this1.colorA = colorID_;
-					this1.colorB = colorID2_;
-					this1.colorC = colorID_;
-				}
-				var this2 = new trilateral_tri_Triangle(id_,line_B,line_C,line_D,0,colorID2_);
-				if(this2.windingAdjusted) {
-					this2.colorA = colorID2_;
-					this2.colorB = colorID_;
-					this2.colorC = colorID2_;
-				} else {
-					this2.colorA = colorID2_;
-					this2.colorB = colorID2_;
-					this2.colorC = colorID_;
-				}
-				tp = { t0 : this1, t1 : this2};
-			} else {
-				var this3 = new trilateral_tri_Triangle(id_,line_A,line_B,line_D,0,colorID_);
-				if(this3.windingAdjusted) {
-					this3.colorA = colorID_;
-					this3.colorB = colorID2_;
-					this3.colorC = colorID_;
-				} else {
-					this3.colorA = colorID_;
-					this3.colorB = colorID_;
-					this3.colorC = colorID2_;
-				}
-				var this4 = new trilateral_tri_Triangle(id_,line_B,line_C,line_D,0,colorID2_);
-				this4.colorA = colorID_;
-				this4.colorB = colorID2_;
-				this4.colorC = colorID2_;
-				tp = { t0 : this3, t1 : this4};
-			}
-			triangles[triangles.length] = tp.t0;
-			triangles[triangles.length] = tp.t1;
-		}
-	} else {
-		var step1 = 1 / sections;
-		var dim_y1;
-		var dim_x1 = wid;
-		dim_y1 = hi * func(step1);
-		var _g11 = 0;
-		var _g2 = loops;
-		while(_g11 < _g2) {
-			var i1 = _g11++;
-			var pos_y1;
-			var pos_x1 = left;
-			pos_y1 = top + func(i1 * step1) * hi;
-			var colorID_1 = colors[i1];
-			var colorID2_1 = colors[i1 + 1];
-			var line_D1;
-			var line_C1;
-			var line_B1;
-			var line_A1;
-			var px6 = pos_x1;
-			var py5 = pos_y1;
-			var dx1 = dim_x1;
-			var dy1 = dim_y1;
-			var A_1 = { x : px6, y : py5};
-			var B_1 = { x : px6 + dx1, y : py5};
-			var C_1 = { x : px6 + dx1, y : py5 + dy1};
-			var D_1 = { x : px6, y : py5 + dy1};
-			if(theta != 0.) {
-				var sin1 = Math.sin(theta);
-				var cos1 = Math.cos(theta);
-				var px7 = A_1.x - pivotX;
-				var py6 = A_1.y - pivotY;
-				var px24 = px7 * cos1 - py6 * sin1;
-				py6 = py6 * cos1 + px7 * sin1;
-				A_1 = { x : px24 + pivotX, y : py6 + pivotY};
-				var px8 = B_1.x - pivotX;
-				var py7 = B_1.y - pivotY;
-				var px25 = px8 * cos1 - py7 * sin1;
-				py7 = py7 * cos1 + px8 * sin1;
-				B_1 = { x : px25 + pivotX, y : py7 + pivotY};
-				var px9 = C_1.x - pivotX;
-				var py8 = C_1.y - pivotY;
-				var px26 = px9 * cos1 - py8 * sin1;
-				py8 = py8 * cos1 + px9 * sin1;
-				C_1 = { x : px26 + pivotX, y : py8 + pivotY};
-				var px10 = D_1.x - pivotX;
-				var py9 = D_1.y - pivotY;
-				var px27 = px10 * cos1 - py9 * sin1;
-				py9 = py9 * cos1 + px10 * sin1;
-				D_1 = { x : px27 + pivotX, y : py9 + pivotY};
-			}
-			line_A1 = A_1;
-			line_B1 = B_1;
-			line_C1 = C_1;
-			line_D1 = D_1;
-			var tp1;
-			if(horizontal_) {
-				var this5 = new trilateral_tri_Triangle(id_,line_A1,line_B1,line_D1,0,colorID_1);
-				if(this5.windingAdjusted) {
-					this5.colorA = colorID_1;
-					this5.colorB = colorID_1;
-					this5.colorC = colorID2_1;
-				} else {
-					this5.colorA = colorID_1;
-					this5.colorB = colorID2_1;
-					this5.colorC = colorID_1;
-				}
-				var this6 = new trilateral_tri_Triangle(id_,line_B1,line_C1,line_D1,0,colorID2_1);
-				if(this6.windingAdjusted) {
-					this6.colorA = colorID2_1;
-					this6.colorB = colorID_1;
-					this6.colorC = colorID2_1;
-				} else {
-					this6.colorA = colorID2_1;
-					this6.colorB = colorID2_1;
-					this6.colorC = colorID_1;
-				}
-				tp1 = { t0 : this5, t1 : this6};
-			} else {
-				var this7 = new trilateral_tri_Triangle(id_,line_A1,line_B1,line_D1,0,colorID_1);
-				if(this7.windingAdjusted) {
-					this7.colorA = colorID_1;
-					this7.colorB = colorID2_1;
-					this7.colorC = colorID_1;
-				} else {
-					this7.colorA = colorID_1;
-					this7.colorB = colorID_1;
-					this7.colorC = colorID2_1;
-				}
-				var this8 = new trilateral_tri_Triangle(id_,line_B1,line_C1,line_D1,0,colorID2_1);
-				this8.colorA = colorID_1;
-				this8.colorB = colorID2_1;
-				this8.colorC = colorID2_1;
-				tp1 = { t0 : this7, t1 : this8};
-			}
-			triangles[triangles.length] = tp1.t0;
-			triangles[triangles.length] = tp1.t1;
-		}
-	}
-};
 var trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$ = {};
 $hxClasses["trilateral.tri._TrilateralArray.TrilateralArray_Impl_"] = trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$;
 trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$.__name__ = true;
@@ -42527,6 +35543,282 @@ trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$.addArray = function(thi
 	}
 	return triArr;
 };
+var trilateralXtra_kDrawing_GridSheet = function(gi) {
+	this.totalCount = 8;
+	this.count = 0;
+	this.c = 0;
+	this.r = 0;
+	this.dy = 0.;
+	this.dx = 0.;
+	this.gridX = gi.gridX;
+	this.gridY = gi.gridY;
+	this.totalRows = gi.totalRows;
+	this.totalCols = gi.totalCols;
+	this.scaleX = gi.scaleX;
+	this.scaleY = gi.scaleY;
+	this.image = gi.image;
+};
+$hxClasses["trilateralXtra.kDrawing.GridSheet"] = trilateralXtra_kDrawing_GridSheet;
+trilateralXtra_kDrawing_GridSheet.__name__ = true;
+trilateralXtra_kDrawing_GridSheet.prototype = {
+	dx: null
+	,dy: null
+	,gridX: null
+	,gridY: null
+	,scaleX: null
+	,scaleY: null
+	,totalRows: null
+	,totalCols: null
+	,r: null
+	,c: null
+	,count: null
+	,image: null
+	,totalCount: null
+	,calculateRows: function() {
+		return Math.round(this.image.get_width() / this.gridX);
+	}
+	,calculateCols: function() {
+		return Math.round(this.image.get_height() / this.gridY);
+	}
+	,renderGrid: function(g,gridItems,outline) {
+		if(outline == null) {
+			outline = false;
+		}
+		var p;
+		var alpha;
+		var item;
+		var temp = [];
+		var count = 0;
+		var _g1 = 0;
+		var _g = this.totalRows;
+		while(_g1 < _g) {
+			var row = _g1++;
+			var _g3 = 0;
+			var _g2 = this.totalCols;
+			while(_g3 < _g2) {
+				var col = _g3++;
+				item = gridItems.getItem(col,row);
+				temp[count++] = { item : item, col : col, row : row};
+			}
+		}
+		haxe_ds_ArraySort.sort(temp,function(a,b) {
+			var c = a.item.depth;
+			var d = b.item.depth;
+			if(c < d) {
+				return -1;
+			} else if(c > d) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+		var obj;
+		var _g11 = 0;
+		var _g4 = temp.length;
+		while(_g11 < _g4) {
+			var i = _g11++;
+			obj = temp[i];
+			var item1 = obj.item;
+			var col1 = obj.col;
+			var row1 = obj.row;
+			g.set_opacity(item1.alpha);
+			var transformation = item1.transform;
+			g.setTransformation(transformation);
+			var _this = g.transformations[g.transformations.length - 1];
+			_this._00 = transformation._00;
+			_this._10 = transformation._10;
+			_this._20 = transformation._20;
+			_this._01 = transformation._01;
+			_this._11 = transformation._11;
+			_this._21 = transformation._21;
+			_this._02 = transformation._02;
+			_this._12 = transformation._12;
+			_this._22 = transformation._22;
+			if(outline) {
+				g.set_color(-65536);
+				g.drawRect(item1.x,item1.y,this.gridX,this.gridY,1);
+				g.set_color(item1.color);
+			}
+			g.set_color(item1.color);
+			g.drawScaledSubImage(this.image,col1 * this.gridX + this.dx,row1 * this.gridY + this.dy,this.gridX,this.gridY,item1.x,item1.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+			g.set_color(-1);
+		}
+		g.set_color(-1);
+		var transformation1 = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		g.setTransformation(transformation1);
+		var _this1 = g.transformations[g.transformations.length - 1];
+		_this1._00 = transformation1._00;
+		_this1._10 = transformation1._10;
+		_this1._20 = transformation1._20;
+		_this1._01 = transformation1._01;
+		_this1._11 = transformation1._11;
+		_this1._21 = transformation1._21;
+		_this1._02 = transformation1._02;
+		_this1._12 = transformation1._12;
+		_this1._22 = transformation1._22;
+		g.set_opacity(1.);
+	}
+	,resetGraphics: function(g) {
+		g.set_color(-1);
+		var transformation = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		g.set_opacity(1.);
+	}
+	,depthSort: function(arr) {
+		haxe_ds_ArraySort.sort(arr,function(a,b) {
+			var c = a.item.depth;
+			var d = b.item.depth;
+			if(c < d) {
+				return -1;
+			} else if(c > d) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+	}
+	,renderSequence: function(g,gridItems) {
+		var col = this.r;
+		var row = this.c;
+		var item = gridItems.getItem(row,col);
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
+		if(this.count == this.totalCount) {
+			this.count = 0;
+			this.r++;
+			if(this.r > this.totalRows - 1) {
+				this.r = 0;
+				this.c++;
+				if(this.c > this.totalCols - 1) {
+					this.c = 0;
+				}
+			}
+		}
+		this.count++;
+	}
+	,renderItem: function(g,item,col,row,outline) {
+		if(outline == null) {
+			outline = false;
+		}
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		if(outline) {
+			g.set_color(-65536);
+			g.drawRect(item.x,item.y,this.gridX,this.gridY,1);
+			g.set_color(item.color);
+		}
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
+	}
+	,renderFrame: function(g,gridItems,col,row,outline) {
+		if(outline == null) {
+			outline = false;
+		}
+		var item = gridItems.getItem(row,col);
+		g.set_opacity(item.alpha);
+		var transformation = item.transform;
+		g.setTransformation(transformation);
+		var _this = g.transformations[g.transformations.length - 1];
+		_this._00 = transformation._00;
+		_this._10 = transformation._10;
+		_this._20 = transformation._20;
+		_this._01 = transformation._01;
+		_this._11 = transformation._11;
+		_this._21 = transformation._21;
+		_this._02 = transformation._02;
+		_this._12 = transformation._12;
+		_this._22 = transformation._22;
+		if(outline) {
+			g.set_color(-65536);
+			g.drawRect(item.x,item.y,this.gridX,this.gridY,1);
+			g.set_color(item.color);
+		}
+		g.set_color(item.color);
+		g.drawScaledSubImage(this.image,col * this.gridX + this.dx,row * this.gridY + this.dy,this.gridX,this.gridY,item.x,item.y,this.gridX * this.scaleX,this.gridY * this.scaleY);
+		g.set_color(-1);
+	}
+	,advanceFrame: function() {
+		if(this.count == this.totalCount) {
+			this.count = 0;
+			this.r++;
+			if(this.r > this.totalRows - 1) {
+				this.r = 0;
+				this.c++;
+				if(this.c > this.totalCols - 1) {
+					this.c = 0;
+				}
+			}
+		}
+		this.count++;
+	}
+	,getItem: function(col,row) {
+		return { x : this.scaleX * col * this.gridX, y : this.scaleY * row * this.gridY, color : -1, alpha : 1., transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : 0};
+	}
+	,__class__: trilateralXtra_kDrawing_GridSheet
+};
+var trilateralXtra_kDrawing_SequenceSprite = function(x_,y_,color_,alpha_,matrix_,depth_) {
+	this.depth = 0;
+	this.alpha = 0;
+	this.color = -1;
+	this.y = 0;
+	this.x = 0;
+	this.x = x_;
+	this.y = y_;
+	this.color = color_;
+	this.alpha = alpha_;
+	this.matrix = matrix_;
+	this.depth = depth_;
+};
+$hxClasses["trilateralXtra.kDrawing.SequenceSprite"] = trilateralXtra_kDrawing_SequenceSprite;
+trilateralXtra_kDrawing_SequenceSprite.__name__ = true;
+trilateralXtra_kDrawing_SequenceSprite.prototype = {
+	x: null
+	,y: null
+	,color: null
+	,alpha: null
+	,matrix: null
+	,depth: null
+	,getItem: function(col,row) {
+		return { x : this.x, y : this.y, color : this.color, alpha : this.alpha, transform : this.matrix, depth : this.depth};
+	}
+	,__class__: trilateralXtra_kDrawing_SequenceSprite
+};
 var trilateralXtra_kDrawing_ImageDrawing = function(fillDraw_) {
 	this.fillDraw = fillDraw_;
 	this.polyPainter = new trilateralXtra_kDrawing_PolyPainter();
@@ -42547,11 +35839,11 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			return;
 		}
 		this.polyPainter.set_canvas(this.image);
-		this.polyPainter.begin(true,0);
+		this.polyPainter.begin(1,true,0);
 	}
 	,startFrame: function(framebuffer) {
 		this.polyPainter.set_framebuffer(framebuffer);
-		this.polyPainter.begin(true,0);
+		this.polyPainter.begin(1,true,0);
 	}
 	,end: function() {
 		this.polyPainter.end();
@@ -42584,40 +35876,31 @@ trilateralXtra_kDrawing_ImageDrawing.prototype = {
 			var i = _g1++;
 			tri = triangles[i];
 			var _this = this.polyPainter;
-			var ax = tri.ax * scale + cx;
-			var ay = tri.ay * scale + cy;
-			var bx = tri.bx * scale + cx;
-			var by = tri.by * scale + cy;
-			var cx1 = tri.cx * scale + cx;
-			var cy1 = tri.cy * scale + cy;
 			var color0 = colors[tri.colorA];
 			var color1 = colors[tri.colorB];
 			var color2 = colors[tri.colorC];
-			if(_this.shaderMode == 1) {
-				_this.flush();
-			}
 			if(alpha != 1.) {
 				color0 = (alpha * 255 | 0) << 24 | (((color0 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color0 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color0 & 255) * 0.00392156862745098 * 255 | 0);
 				color1 = (alpha * 255 | 0) << 24 | (((color1 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color1 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color1 & 255) * 0.00392156862745098 * 255 | 0);
 				color2 = (alpha * 255 | 0) << 24 | (((color2 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color2 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color2 & 255) * 0.00392156862745098 * 255 | 0);
 			}
 			var pos = _this.posGradient;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos] = ax;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 1] = ay;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos] = tri.ax * scale + cx;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 1] = tri.ay * scale + cy;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 2] = -5.0;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 3] = ((color0 & 16711680) >>> 16) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 4] = ((color0 & 65280) >>> 8) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 5] = (color0 & 255) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 6] = (color0 >>> 24) * 0.00392156862745098;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 7] = bx;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 8] = by;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 7] = tri.bx * scale + cx;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 8] = tri.by * scale + cy;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 9] = -5.0;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 10] = ((color1 & 16711680) >>> 16) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 11] = ((color1 & 65280) >>> 8) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 12] = (color1 & 255) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 13] = (color1 >>> 24) * 0.00392156862745098;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 14] = cx1;
-			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 15] = cy1;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 14] = tri.cx * scale + cx;
+			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 15] = tri.cy * scale + cy;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 16] = -5.0;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 17] = ((color2 & 16711680) >>> 16) * 0.00392156862745098;
 			trilateralXtra_kDrawing_PolyPainter.verticesGrad[pos + 18] = ((color2 & 65280) >>> 8) * 0.00392156862745098;
@@ -42771,18 +36054,25 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 	,posGradient: null
 	,sourceBlend: null
 	,destinationBlend: null
-	,begin: function(clear,clearColor) {
+	,begin: function(shaderMode_,clear,clearColor) {
 		if(clear == null) {
 			clear = true;
 		}
 		if(this.g == null) {
 			return;
 		}
+		this.shaderMode = shaderMode_;
 		this.g.begin();
 		if(clear) {
 			this.g.clear(clearColor);
 		}
 		this.getProjectionMatrix();
+	}
+	,changeShaderMode: function(shaderMode_) {
+		if(this.shaderMode != shaderMode_) {
+			this.shaderMode = shaderMode_;
+			this.flush();
+		}
 	}
 	,clear: function(color) {
 		if(this.g == null) {
@@ -42858,9 +36148,6 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 		var color0 = color;
 		var color1 = color;
 		var color2 = color;
-		if(this.shaderMode == 1) {
-			this.flush();
-		}
 		if(alpha != 1.) {
 			color0 = (alpha * 255 | 0) << 24 | (((color0 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color0 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color0 & 255) * 0.00392156862745098 * 255 | 0);
 			color1 = (alpha * 255 | 0) << 24 | (((color1 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color1 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color1 & 255) * 0.00392156862745098 * 255 | 0);
@@ -42894,9 +36181,6 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 	,drawGradientTriangle: function(ax,ay,bx,by,cx,cy,color0,color1,color2,alpha) {
 		if(alpha == null) {
 			alpha = 1.;
-		}
-		if(this.shaderMode == 1) {
-			this.flush();
 		}
 		if(alpha != 1.) {
 			color0 = (alpha * 255 | 0) << 24 | (((color0 & 16711680) >>> 16) * 0.00392156862745098 * 255 | 0) << 16 | (((color0 & 65280) >>> 8) * 0.00392156862745098 * 255 | 0) << 8 | ((color0 & 255) * 0.00392156862745098 * 255 | 0);
@@ -42958,7 +36242,7 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 		var colorA = color;
 		var colorB = color;
 		var colorC = color;
-		if(trilateralXtra_kDrawing_PolyPainter.imgLast != img || this.shaderMode == 0) {
+		if(trilateralXtra_kDrawing_PolyPainter.imgLast != img) {
 			this.flush();
 		}
 		trilateralXtra_kDrawing_PolyPainter.imgLast = img;
@@ -42997,7 +36281,7 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 		if(alpha == null) {
 			alpha = 1.;
 		}
-		if(trilateralXtra_kDrawing_PolyPainter.imgLast != img || this.shaderMode == 0) {
+		if(trilateralXtra_kDrawing_PolyPainter.imgLast != img) {
 			this.flush();
 		}
 		if(alpha != 1.) {
@@ -43688,12 +36972,12 @@ kha_Scheduler.startTime = 0;
 kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
 kha_Shaders.painter_colored_fragData2 = "s210:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7CgpvdXQgdmVjNCBGcmFnQ29sb3I7CmluIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIEZyYWdDb2xvciA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
-kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
-kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
-kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
+kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
+kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
+kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_image_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
