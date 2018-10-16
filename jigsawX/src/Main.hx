@@ -16,9 +16,13 @@ class Main {
     var once            = true; // only render the first time after loading.
     var jigsawx:        Jigsawx;
     var imgJigsaw:      Image;
+    var imgOutline:     Image;
     var jigsawBuilder:  JigsawImageBuilder;
     var gridDef:        GridSheetDef;
-    var gridSheet:      GridSheet; 
+    var gridDefOutline: GridSheetDef;
+    var gridSheet:        GridSheet;
+    var gridSheetOutline: GridSheet;
+    var outLineEdge:    OutLineEdge;
     var wid             = 45;
     var hi              = 45;
     var rows            = 6;
@@ -27,7 +31,7 @@ class Main {
     var offY:           Float;
     var mouseIsDown:    Bool = false;
     var selected:       JigsawPiece;
-    var depths          = new Array<Int>();
+    public var depths          = new Array<Int>();
     var topDepth        = 100;
     public static 
     function main() {
@@ -46,52 +50,88 @@ class Main {
     public function loadAll(){
         trace( 'loadAll' );
         drawJigsawImage();
+        outLineEdge = new OutLineEdge( this );
+        initDepths();
         setupImageGrid();
         startRendering();
         initInputs();
     }
-    inline function setupImageGrid(){
+    inline
+    function initDepths(){
+        for( i in 0...rows*cols ){ depths[i] = i; }
+    }
+    inline
+    function setupImageGrid(){
         // piece size is 45 ( or 90? )
         gridDef = { gridX:          wid*2,  gridY:     hi*2
                   , totalRows:       rows,  totalCols: cols
                   , scaleX:            1.,  scaleY:      1.
-                  , image:       imgJigsaw  };
-        for( i in 0...rows*cols ){ depths[i] = i; }
+                  , image:       imgJigsaw  
+                  }; // sets image
+        gridDefOutline = { gridX:          wid*2,  gridY:     hi*2
+                         , totalRows:       rows,  totalCols: cols
+                         , scaleX:            1.,  scaleY:      1.
+                         , image:      imgOutline
+                         }; // sets image     
         gridSheet = new GridSheet( cast gridDef );
         gridSheet.dx = -wid/2 + 1; // 1 is because had to move jigsaw in one to stop it being strange.
         gridSheet.dy = -hi/2 + 1;
+        gridSheetOutline = new GridSheet( cast gridDefOutline );
+        gridSheetOutline.dx = -wid/2 + 1; // 1 is because had to move jigsaw in one to stop it being strange.
+        gridSheetOutline.dy = -hi/2 + 1;
     }
-    inline function drawJigsawImage(){
+    inline
+    function drawJigsawImage(){
         jigsawBuilder.drawMask();
+        jigsawBuilder.drawOutline();
         imgJigsaw = jigsawBuilder.renderJigsaw( Assets.images.tablecloth );
+        imgOutline = jigsawBuilder.renderJigsawOutline();
+        randomizePieces();
+    }
+    inline
+    function randomizePieces(){
+        var factor = 4; // 1 in 5 ( as includes 0 ).
+        var left = 320.;
+        var top = 265.;
+        var xRange = 370.;
+        var yRange = 250.;
+        var randomizeMost: Bool; 
         for( jig in jigsawx.jigs ){
-            if( Std.int( Math.random()*4 ) != 0 ){
-                jig.xy.x = Math.random()*370 + 320;
-                jig.xy.y = Math.random()*250 + 265;
+            randomizeMost = Std.int( Math.random() * factor ) != 0;
+            if( randomizeMost ){
+                jig.xy.x = Math.random()*xRange + left;
+                jig.xy.y = Math.random()*yRange + top;
             } else {
                 jig.enabled = false;
             }
         }
     }
-    inline function startRendering(){
+    inline
+    function startRendering(){
         System.notifyOnRender( function ( framebuffer ) { render( framebuffer ); } );
     }
-    inline function render( framebuffer: Framebuffer ): Void {
+    inline
+    function render( framebuffer: Framebuffer ): Void {
         var g = framebuffer.g2;
         g.begin();
-        //g.drawImage( imgJigsaw, 0, 0 );
-        g.color = Color.fromValue( 0xFF5555FE );
+        var blueBackTint = Color.fromValue( 0xFF5555FE );
+        g.color = blueBackTint;
         g.drawImage( Assets.images.tablecloth, wid/2 + 1, hi/2 + 1 );
+        gridSheetOutline.renderGrid( g, cast outLineEdge, false );
         gridSheet.renderGrid( g, cast this, false );
+        //g.drawImage( imgJigsaw, 0, 0 );
+        //g.drawImage( imgOutline, 0, 0 );
         g.end();
     }
-    inline function getItem( col: Int, row: Int ): GridItemDef {
+    inline
+    function getItem( col: Int, row: Int ): GridItemDef {
         var id = row*cols + col;
         var jig = jigsawx.jigs[ id ];
         var color = Color.White;
         var depth = depths[ id ];
+        var redHighLight = Color.fromValue( 0xFFFEDDDD );
         if( jig == selected ){
-            color = Color.fromValue( 0xFFFEDDDD );
+            color = redHighLight;
             depth = topDepth++;
             depths[ id ] = topDepth;
         }
@@ -137,9 +177,7 @@ class Main {
     function mouseDown( button: Int, x: Int, y: Int ): Void {
         var arr = jigsawBuilder.hitTest( x - wid/2, y - hi/2 );
         var jigs = jigsawx.jigs;
-        arr = arr.filter( function( i: Int ){
-            return jigs[ i ].enabled; 
-            });
+        arr = arr.filter( function( i: Int ){ return jigs[ i ].enabled; });
         if( arr.length > 1 ) sortByDistance( arr, x - wid, y - hi );
         if( arr.length > 0 ) {
             var jig = jigs[ arr[ 0 ] ];
@@ -155,23 +193,27 @@ class Main {
         //trace('up');
         mouseIsDown = false;
         if( selected != null ){
-            var id = 0;
-            var jigs = jigsawx.jigs;
-            for( i in 0...jigs.length ){
-                if( jigs[i] == selected ){
-                    id = i;
-                    break;
-                }
-            }
+            var id = getIdofSelected();
             if( jigsawBuilder.isInPlace( id, selected ) ) {
                 selected.enabled = false;
-                var p = jigsawBuilder.getShapeXY( id );
+                var p = jigsawBuilder.getShapeXY( id ); // set to final piece postion obtained from the item.
                 selected.xy.x = p.x;
                 selected.xy.y = p.y;
             }
         }
         selected = null;
-        
+    }
+    inline
+    function getIdofSelected(): Int {
+        var id = 0;
+        var jigs = jigsawx.jigs;
+        for( i in 0...jigs.length ){
+            if( jigs[i] == selected ){
+                id = i;
+                break;
+            }
+        }
+        return id;
     }
     function mouseMove( x: Int, y: Int, movementX: Int, movementY: Int ): Void {
         if( mouseIsDown == false ) return;
@@ -186,4 +228,40 @@ class Main {
         offX = offX/1.025;// ease to hold piece in centre
         offY = offY/1.025;
     }
+}
+
+class OutLineEdge{
+    // just pointers to props in main
+    var main: Main;
+    public function new( main_: Main ){
+        main = main_;
+    }
+    @:access( Main )
+    inline
+    function getItem( col: Int, row: Int ): GridItemDef {
+        var id = row*main.cols + col;
+        var jig = main.jigsawx.jigs[ id ];
+        var color = Color.White;
+        var depth = main.depths[ id ];
+        var redHighLight = Color.fromValue( 0xFFFEDDDD );
+        if( jig == main.selected ){
+            color = redHighLight;
+            depth = main.topDepth++;
+            main.depths[ id ] = main.topDepth;
+        }
+        var alpha = 0.8;
+        if( jig.enabled == false ) {
+            alpha = 1.;
+            color = Color.fromValue( 0x00FFFFFF );
+        }
+        var x = jig.xy.x;
+        var y = jig.xy.y;
+        return {    x: x
+                ,   y: y
+                ,   color: color
+                ,   alpha: alpha
+                ,   transform: FastMatrix3.identity()
+                ,   depth: depth };
+    }
+
 }

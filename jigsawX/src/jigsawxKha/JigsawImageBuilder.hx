@@ -5,13 +5,21 @@ import trilateralXtra.kDrawing.ImageDrawing;
 import trilateralXtra.kDrawing.PolyPainter;
 import trilateral.path.Base;
 import trilateral.path.Fine;
+import trilateral.path.Crude;
 import trilateral.path.MediumOverlap;
 import trilateral.path.FillOnly;
 import kha.Image;
+import kha.Color;
 import jigsawx.JigsawPiece;
 import jigsawx.math.Vec2;
 import jigsawxKha.JigsawShape;
-import trilateral.parsing.FillDraw; 
+import trilateral.parsing.FillDraw;
+import trilateralXtra.color.AppColors;
+import kha.graphics4.DepthStencilFormat;
+import trilateral.tri.TriangleArray;
+import trilateral.tri.TrilateralArray;
+import trilateral.tri.Triangle;
+import trilateral.geom.Contour;
 class JigsawImageBuilder {
     var showBackground   = false; // useful for debug
     var backgroundAlpha  = 0.3;
@@ -19,14 +27,20 @@ class JigsawImageBuilder {
     var fillDraw:        FillDraw;
     var scaleImg         = 1;//.2;
     var jigsawShapeArray = new Array<JigsawShape>();
+    var jigsawShapeArrayOutline = new Array<JigsawShape>();
+    var polyPainter: PolyPainter;
     var jigs:            Array<JigsawPiece>;
-    //var appColors:      Array<AppColors> = [ Black, Red, Orange, Yellow, Green, Blue, Indigo, Violet
-    //                                       , LightGrey, MidGrey, DarkGrey, NearlyBlack, White
-    //                                       , BlueAlpha, GreenAlpha, RedAlpha ];//fillDraw.colors = appColors;
+    var countID: Int = 0;
+    var colors:      Array<AppColors> = [ Black, Red, Orange, Yellow, Green, Blue, Indigo, Violet
+                                        , LightGrey, MidGrey, DarkGrey, NearlyBlack, White
+                                        , BlueAlpha, GreenAlpha, RedAlpha ];//fillDraw.colors = appColors;
     public
     function new( jigs_: Array<JigsawPiece> ){
         jigs = jigs_;
-        PolyPainter.bufferSize = 3000000;
+        PolyPainter.bufferSize = 6145334;//3000000;
+        polyPainter = new PolyPainter();
+        polyPainter.textureAddressingX  = Repeat;
+        polyPainter.textureAddressingY  = Repeat;
         fillDraw     = new FillDrawPolyK( 1024, 768 );
         imageDrawing = new ImageDrawing( fillDraw );
     }
@@ -38,11 +52,9 @@ class JigsawImageBuilder {
         var ox: Float;
         var oy: Float;
         var count: Int = 0;
-        for( i in 0...jigs.length ){
+        for( i in 0...jigs.length ){//jigs.length ){
             jig = jigs[ i ];
-            path.trilateralArray  = [];
-            path.points           = [];
-            path.dim              = [];
+            path.reset();
             ox = jig.xy.x;
             oy = jig.xy.y;
             var first = jig.getFirst();
@@ -53,6 +65,32 @@ class JigsawImageBuilder {
             fillDraw.triangles  = [];
             fillDraw.fill( path.points, 0 );
             jigsawShapeArray[ count ] = new JigsawShape( jig, fillDraw.triangles, ox, oy );
+            count++;
+        }
+    }
+    public inline
+    function drawOutline(){
+        var path: Base = new MediumOverlap( null, null, both );//new MediumOverlap(); // try to reuse rather than new?
+        path.width = 2;
+        var jig = jigs[ 0 ];
+        var ox: Float;
+        var oy: Float;
+        var count: Int = 0;
+        for( i in 0...jigs.length ){
+            jig = jigs[ i ];
+            path.reset();
+            ox = jig.xy.x;
+            oy = jig.xy.y;
+            var first = jig.getFirst();
+            path.moveTo( first.x + ox, first.y + oy );
+            var p = jig.getPoints();
+            for( v in  p )  {  path.lineTo( v.x + ox, v.y + oy ); }
+            path.lineTo( first.x + ox, first.y + oy );
+            var triangles = new TriangleArray();
+            triangles.addArray( count
+                            ,   path.trilateralArray
+                            ,   1 );
+            jigsawShapeArrayOutline[ i ] = new JigsawShape( jig, triangles, ox, oy );
             count++;
         }
     }
@@ -98,7 +136,7 @@ class JigsawImageBuilder {
     function renderJigsaw( imageIn: Image ): Image {
         var poly = imageDrawing.polyPainter;
         var jigsawShape: JigsawShape;
-        var scale = 1;
+        var scale = 1.;
         var x = 0.;
         var y = 0.;
         imageDrawing.startImage();
@@ -112,5 +150,29 @@ class JigsawImageBuilder {
         }
         imageDrawing.end();
         return imageDrawing.image;
+    }
+    public inline
+    function renderJigsawOutline(): Image {
+        var poly = polyPainter;
+        var jigsawShape: JigsawShape;
+        var scale = 1.;
+        var x = 0.;
+        var y = 0.;
+        var img = Image.createRenderTarget( 1024, 768, null, DepthStencilFormat.NoDepthAndStencil, 4 );
+        poly.canvas = img;
+        poly.begin( GradientMode, true, null );
+        for( i in 0...jigsawShapeArrayOutline.length ){
+            jigsawShape = jigsawShapeArrayOutline[ i ];
+            var triangles = jigsawShape.triangles;
+            var dx = jigsawShape.x;
+            var dy = jigsawShape.y;
+            var tri: Triangle;
+            for( i in 0...triangles.length ){
+                tri = triangles[ i ];
+                poly.drawFillTriangle( tri.ax+dx + 1, tri.ay+dy + 1, tri.bx+dx + 1, tri.by+dy + 1, tri.cx+dx + 1, tri.cy+dy + 1, Color.White );
+            }
+        }
+        poly.end();
+        return img;
     }
 }
