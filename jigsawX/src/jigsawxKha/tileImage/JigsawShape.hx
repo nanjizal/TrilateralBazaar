@@ -1,4 +1,4 @@
-package jigsawxKha;
+package jigsawxKha.tileImage;
 import trilateral.tri.TriangleArray;
 import jigsawx.JigsawPiece;
 import kha.Image;

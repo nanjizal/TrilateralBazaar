@@ -6,7 +6,7 @@ project.addLibrary('trilateral');
 project.addLibrary('trilateralXtra');
 project.addLibrary('hxPolyK');
 project.addLibrary('poly2trihx');
-project.addParameter('-dce no');
+//project.addParameter('-dce no');
 project.windowOptions.width = 1024;
 project.windowOptions.height = 768;
 resolve( project );

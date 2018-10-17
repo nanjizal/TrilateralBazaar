@@ -14,7 +14,7 @@ var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
 };
 $hxClasses["EReg"] = EReg;
-EReg.__name__ = ["EReg"];
+EReg.__name__ = true;
 EReg.prototype = {
 	r: null
 	,match: function(s) {
@@ -32,96 +32,11 @@ EReg.prototype = {
 			throw new js__$Boot_HaxeError("EReg::matched");
 		}
 	}
-	,matchedLeft: function() {
-		if(this.r.m == null) {
-			throw new js__$Boot_HaxeError("No string matched");
-		}
-		return HxOverrides.substr(this.r.s,0,this.r.m.index);
-	}
-	,matchedRight: function() {
-		if(this.r.m == null) {
-			throw new js__$Boot_HaxeError("No string matched");
-		}
-		var sz = this.r.m.index + this.r.m[0].length;
-		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
-	}
-	,matchedPos: function() {
-		if(this.r.m == null) {
-			throw new js__$Boot_HaxeError("No string matched");
-		}
-		return { pos : this.r.m.index, len : this.r.m[0].length};
-	}
-	,matchSub: function(s,pos,len) {
-		if(len == null) {
-			len = -1;
-		}
-		if(this.r.global) {
-			this.r.lastIndex = pos;
-			var tmp = this.r;
-			var tmp1 = len < 0 ? s : HxOverrides.substr(s,0,pos + len);
-			this.r.m = tmp.exec(tmp1);
-			var b = this.r.m != null;
-			if(b) {
-				this.r.s = s;
-			}
-			return b;
-		} else {
-			var b1 = this.match(len < 0 ? HxOverrides.substr(s,pos,null) : HxOverrides.substr(s,pos,len));
-			if(b1) {
-				this.r.s = s;
-				this.r.m.index += pos;
-			}
-			return b1;
-		}
-	}
-	,split: function(s) {
-		var d = "#__delim__#";
-		return s.replace(this.r,d).split(d);
-	}
-	,replace: function(s,by) {
-		return s.replace(this.r,by);
-	}
-	,map: function(s,f) {
-		var offset = 0;
-		var buf_b = "";
-		while(true) {
-			if(offset >= s.length) {
-				break;
-			} else if(!this.matchSub(s,offset)) {
-				buf_b += Std.string(HxOverrides.substr(s,offset,null));
-				break;
-			}
-			var p = this.matchedPos();
-			buf_b += Std.string(HxOverrides.substr(s,offset,p.pos - offset));
-			buf_b += Std.string(f(this));
-			if(p.len == 0) {
-				buf_b += Std.string(HxOverrides.substr(s,p.pos,1));
-				offset = p.pos + 1;
-			} else {
-				offset = p.pos + p.len;
-			}
-			if(!this.r.global) {
-				break;
-			}
-		}
-		if(!this.r.global && offset > 0 && offset < s.length) {
-			buf_b += Std.string(HxOverrides.substr(s,offset,null));
-		}
-		return buf_b;
-	}
 	,__class__: EReg
 };
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
-HxOverrides.__name__ = ["HxOverrides"];
-HxOverrides.dateStr = function(date) {
-	var m = date.getMonth() + 1;
-	var d = date.getDate();
-	var h = date.getHours();
-	var mi = date.getMinutes();
-	var s = date.getSeconds();
-	return date.getFullYear() + "-" + (m < 10 ? "0" + m : "" + m) + "-" + (d < 10 ? "0" + d : "" + d) + " " + (h < 10 ? "0" + h : "" + h) + ":" + (mi < 10 ? "0" + mi : "" + mi) + ":" + (s < 10 ? "0" + s : "" + s);
-};
+HxOverrides.__name__ = true;
 HxOverrides.strDate = function(s) {
 	var _g = s.length;
 	switch(_g) {
@@ -164,37 +79,6 @@ HxOverrides.substr = function(s,pos,len) {
 	}
 	return s.substr(pos,len);
 };
-HxOverrides.indexOf = function(a,obj,i) {
-	var len = a.length;
-	if(i < 0) {
-		i += len;
-		if(i < 0) {
-			i = 0;
-		}
-	}
-	while(i < len) {
-		if(a[i] === obj) {
-			return i;
-		}
-		++i;
-	}
-	return -1;
-};
-HxOverrides.lastIndexOf = function(a,obj,i) {
-	var len = a.length;
-	if(i >= len) {
-		i = len - 1;
-	} else if(i < 0) {
-		i += len;
-	}
-	while(i >= 0) {
-		if(a[i] === obj) {
-			return i;
-		}
-		--i;
-	}
-	return -1;
-};
 HxOverrides.remove = function(a,obj) {
 	var i = a.indexOf(obj);
 	if(i == -1) {
@@ -210,26 +94,9 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
-var IntIterator = function(min,max) {
-	this.min = min;
-	this.max = max;
-};
-$hxClasses["IntIterator"] = IntIterator;
-IntIterator.__name__ = ["IntIterator"];
-IntIterator.prototype = {
-	min: null
-	,max: null
-	,hasNext: function() {
-		return this.min < this.max;
-	}
-	,next: function() {
-		return this.min++;
-	}
-	,__class__: IntIterator
-};
 var Lambda = function() { };
 $hxClasses["Lambda"] = Lambda;
-Lambda.__name__ = ["Lambda"];
+Lambda.__name__ = true;
 Lambda.array = function(it) {
 	var a = [];
 	var i = $iterator(it)();
@@ -239,169 +106,11 @@ Lambda.array = function(it) {
 	}
 	return a;
 };
-Lambda.list = function(it) {
-	var l = new List();
-	var i = $iterator(it)();
-	while(i.hasNext()) {
-		var i1 = i.next();
-		l.add(i1);
-	}
-	return l;
-};
-Lambda.map = function(it,f) {
-	var l = new List();
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		l.add(f(x1));
-	}
-	return l;
-};
-Lambda.mapi = function(it,f) {
-	var l = new List();
-	var i = 0;
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		l.add(f(i++,x1));
-	}
-	return l;
-};
-Lambda.flatten = function(it) {
-	var l = new List();
-	var e = $iterator(it)();
-	while(e.hasNext()) {
-		var e1 = e.next();
-		var x = $iterator(e1)();
-		while(x.hasNext()) {
-			var x1 = x.next();
-			l.add(x1);
-		}
-	}
-	return l;
-};
-Lambda.flatMap = function(it,f) {
-	return Lambda.flatten(Lambda.map(it,f));
-};
-Lambda.has = function(it,elt) {
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		if(x1 == elt) {
-			return true;
-		}
-	}
-	return false;
-};
-Lambda.exists = function(it,f) {
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		if(f(x1)) {
-			return true;
-		}
-	}
-	return false;
-};
-Lambda.foreach = function(it,f) {
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		if(!f(x1)) {
-			return false;
-		}
-	}
-	return true;
-};
-Lambda.iter = function(it,f) {
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		f(x1);
-	}
-};
-Lambda.filter = function(it,f) {
-	var l = new List();
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		if(f(x1)) {
-			l.add(x1);
-		}
-	}
-	return l;
-};
-Lambda.fold = function(it,f,first) {
-	var x = $iterator(it)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		first = f(x1,first);
-	}
-	return first;
-};
-Lambda.count = function(it,pred) {
-	var n = 0;
-	if(pred == null) {
-		var _ = $iterator(it)();
-		while(_.hasNext()) {
-			var _1 = _.next();
-			++n;
-		}
-	} else {
-		var x = $iterator(it)();
-		while(x.hasNext()) {
-			var x1 = x.next();
-			if(pred(x1)) {
-				++n;
-			}
-		}
-	}
-	return n;
-};
-Lambda.empty = function(it) {
-	return !$iterator(it)().hasNext();
-};
-Lambda.indexOf = function(it,v) {
-	var i = 0;
-	var v2 = $iterator(it)();
-	while(v2.hasNext()) {
-		var v21 = v2.next();
-		if(v == v21) {
-			return i;
-		}
-		++i;
-	}
-	return -1;
-};
-Lambda.find = function(it,f) {
-	var v = $iterator(it)();
-	while(v.hasNext()) {
-		var v1 = v.next();
-		if(f(v1)) {
-			return v1;
-		}
-	}
-	return null;
-};
-Lambda.concat = function(a,b) {
-	var l = new List();
-	var x = $iterator(a)();
-	while(x.hasNext()) {
-		var x1 = x.next();
-		l.add(x1);
-	}
-	var x2 = $iterator(b)();
-	while(x2.hasNext()) {
-		var x3 = x2.next();
-		l.add(x3);
-	}
-	return l;
-};
 var List = function() {
 	this.length = 0;
 };
 $hxClasses["List"] = List;
-List.__name__ = ["List"];
+List.__name__ = true;
 List.prototype = {
 	h: null
 	,q: null
@@ -416,125 +125,8 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
-	,push: function(item) {
-		var x = new _$List_ListNode(item,this.h);
-		this.h = x;
-		if(this.q == null) {
-			this.q = x;
-		}
-		this.length++;
-	}
-	,first: function() {
-		if(this.h == null) {
-			return null;
-		} else {
-			return this.h.item;
-		}
-	}
-	,last: function() {
-		if(this.q == null) {
-			return null;
-		} else {
-			return this.q.item;
-		}
-	}
-	,pop: function() {
-		if(this.h == null) {
-			return null;
-		}
-		var x = this.h.item;
-		this.h = this.h.next;
-		if(this.h == null) {
-			this.q = null;
-		}
-		this.length--;
-		return x;
-	}
-	,isEmpty: function() {
-		return this.h == null;
-	}
-	,clear: function() {
-		this.h = null;
-		this.q = null;
-		this.length = 0;
-	}
-	,remove: function(v) {
-		var prev = null;
-		var l = this.h;
-		while(l != null) {
-			if(l.item == v) {
-				if(prev == null) {
-					this.h = l.next;
-				} else {
-					prev.next = l.next;
-				}
-				if(this.q == l) {
-					this.q = prev;
-				}
-				this.length--;
-				return true;
-			}
-			prev = l;
-			l = l.next;
-		}
-		return false;
-	}
 	,iterator: function() {
 		return new _$List_ListIterator(this.h);
-	}
-	,toString: function() {
-		var s_b = "";
-		var first = true;
-		var l = this.h;
-		s_b += "{";
-		while(l != null) {
-			if(first) {
-				first = false;
-			} else {
-				s_b += ", ";
-			}
-			s_b += Std.string(Std.string(l.item));
-			l = l.next;
-		}
-		s_b += "}";
-		return s_b;
-	}
-	,join: function(sep) {
-		var s_b = "";
-		var first = true;
-		var l = this.h;
-		while(l != null) {
-			if(first) {
-				first = false;
-			} else {
-				s_b += sep == null ? "null" : "" + sep;
-			}
-			s_b += Std.string(l.item);
-			l = l.next;
-		}
-		return s_b;
-	}
-	,filter: function(f) {
-		var l2 = new List();
-		var l = this.h;
-		while(l != null) {
-			var v = l.item;
-			l = l.next;
-			if(f(v)) {
-				l2.add(v);
-			}
-		}
-		return l2;
-	}
-	,map: function(f) {
-		var b = new List();
-		var l = this.h;
-		while(l != null) {
-			var v = l.item;
-			l = l.next;
-			b.add(f(v));
-		}
-		return b;
 	}
 	,__class__: List
 };
@@ -543,7 +135,7 @@ var _$List_ListNode = function(item,next) {
 	this.next = next;
 };
 $hxClasses["_List.ListNode"] = _$List_ListNode;
-_$List_ListNode.__name__ = ["_List","ListNode"];
+_$List_ListNode.__name__ = true;
 _$List_ListNode.prototype = {
 	item: null
 	,next: null
@@ -553,7 +145,7 @@ var _$List_ListIterator = function(head) {
 	this.head = head;
 };
 $hxClasses["_List.ListIterator"] = _$List_ListIterator;
-_$List_ListIterator.__name__ = ["_List","ListIterator"];
+_$List_ListIterator.__name__ = true;
 _$List_ListIterator.prototype = {
 	head: null
 	,hasNext: function() {
@@ -567,695 +159,115 @@ _$List_ListIterator.prototype = {
 	,__class__: _$List_ListIterator
 };
 var Main = function() {
-	this.topDepth = 100;
-	this.depths = [];
+	this.enable = true;
+	this.theta = 0.035;
+	this.down = false;
+	this.up = false;
+	this.right = false;
+	this.left = false;
 	this.mouseIsDown = false;
-	this.cols = 8;
-	this.rows = 6;
-	this.hi = 45;
-	this.wid = 45;
-	this.once = true;
-	this.jigsawx = new jigsawx_Jigsawx(this.wid,this.hi,this.rows,this.cols);
-	this.jigsawBuilder = new jigsawxKha_JigsawImageBuilder(this.jigsawx.jigs);
+	this.jigsaw = new jigsawxKha_game_JigsawGame();
 	kha_Assets.loadEverything($bind(this,this.loadAll));
 };
 $hxClasses["Main"] = Main;
-Main.__name__ = ["Main"];
+Main.__name__ = true;
 Main.main = function() {
 	kha_System.init({ title : "JigsawX Trilateral Kha example", width : 1024, height : 768, samplesPerPixel : 4},function() {
 		new Main();
 	});
 };
 Main.prototype = {
-	once: null
-	,jigsawx: null
-	,imgJigsaw: null
-	,imgOutline: null
-	,jigsawBuilder: null
-	,gridDef: null
-	,gridDefOutline: null
-	,gridSheet: null
-	,gridSheetOutline: null
-	,outLineEdge: null
-	,wid: null
-	,hi: null
-	,rows: null
-	,cols: null
-	,offX: null
-	,offY: null
-	,mouseIsDown: null
-	,selected: null
-	,depths: null
-	,topDepth: null
+	mouseIsDown: null
+	,key: null
+	,left: null
+	,right: null
+	,up: null
+	,down: null
+	,theta: null
+	,jigsaw: null
+	,enable: null
 	,loadAll: function() {
-		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 51, className : "Main", methodName : "loadAll"});
-		var _this = this.jigsawBuilder;
-		var path = new trilateral_path_FillOnly();
-		var jig = _this.jigs[0];
-		var image;
-		var ox;
-		var oy;
-		var count = 0;
-		var _g1 = 0;
-		var _g = _this.jigs.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			jig = _this.jigs[i];
-			path.reset();
-			ox = jig.xy.x;
-			oy = jig.xy.y;
-			var first = jig.getFirst();
-			path.moveTo(first.x + ox,first.y + oy);
-			var p = jig.getPoints();
-			var _g2 = 0;
-			while(_g2 < p.length) {
-				var v = p[_g2];
-				++_g2;
-				var x_ = v.x + ox;
-				var y_ = v.y + oy;
-				var repeat = path.x == x_ && path.y == y_;
-				if(!repeat) {
-					if(path.widthFunction != null) {
-						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
-					}
-					path.line(x_,y_);
-					var l = path.points.length;
-					var p1 = path.points[l - 1];
-					var l2 = p1.length;
-					p1[l2] = x_;
-					p1[l2 + 1] = y_;
-					var d = path.dim[path.dim.length - 1];
-					if(x_ < d.minX) {
-						d.minX = x_;
-					}
-					if(x_ > d.maxX) {
-						d.maxX = x_;
-					}
-					if(y_ < d.minY) {
-						d.minY = y_;
-					}
-					if(y_ > d.maxY) {
-						d.maxY = y_;
-					}
-					path.x = x_;
-					path.y = y_;
-				}
-			}
-			_this.fillDraw.triangles = [];
-			_this.fillDraw.fill(path.points,0);
-			_this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,_this.fillDraw.triangles,ox,oy);
-			++count;
-		}
-		var _this1 = this.jigsawBuilder;
-		var path1 = new trilateral_path_MediumOverlap(null,null,3);
-		path1.width = 2;
-		var jig1 = _this1.jigs[0];
-		var ox1;
-		var oy1;
-		var count1 = 0;
-		var _g11 = 0;
-		var _g3 = _this1.jigs.length;
-		while(_g11 < _g3) {
-			var i1 = _g11++;
-			jig1 = _this1.jigs[i1];
-			path1.reset();
-			ox1 = jig1.xy.x;
-			oy1 = jig1.xy.y;
-			var first1 = jig1.getFirst();
-			path1.moveTo(first1.x + ox1,first1.y + oy1);
-			var p2 = jig1.getPoints();
-			var _g21 = 0;
-			while(_g21 < p2.length) {
-				var v1 = p2[_g21];
-				++_g21;
-				var x_1 = v1.x + ox1;
-				var y_1 = v1.y + oy1;
-				var repeat1 = path1.x == x_1 && path1.y == y_1;
-				if(!repeat1) {
-					if(path1.widthFunction != null) {
-						path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_1,y_1);
-					}
-					path1.line(x_1,y_1);
-					var l1 = path1.points.length;
-					var p3 = path1.points[l1 - 1];
-					var l21 = p3.length;
-					p3[l21] = x_1;
-					p3[l21 + 1] = y_1;
-					var d1 = path1.dim[path1.dim.length - 1];
-					if(x_1 < d1.minX) {
-						d1.minX = x_1;
-					}
-					if(x_1 > d1.maxX) {
-						d1.maxX = x_1;
-					}
-					if(y_1 < d1.minY) {
-						d1.minY = y_1;
-					}
-					if(y_1 > d1.maxY) {
-						d1.maxY = y_1;
-					}
-					path1.x = x_1;
-					path1.y = y_1;
-				}
-			}
-			var x_2 = first1.x + ox1;
-			var y_2 = first1.y + oy1;
-			var repeat2 = path1.x == x_2 && path1.y == y_2;
-			if(!repeat2) {
-				if(path1.widthFunction != null) {
-					path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_2,y_2);
-				}
-				path1.line(x_2,y_2);
-				var l3 = path1.points.length;
-				var p4 = path1.points[l3 - 1];
-				var l22 = p4.length;
-				p4[l22] = x_2;
-				p4[l22 + 1] = y_2;
-				var d2 = path1.dim[path1.dim.length - 1];
-				if(x_2 < d2.minX) {
-					d2.minX = x_2;
-				}
-				if(x_2 > d2.maxX) {
-					d2.maxX = x_2;
-				}
-				if(y_2 < d2.minY) {
-					d2.minY = y_2;
-				}
-				if(y_2 > d2.maxY) {
-					d2.maxY = y_2;
-				}
-				path1.x = x_2;
-				path1.y = y_2;
-			}
-			var this1 = trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new([]);
-			var triangles = this1;
-			var triArr = path1.trilateralArray;
-			var tri;
-			var _g4 = 0;
-			while(_g4 < triArr.length) {
-				var t = triArr[_g4];
-				++_g4;
-				if(t != null) {
-					var t1 = Type.createEmptyInstance(trilateral_tri_Triangle);
-					t1.id = count1;
-					t1.ax = t.ax;
-					t1.ay = t.ay;
-					t1.bx = t.bx;
-					t1.by = t.by;
-					t1.cx = t.cx;
-					t1.cy = t.cy;
-					t1.mark = t.mark;
-					t1.depth = 0;
-					t1.alpha = 1.;
-					t1.colorID = 1;
-					t1.colorA = 1;
-					t1.colorB = 1;
-					t1.colorC = 1;
-					t1.windingAdjusted = t.windingAdjusted;
-					tri = t1;
-					triangles[triangles.length] = tri;
-				}
-			}
-			_this1.jigsawShapeArrayOutline[i1] = new jigsawxKha_JigsawShape(jig1,triangles,ox1,oy1);
-			++count1;
-		}
-		var _this2 = this.jigsawBuilder;
-		var imageIn = kha_Assets.images.tablecloth;
-		var poly = _this2.imageDrawing.polyPainter;
-		var jigsawShape;
-		var scale = 1.;
-		var x = 0.;
-		var y = 0.;
-		_this2.imageDrawing.startImage();
-		if(_this2.showBackground) {
-			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),_this2.backgroundAlpha);
-		}
-		var _g12 = 0;
-		var _g5 = _this2.jigsawShapeArray.length;
-		while(_g12 < _g5) {
-			var i2 = _g12++;
-			jigsawShape = _this2.jigsawShapeArray[i2];
-			_this2.fillDraw.triangles = jigsawShape.triangles;
-			var dx = jigsawShape.x * _this2.scaleImg;
-			var dy = jigsawShape.y * _this2.scaleImg;
-			_this2.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
-		}
-		_this2.imageDrawing.end();
-		this.imgJigsaw = _this2.imageDrawing.image;
-		var _this3 = this.jigsawBuilder;
-		var poly1 = _this3.polyPainter;
-		var jigsawShape1;
-		var scale1 = 1.;
-		var x1 = 0.;
-		var y1 = 0.;
-		var img = kha_Image.createRenderTarget(1024,768,null,0,4);
-		poly1.set_canvas(img);
-		poly1.begin(0,true,null);
-		var _g13 = 0;
-		var _g6 = _this3.jigsawShapeArrayOutline.length;
-		while(_g13 < _g6) {
-			var i3 = _g13++;
-			jigsawShape1 = _this3.jigsawShapeArrayOutline[i3];
-			var triangles1 = jigsawShape1.triangles;
-			var dx1 = jigsawShape1.x;
-			var dy1 = jigsawShape1.y;
-			var tri1;
-			var _g31 = 0;
-			var _g22 = triangles1.length;
-			while(_g31 < _g22) {
-				var i4 = _g31++;
-				tri1 = triangles1[i4];
-				poly1.drawFillTriangle(tri1.ax + dx1 + 1,tri1.ay + dy1 + 1,tri1.bx + dx1 + 1,tri1.by + dy1 + 1,tri1.cx + dx1 + 1,tri1.cy + dy1 + 1,-1);
-			}
-		}
-		poly1.end();
-		this.imgOutline = img;
-		var factor = 4;
-		var left = 320.;
-		var top = 265.;
-		var xRange = 370.;
-		var yRange = 250.;
-		var randomizeMost;
-		var _g7 = 0;
-		var _g14 = this.jigsawx.jigs;
-		while(_g7 < _g14.length) {
-			var jig2 = _g14[_g7];
-			++_g7;
-			randomizeMost = (Math.random() * factor | 0) != 0;
-			if(randomizeMost) {
-				var tmp = Math.random() * xRange;
-				jig2.xy.x = tmp + left;
-				var tmp1 = Math.random() * yRange;
-				jig2.xy.y = tmp1 + top;
-			} else {
-				jig2.enabled = false;
-			}
-		}
-		this.outLineEdge = new OutLineEdge(this);
-		var _g15 = 0;
-		var _g8 = this.rows * this.cols;
-		while(_g15 < _g8) {
-			var i5 = _g15++;
-			this.depths[i5] = i5;
-		}
-		this.gridDef = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgJigsaw};
-		this.gridDefOutline = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgOutline};
-		this.gridSheet = new trilateralXtra_kDrawing_GridSheet(this.gridDef);
-		this.gridSheet.dx = -this.wid / 2 + 1;
-		this.gridSheet.dy = -this.hi / 2 + 1;
-		this.gridSheetOutline = new trilateralXtra_kDrawing_GridSheet(this.gridDefOutline);
-		this.gridSheetOutline.dx = -this.wid / 2 + 1;
-		this.gridSheetOutline.dy = -this.hi / 2 + 1;
+		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 38, className : "Main", methodName : "loadAll"});
+		this.jigsaw.start(kha_Assets.images.tablecloth);
 		var _gthis = this;
 		kha_System.notifyOnRender(function(framebuffer) {
 			var g = framebuffer.get_g2();
 			g.begin();
-			var blueBackTint = kha__$Color_Color_$Impl_$._new(-11184642);
-			g.set_color(blueBackTint);
-			g.drawImage(kha_Assets.images.tablecloth,_gthis.wid / 2 + 1,_gthis.hi / 2 + 1);
-			_gthis.gridSheetOutline.renderGrid(g,_gthis.outLineEdge,false);
-			_gthis.gridSheet.renderGrid(g,_gthis,false);
+			var _this = _gthis.jigsaw;
+			_this.gridOutline.renderGrid(g,_this.outLineEdge,false);
+			_this.gridFill.renderGrid(g,_this,false);
 			g.end();
 		});
+		kha_Scheduler.addTimeTask($bind(this,this.update),0,0.0166666666666666664);
 		this.initInputs();
-	}
-	,initDepths: function() {
-		var _g1 = 0;
-		var _g = this.rows * this.cols;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.depths[i] = i;
-		}
-	}
-	,setupImageGrid: function() {
-		this.gridDef = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgJigsaw};
-		this.gridDefOutline = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imgOutline};
-		this.gridSheet = new trilateralXtra_kDrawing_GridSheet(this.gridDef);
-		this.gridSheet.dx = -this.wid / 2 + 1;
-		this.gridSheet.dy = -this.hi / 2 + 1;
-		this.gridSheetOutline = new trilateralXtra_kDrawing_GridSheet(this.gridDefOutline);
-		this.gridSheetOutline.dx = -this.wid / 2 + 1;
-		this.gridSheetOutline.dy = -this.hi / 2 + 1;
-	}
-	,drawJigsawImage: function() {
-		var _this = this.jigsawBuilder;
-		var path = new trilateral_path_FillOnly();
-		var jig = _this.jigs[0];
-		var image;
-		var ox;
-		var oy;
-		var count = 0;
-		var _g1 = 0;
-		var _g = _this.jigs.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			jig = _this.jigs[i];
-			path.reset();
-			ox = jig.xy.x;
-			oy = jig.xy.y;
-			var first = jig.getFirst();
-			path.moveTo(first.x + ox,first.y + oy);
-			var p = jig.getPoints();
-			var _g2 = 0;
-			while(_g2 < p.length) {
-				var v = p[_g2];
-				++_g2;
-				var x_ = v.x + ox;
-				var y_ = v.y + oy;
-				var repeat = path.x == x_ && path.y == y_;
-				if(!repeat) {
-					if(path.widthFunction != null) {
-						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
-					}
-					path.line(x_,y_);
-					var l = path.points.length;
-					var p1 = path.points[l - 1];
-					var l2 = p1.length;
-					p1[l2] = x_;
-					p1[l2 + 1] = y_;
-					var d = path.dim[path.dim.length - 1];
-					if(x_ < d.minX) {
-						d.minX = x_;
-					}
-					if(x_ > d.maxX) {
-						d.maxX = x_;
-					}
-					if(y_ < d.minY) {
-						d.minY = y_;
-					}
-					if(y_ > d.maxY) {
-						d.maxY = y_;
-					}
-					path.x = x_;
-					path.y = y_;
-				}
-			}
-			_this.fillDraw.triangles = [];
-			_this.fillDraw.fill(path.points,0);
-			_this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,_this.fillDraw.triangles,ox,oy);
-			++count;
-		}
-		var _this1 = this.jigsawBuilder;
-		var path1 = new trilateral_path_MediumOverlap(null,null,3);
-		path1.width = 2;
-		var jig1 = _this1.jigs[0];
-		var ox1;
-		var oy1;
-		var count1 = 0;
-		var _g11 = 0;
-		var _g3 = _this1.jigs.length;
-		while(_g11 < _g3) {
-			var i1 = _g11++;
-			jig1 = _this1.jigs[i1];
-			path1.reset();
-			ox1 = jig1.xy.x;
-			oy1 = jig1.xy.y;
-			var first1 = jig1.getFirst();
-			path1.moveTo(first1.x + ox1,first1.y + oy1);
-			var p2 = jig1.getPoints();
-			var _g21 = 0;
-			while(_g21 < p2.length) {
-				var v1 = p2[_g21];
-				++_g21;
-				var x_1 = v1.x + ox1;
-				var y_1 = v1.y + oy1;
-				var repeat1 = path1.x == x_1 && path1.y == y_1;
-				if(!repeat1) {
-					if(path1.widthFunction != null) {
-						path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_1,y_1);
-					}
-					path1.line(x_1,y_1);
-					var l1 = path1.points.length;
-					var p3 = path1.points[l1 - 1];
-					var l21 = p3.length;
-					p3[l21] = x_1;
-					p3[l21 + 1] = y_1;
-					var d1 = path1.dim[path1.dim.length - 1];
-					if(x_1 < d1.minX) {
-						d1.minX = x_1;
-					}
-					if(x_1 > d1.maxX) {
-						d1.maxX = x_1;
-					}
-					if(y_1 < d1.minY) {
-						d1.minY = y_1;
-					}
-					if(y_1 > d1.maxY) {
-						d1.maxY = y_1;
-					}
-					path1.x = x_1;
-					path1.y = y_1;
-				}
-			}
-			var x_2 = first1.x + ox1;
-			var y_2 = first1.y + oy1;
-			var repeat2 = path1.x == x_2 && path1.y == y_2;
-			if(!repeat2) {
-				if(path1.widthFunction != null) {
-					path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_2,y_2);
-				}
-				path1.line(x_2,y_2);
-				var l3 = path1.points.length;
-				var p4 = path1.points[l3 - 1];
-				var l22 = p4.length;
-				p4[l22] = x_2;
-				p4[l22 + 1] = y_2;
-				var d2 = path1.dim[path1.dim.length - 1];
-				if(x_2 < d2.minX) {
-					d2.minX = x_2;
-				}
-				if(x_2 > d2.maxX) {
-					d2.maxX = x_2;
-				}
-				if(y_2 < d2.minY) {
-					d2.minY = y_2;
-				}
-				if(y_2 > d2.maxY) {
-					d2.maxY = y_2;
-				}
-				path1.x = x_2;
-				path1.y = y_2;
-			}
-			var this1 = trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new([]);
-			var triangles = this1;
-			var triArr = path1.trilateralArray;
-			var tri;
-			var _g4 = 0;
-			while(_g4 < triArr.length) {
-				var t = triArr[_g4];
-				++_g4;
-				if(t != null) {
-					var t1 = Type.createEmptyInstance(trilateral_tri_Triangle);
-					t1.id = count1;
-					t1.ax = t.ax;
-					t1.ay = t.ay;
-					t1.bx = t.bx;
-					t1.by = t.by;
-					t1.cx = t.cx;
-					t1.cy = t.cy;
-					t1.mark = t.mark;
-					t1.depth = 0;
-					t1.alpha = 1.;
-					t1.colorID = 1;
-					t1.colorA = 1;
-					t1.colorB = 1;
-					t1.colorC = 1;
-					t1.windingAdjusted = t.windingAdjusted;
-					tri = t1;
-					triangles[triangles.length] = tri;
-				}
-			}
-			_this1.jigsawShapeArrayOutline[i1] = new jigsawxKha_JigsawShape(jig1,triangles,ox1,oy1);
-			++count1;
-		}
-		var _this2 = this.jigsawBuilder;
-		var imageIn = kha_Assets.images.tablecloth;
-		var poly = _this2.imageDrawing.polyPainter;
-		var jigsawShape;
-		var scale = 1.;
-		var x = 0.;
-		var y = 0.;
-		_this2.imageDrawing.startImage();
-		if(_this2.showBackground) {
-			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),_this2.backgroundAlpha);
-		}
-		var _g12 = 0;
-		var _g5 = _this2.jigsawShapeArray.length;
-		while(_g12 < _g5) {
-			var i2 = _g12++;
-			jigsawShape = _this2.jigsawShapeArray[i2];
-			_this2.fillDraw.triangles = jigsawShape.triangles;
-			var dx = jigsawShape.x * _this2.scaleImg;
-			var dy = jigsawShape.y * _this2.scaleImg;
-			_this2.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
-		}
-		_this2.imageDrawing.end();
-		this.imgJigsaw = _this2.imageDrawing.image;
-		var _this3 = this.jigsawBuilder;
-		var poly1 = _this3.polyPainter;
-		var jigsawShape1;
-		var scale1 = 1.;
-		var x1 = 0.;
-		var y1 = 0.;
-		var img = kha_Image.createRenderTarget(1024,768,null,0,4);
-		poly1.set_canvas(img);
-		poly1.begin(0,true,null);
-		var _g13 = 0;
-		var _g6 = _this3.jigsawShapeArrayOutline.length;
-		while(_g13 < _g6) {
-			var i3 = _g13++;
-			jigsawShape1 = _this3.jigsawShapeArrayOutline[i3];
-			var triangles1 = jigsawShape1.triangles;
-			var dx1 = jigsawShape1.x;
-			var dy1 = jigsawShape1.y;
-			var tri1;
-			var _g31 = 0;
-			var _g22 = triangles1.length;
-			while(_g31 < _g22) {
-				var i4 = _g31++;
-				tri1 = triangles1[i4];
-				poly1.drawFillTriangle(tri1.ax + dx1 + 1,tri1.ay + dy1 + 1,tri1.bx + dx1 + 1,tri1.by + dy1 + 1,tri1.cx + dx1 + 1,tri1.cy + dy1 + 1,-1);
-			}
-		}
-		poly1.end();
-		this.imgOutline = img;
-		var factor = 4;
-		var left = 320.;
-		var top = 265.;
-		var xRange = 370.;
-		var yRange = 250.;
-		var randomizeMost;
-		var _g7 = 0;
-		var _g14 = this.jigsawx.jigs;
-		while(_g7 < _g14.length) {
-			var jig2 = _g14[_g7];
-			++_g7;
-			randomizeMost = (Math.random() * factor | 0) != 0;
-			if(randomizeMost) {
-				var tmp = Math.random() * xRange;
-				jig2.xy.x = tmp + left;
-				var tmp1 = Math.random() * yRange;
-				jig2.xy.y = tmp1 + top;
-			} else {
-				jig2.enabled = false;
-			}
-		}
-	}
-	,randomizePieces: function() {
-		var factor = 4;
-		var left = 320.;
-		var top = 265.;
-		var xRange = 370.;
-		var yRange = 250.;
-		var randomizeMost;
-		var _g = 0;
-		var _g1 = this.jigsawx.jigs;
-		while(_g < _g1.length) {
-			var jig = _g1[_g];
-			++_g;
-			randomizeMost = (Math.random() * factor | 0) != 0;
-			if(randomizeMost) {
-				var tmp = Math.random() * xRange;
-				jig.xy.x = tmp + left;
-				var tmp1 = Math.random() * yRange;
-				jig.xy.y = tmp1 + top;
-			} else {
-				jig.enabled = false;
-			}
-		}
 	}
 	,startRendering: function() {
 		var _gthis = this;
 		kha_System.notifyOnRender(function(framebuffer) {
 			var g = framebuffer.get_g2();
 			g.begin();
-			var blueBackTint = kha__$Color_Color_$Impl_$._new(-11184642);
-			g.set_color(blueBackTint);
-			g.drawImage(kha_Assets.images.tablecloth,_gthis.wid / 2 + 1,_gthis.hi / 2 + 1);
-			_gthis.gridSheetOutline.renderGrid(g,_gthis.outLineEdge,false);
-			_gthis.gridSheet.renderGrid(g,_gthis,false);
+			var _this = _gthis.jigsaw;
+			_this.gridOutline.renderGrid(g,_this.outLineEdge,false);
+			_this.gridFill.renderGrid(g,_this,false);
 			g.end();
 		});
+		kha_Scheduler.addTimeTask($bind(this,this.update),0,0.0166666666666666664);
 	}
 	,render: function(framebuffer) {
 		var g = framebuffer.get_g2();
 		g.begin();
-		var blueBackTint = kha__$Color_Color_$Impl_$._new(-11184642);
-		g.set_color(blueBackTint);
-		g.drawImage(kha_Assets.images.tablecloth,this.wid / 2 + 1,this.hi / 2 + 1);
-		this.gridSheetOutline.renderGrid(g,this.outLineEdge,false);
-		this.gridSheet.renderGrid(g,this,false);
+		var _this = this.jigsaw;
+		_this.gridOutline.renderGrid(g,_this.outLineEdge,false);
+		_this.gridFill.renderGrid(g,_this,false);
 		g.end();
 	}
-	,getItem: function(col,row) {
-		var id = row * this.cols + col;
-		var jig = this.jigsawx.jigs[id];
-		var color = -1;
-		var depth = this.depths[id];
-		var redHighLight = kha__$Color_Color_$Impl_$._new(-74275);
-		if(jig == this.selected) {
-			color = redHighLight;
-			depth = this.topDepth++;
-			this.depths[id] = this.topDepth;
+	,update: function() {
+		if(this.left) {
+			var _this = this.jigsaw;
+			if(_this.selected != null) {
+				_this.selected.rotation -= -this.theta;
+			}
+		} else if(this.right) {
+			var _this1 = this.jigsaw;
+			if(_this1.selected != null) {
+				_this1.selected.rotation -= this.theta;
+			}
 		}
-		var alpha = 0.8;
-		if(jig.enabled == false) {
-			alpha = 1.;
-			color = -1;
-		}
-		var x = jig.xy.x;
-		var y = jig.xy.y;
-		return { x : x, y : y, color : color, alpha : alpha, transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : depth};
 	}
 	,initInputs: function() {
 		if(kha_input_Mouse.get() != null) {
 			kha_input_Mouse.get().notify($bind(this,this.mouseDown),$bind(this,this.mouseUp),$bind(this,this.mouseMove),null);
 		}
-	}
-	,sortByDistance: function(arr,x,y) {
-		var _gthis = this;
-		var mx = x;
-		var my = y;
-		var jigs = this.jigsawx.jigs;
-		haxe_ds_ArraySort.sort(arr,function(a,b) {
-			var j = jigs[a].xy;
-			var k = jigs[b].xy;
-			var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
-			var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
-			if(distA < distB) {
-				return -1;
-			} else if(distA > distB) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
-	}
-	,distP: function(px,py,x,y) {
-		return Math.pow(x - px,2) + Math.pow(y - py,2);
+		if(kha_input_Keyboard.get() != null) {
+			kha_input_Keyboard.get().notify($bind(this,this.keyDown),$bind(this,this.keyUp),null);
+		}
 	}
 	,mouseDown: function(button,x,y) {
-		var _this = this.jigsawBuilder;
-		var x1 = x - this.wid / 2;
-		var y1 = y - this.hi / 2;
+		var _this = this.jigsaw;
+		_this.selected = null;
+		_this.selectedID = null;
+		var _this1 = this.jigsaw;
+		var _gthis = _this1;
+		var x1 = x - _this1.wid / 2;
+		var y1 = y - _this1.hi / 2;
 		var hits = [];
 		var hitCount = 0;
 		var jigsawShape;
 		var ox;
 		var oy;
-		var xy;
+		var jig;
 		var _g1 = 0;
-		var _g = _this.jigsawShapeArray.length;
+		var _g = _this1.jigsawShapeArray.length;
 		while(_g1 < _g) {
 			var s = _g1++;
-			jigsawShape = _this.jigsawShapeArray[s];
+			jigsawShape = _this1.jigsawShapeArray[s];
 			ox = jigsawShape.x;
 			oy = jigsawShape.y;
-			xy = _this.jigs[s].xy;
+			jig = _this1.jigs[s];
 			var t = HxOverrides.iter(jigsawShape.triangles);
 			while(t.hasNext()) {
 				var t1 = t.next();
-				if(t1.fullHit(x1 + -xy.x + ox,y1 + -xy.y + oy)) {
+				if(t1.fullHit(x1 + -jig.x + ox,y1 + -jig.y + oy)) {
 					hits[hitCount] = s;
 					++hitCount;
 					break;
@@ -1263,18 +275,16 @@ Main.prototype = {
 			}
 		}
 		var arr = hits;
-		var jigs = this.jigsawx.jigs;
 		arr = arr.filter(function(i) {
-			return jigs[i].enabled;
+			return _gthis.jigs[i].enabled;
 		});
 		if(arr.length > 1) {
-			var _gthis = this;
-			var mx = x - this.wid;
-			var my = y - this.hi;
-			var jigs1 = this.jigsawx.jigs;
+			var _gthis1 = _this1;
+			var mx = x - _this1.wid;
+			var my = y - _this1.hi;
 			haxe_ds_ArraySort.sort(arr,function(a,b) {
-				var j = jigs1[a].xy;
-				var k = jigs1[b].xy;
+				var j = _gthis1.jigs[a];
+				var k = _gthis1.jigs[b];
 				var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
 				var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
 				if(distA < distB) {
@@ -1287,215 +297,100 @@ Main.prototype = {
 			});
 		}
 		if(arr.length > 0) {
-			var jig = jigs[arr[0]];
-			this.selected = jig;
-			var xy1 = jig.xy;
-			this.offX = x - this.wid - xy1.x;
-			this.offY = y - this.hi - xy1.y;
+			_this1.selectedID = arr[0];
+			var jig1 = _this1.jigs[_this1.selectedID];
+			_this1.selected = jig1;
+			_this1.offX = x - _this1.wid - _this1.selected.x;
+			_this1.offY = y - _this1.hi - _this1.selected.y;
 		}
 		this.mouseIsDown = true;
 	}
 	,mouseUp: function(button,x,y) {
 		this.mouseIsDown = false;
-		if(this.selected != null) {
-			var id = 0;
-			var jigs = this.jigsawx.jigs;
-			var _g1 = 0;
-			var _g = jigs.length;
-			while(_g1 < _g) {
-				var i = _g1++;
-				if(jigs[i] == this.selected) {
-					id = i;
-					break;
+		var _this = this.jigsaw;
+		if(_this.selected != null) {
+			var id = _this.selectedID;
+			var angle = _this.selected.rotation;
+			var tmp;
+			if(angle <= Math.PI && angle > -Math.PI) {
+				tmp = angle;
+			} else {
+				var a = (angle + Math.PI) % (2 * Math.PI);
+				if(a >= 0) {
+					tmp = a - Math.PI;
+				} else {
+					tmp = a + Math.PI;
 				}
 			}
-			var id1 = id;
-			if(this.jigsawBuilder.isInPlace(id1,this.selected)) {
-				this.selected.enabled = false;
-				var p = this.jigsawBuilder.getShapeXY(id1);
-				this.selected.xy.x = p.x;
-				this.selected.xy.y = p.y;
+			_this.selected.rotation = tmp;
+			if(_this.selected.rotation < Math.PI / 16 && _this.selected.rotation > -Math.PI / 16) {
+				if(_this.isInPlace(id,_this.selected)) {
+					_this.selected.rotation = 0;
+					_this.selected.enabled = false;
+					var p = _this.getShapeXY(id);
+					_this.selected.x = p.x;
+					_this.selected.y = p.y;
+				}
 			}
 		}
-		this.selected = null;
-	}
-	,getIdofSelected: function() {
-		var id = 0;
-		var jigs = this.jigsawx.jigs;
-		var _g1 = 0;
-		var _g = jigs.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			if(jigs[i] == this.selected) {
-				id = i;
-				break;
-			}
-		}
-		return id;
+		var _this1 = this.jigsaw;
+		_this1.selected = null;
+		_this1.selectedID = null;
 	}
 	,mouseMove: function(x,y,movementX,movementY) {
 		if(this.mouseIsDown == false) {
 			return;
 		}
-		var _g = 0;
-		var _g1 = this.jigsawx.jigs;
-		while(_g < _g1.length) {
-			var j = _g1[_g];
-			++_g;
-			if(j == this.selected) {
-				var xy = j.xy;
-				xy.x = x - this.wid - this.offX;
-				xy.y = y - this.hi - this.offY;
-			}
+		var _this = this.jigsaw;
+		if(_this.selected != null) {
+			_this.selected.x = x - _this.wid - _this.offX;
+			_this.selected.y = y - _this.hi - _this.offY;
+			_this.offX /= 1.025;
+			_this.offY /= 1.025;
 		}
-		this.offX /= 1.025;
-		this.offY /= 1.025;
+	}
+	,keyDown: function(keyCode) {
+		this.key = keyCode;
+		if(!this.enable) {
+			return;
+		}
+		switch(keyCode) {
+		case 37:
+			this.left = true;
+			break;
+		case 38:
+			this.up = true;
+			break;
+		case 39:
+			this.right = true;
+			break;
+		case 40:
+			this.down = true;
+			break;
+		default:
+		}
+	}
+	,keyUp: function(keyCode) {
+		if(!this.enable) {
+			return;
+		}
+		this.left = false;
+		this.right = false;
+		this.up = false;
+		this.down = false;
 	}
 	,__class__: Main
 };
-var OutLineEdge = function(main_) {
-	this.main = main_;
-};
-$hxClasses["OutLineEdge"] = OutLineEdge;
-OutLineEdge.__name__ = ["OutLineEdge"];
-OutLineEdge.prototype = {
-	main: null
-	,getItem: function(col,row) {
-		var id = row * this.main.cols + col;
-		var jig = this.main.jigsawx.jigs[id];
-		var color = -1;
-		var depth = this.main.depths[id];
-		var redHighLight = kha__$Color_Color_$Impl_$._new(-74275);
-		if(jig == this.main.selected) {
-			color = redHighLight;
-			depth = this.main.topDepth++;
-			this.main.depths[id] = this.main.topDepth;
-		}
-		var alpha = 0.8;
-		if(jig.enabled == false) {
-			alpha = 1.;
-			color = kha__$Color_Color_$Impl_$._new(16777215);
-		}
-		var x = jig.xy.x;
-		var y = jig.xy.y;
-		return { x : x, y : y, color : color, alpha : alpha, transform : new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1), depth : depth};
-	}
-	,__class__: OutLineEdge
-};
-var _$Map_Map_$Impl_$ = {};
-$hxClasses["_Map.Map_Impl_"] = _$Map_Map_$Impl_$;
-_$Map_Map_$Impl_$.__name__ = ["_Map","Map_Impl_"];
-_$Map_Map_$Impl_$.set = function(this1,key,value) {
-	this1.set(key,value);
-};
-_$Map_Map_$Impl_$.get = function(this1,key) {
-	return this1.get(key);
-};
-_$Map_Map_$Impl_$.exists = function(this1,key) {
-	return this1.exists(key);
-};
-_$Map_Map_$Impl_$.remove = function(this1,key) {
-	return this1.remove(key);
-};
-_$Map_Map_$Impl_$.keys = function(this1) {
-	return this1.keys();
-};
-_$Map_Map_$Impl_$.iterator = function(this1) {
-	return this1.iterator();
-};
-_$Map_Map_$Impl_$.toString = function(this1) {
-	return this1.toString();
-};
-_$Map_Map_$Impl_$.arrayWrite = function(this1,k,v) {
-	this1.set(k,v);
-	return v;
-};
-_$Map_Map_$Impl_$.toStringMap = function(t) {
-	return new haxe_ds_StringMap();
-};
-_$Map_Map_$Impl_$.toIntMap = function(t) {
-	return new haxe_ds_IntMap();
-};
-_$Map_Map_$Impl_$.toEnumValueMapMap = function(t) {
-	return new haxe_ds_EnumValueMap();
-};
-_$Map_Map_$Impl_$.toObjectMap = function(t) {
-	return new haxe_ds_ObjectMap();
-};
-_$Map_Map_$Impl_$.fromStringMap = function(map) {
-	return map;
-};
-_$Map_Map_$Impl_$.fromIntMap = function(map) {
-	return map;
-};
-_$Map_Map_$Impl_$.fromObjectMap = function(map) {
-	return map;
-};
-Math.__name__ = ["Math"];
+Math.__name__ = true;
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
-Reflect.__name__ = ["Reflect"];
-Reflect.hasField = function(o,field) {
-	return Object.prototype.hasOwnProperty.call(o,field);
-};
+Reflect.__name__ = true;
 Reflect.field = function(o,field) {
 	try {
 		return o[field];
 	} catch( e ) {
 		return null;
 	}
-};
-Reflect.setField = function(o,field,value) {
-	o[field] = value;
-};
-Reflect.getProperty = function(o,field) {
-	var tmp;
-	if(o == null) {
-		return null;
-	} else {
-		var tmp1;
-		if(o.__properties__) {
-			tmp = o.__properties__["get_" + field];
-			tmp1 = tmp;
-		} else {
-			tmp1 = false;
-		}
-		if(tmp1) {
-			return o[tmp]();
-		} else {
-			return o[field];
-		}
-	}
-};
-Reflect.setProperty = function(o,field,value) {
-	var tmp;
-	var tmp1;
-	if(o.__properties__) {
-		tmp = o.__properties__["set_" + field];
-		tmp1 = tmp;
-	} else {
-		tmp1 = false;
-	}
-	if(tmp1) {
-		o[tmp](value);
-	} else {
-		o[field] = value;
-	}
-};
-Reflect.callMethod = function(o,func,args) {
-	return func.apply(o,args);
-};
-Reflect.fields = function(o) {
-	var a = [];
-	if(o != null) {
-		var hasOwnProperty = Object.prototype.hasOwnProperty;
-		for( var f in o ) {
-		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) {
-			a.push(f);
-		}
-		}
-	}
-	return a;
 };
 Reflect.isFunction = function(f) {
 	if(typeof(f) == "function") {
@@ -1504,92 +399,11 @@ Reflect.isFunction = function(f) {
 		return false;
 	}
 };
-Reflect.compare = function(a,b) {
-	if(a == b) {
-		return 0;
-	} else if(a > b) {
-		return 1;
-	} else {
-		return -1;
-	}
-};
-Reflect.compareMethods = function(f1,f2) {
-	if(f1 == f2) {
-		return true;
-	}
-	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) {
-		return false;
-	}
-	if(f1.scope == f2.scope && f1.method == f2.method) {
-		return f1.method != null;
-	} else {
-		return false;
-	}
-};
-Reflect.isObject = function(v) {
-	if(v == null) {
-		return false;
-	}
-	var t = typeof(v);
-	if(!(t == "string" || t == "object" && v.__enum__ == null)) {
-		if(t == "function") {
-			return (v.__name__ || v.__ename__) != null;
-		} else {
-			return false;
-		}
-	} else {
-		return true;
-	}
-};
-Reflect.isEnumValue = function(v) {
-	if(v != null) {
-		return v.__enum__ != null;
-	} else {
-		return false;
-	}
-};
-Reflect.deleteField = function(o,field) {
-	if(!Object.prototype.hasOwnProperty.call(o,field)) {
-		return false;
-	}
-	delete(o[field]);
-	return true;
-};
-Reflect.copy = function(o) {
-	var o2 = { };
-	var _g = 0;
-	var _g1 = Reflect.fields(o);
-	while(_g < _g1.length) {
-		var f = _g1[_g];
-		++_g;
-		o2[f] = Reflect.field(o,f);
-	}
-	return o2;
-};
-Reflect.makeVarArgs = function(f) {
-	return function() {
-		var a = Array.prototype.slice.call(arguments);
-		return f(a);
-	};
-};
 var Std = function() { };
 $hxClasses["Std"] = Std;
-Std.__name__ = ["Std"];
-Std["is"] = function(v,t) {
-	return js_Boot.__instanceof(v,t);
-};
-Std.instance = function(value,c) {
-	if((value instanceof c)) {
-		return value;
-	} else {
-		return null;
-	}
-};
+Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
-};
-Std["int"] = function(x) {
-	return x | 0;
 };
 Std.parseInt = function(x) {
 	var v = parseInt(x,10);
@@ -1601,68 +415,9 @@ Std.parseInt = function(x) {
 	}
 	return v;
 };
-Std.parseFloat = function(x) {
-	return parseFloat(x);
-};
-Std.random = function(x) {
-	if(x <= 0) {
-		return 0;
-	} else {
-		return Math.floor(Math.random() * x);
-	}
-};
-var StringBuf = function() {
-	this.b = "";
-};
-$hxClasses["StringBuf"] = StringBuf;
-StringBuf.__name__ = ["StringBuf"];
-StringBuf.prototype = {
-	b: null
-	,get_length: function() {
-		return this.b.length;
-	}
-	,add: function(x) {
-		this.b += Std.string(x);
-	}
-	,addChar: function(c) {
-		this.b += String.fromCharCode(c);
-	}
-	,addSub: function(s,pos,len) {
-		this.b += len == null ? HxOverrides.substr(s,pos,null) : HxOverrides.substr(s,pos,len);
-	}
-	,toString: function() {
-		return this.b;
-	}
-	,__class__: StringBuf
-	,__properties__: {get_length:"get_length"}
-};
 var StringTools = function() { };
 $hxClasses["StringTools"] = StringTools;
-StringTools.__name__ = ["StringTools"];
-StringTools.urlEncode = function(s) {
-	return encodeURIComponent(s);
-};
-StringTools.urlDecode = function(s) {
-	return decodeURIComponent(s.split("+").join(" "));
-};
-StringTools.htmlEscape = function(s,quotes) {
-	s = s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-	if(quotes) {
-		return s.split("\"").join("&quot;").split("'").join("&#039;");
-	} else {
-		return s;
-	}
-};
-StringTools.htmlUnescape = function(s) {
-	return s.split("&gt;").join(">").split("&lt;").join("<").split("&quot;").join("\"").split("&#039;").join("'").split("&amp;").join("&");
-};
-StringTools.startsWith = function(s,start) {
-	if(s.length >= start.length) {
-		return HxOverrides.substr(s,0,start.length) == start;
-	} else {
-		return false;
-	}
-};
+StringTools.__name__ = true;
 StringTools.endsWith = function(s,end) {
 	var elen = end.length;
 	var slen = s.length;
@@ -1672,205 +427,9 @@ StringTools.endsWith = function(s,end) {
 		return false;
 	}
 };
-StringTools.isSpace = function(s,pos) {
-	var c = HxOverrides.cca(s,pos);
-	if(!(c > 8 && c < 14)) {
-		return c == 32;
-	} else {
-		return true;
-	}
-};
-StringTools.ltrim = function(s) {
-	var l = s.length;
-	var r = 0;
-	while(r < l && StringTools.isSpace(s,r)) ++r;
-	if(r > 0) {
-		return HxOverrides.substr(s,r,l - r);
-	} else {
-		return s;
-	}
-};
-StringTools.rtrim = function(s) {
-	var l = s.length;
-	var r = 0;
-	while(r < l && StringTools.isSpace(s,l - r - 1)) ++r;
-	if(r > 0) {
-		return HxOverrides.substr(s,0,l - r);
-	} else {
-		return s;
-	}
-};
-StringTools.trim = function(s) {
-	return StringTools.ltrim(StringTools.rtrim(s));
-};
-StringTools.lpad = function(s,c,l) {
-	if(c.length <= 0) {
-		return s;
-	}
-	while(s.length < l) s = c + s;
-	return s;
-};
-StringTools.rpad = function(s,c,l) {
-	if(c.length <= 0) {
-		return s;
-	}
-	while(s.length < l) s += c;
-	return s;
-};
-StringTools.replace = function(s,sub,by) {
-	return s.split(sub).join(by);
-};
-StringTools.hex = function(n,digits) {
-	var s = "";
-	var hexChars = "0123456789ABCDEF";
-	while(true) {
-		s = hexChars.charAt(n & 15) + s;
-		n >>>= 4;
-		if(!(n > 0)) {
-			break;
-		}
-	}
-	if(digits != null) {
-		while(s.length < digits) s = "0" + s;
-	}
-	return s;
-};
-StringTools.fastCodeAt = function(s,index) {
-	return s.charCodeAt(index);
-};
-StringTools.isEof = function(c) {
-	return c != c;
-};
-StringTools.quoteUnixArg = function(argument) {
-	if(argument == "") {
-		return "''";
-	}
-	if(!new EReg("[^a-zA-Z0-9_@%+=:,./-]","").match(argument)) {
-		return argument;
-	}
-	return "'" + StringTools.replace(argument,"'","'\"'\"'") + "'";
-};
-StringTools.quoteWinArg = function(argument,escapeMetaCharacters) {
-	if(!new EReg("^[^ \t\\\\\"]+$","").match(argument)) {
-		var result_b = "";
-		var needquote = argument.indexOf(" ") != -1 || argument.indexOf("\t") != -1 || argument == "";
-		if(needquote) {
-			result_b += "\"";
-		}
-		var bs_buf = new StringBuf();
-		var _g1 = 0;
-		var _g = argument.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var _g2 = HxOverrides.cca(argument,i);
-			if(_g2 == null) {
-				var c = _g2;
-				if(bs_buf.b.length > 0) {
-					result_b += Std.string(bs_buf.b);
-					bs_buf = new StringBuf();
-				}
-				result_b += String.fromCharCode(c);
-			} else {
-				switch(_g2) {
-				case 34:
-					var bs = bs_buf.b;
-					result_b += bs == null ? "null" : "" + bs;
-					result_b += bs == null ? "null" : "" + bs;
-					bs_buf = new StringBuf();
-					result_b += "\\\"";
-					break;
-				case 92:
-					bs_buf.b += "\\";
-					break;
-				default:
-					var c1 = _g2;
-					if(bs_buf.b.length > 0) {
-						result_b += Std.string(bs_buf.b);
-						bs_buf = new StringBuf();
-					}
-					result_b += String.fromCharCode(c1);
-				}
-			}
-		}
-		result_b += Std.string(bs_buf.b);
-		if(needquote) {
-			result_b += Std.string(bs_buf.b);
-			result_b += "\"";
-		}
-		argument = result_b;
-	}
-	if(escapeMetaCharacters) {
-		var result_b1 = "";
-		var _g11 = 0;
-		var _g3 = argument.length;
-		while(_g11 < _g3) {
-			var i1 = _g11++;
-			var c2 = HxOverrides.cca(argument,i1);
-			if(StringTools.winMetaCharacters.indexOf(c2) >= 0) {
-				result_b1 += "^";
-			}
-			result_b1 += String.fromCharCode(c2);
-		}
-		return result_b1;
-	} else {
-		return argument;
-	}
-};
-var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] };
-ValueType.TNull = ["TNull",0];
-ValueType.TNull.toString = $estr;
-ValueType.TNull.__enum__ = ValueType;
-ValueType.TInt = ["TInt",1];
-ValueType.TInt.toString = $estr;
-ValueType.TInt.__enum__ = ValueType;
-ValueType.TFloat = ["TFloat",2];
-ValueType.TFloat.toString = $estr;
-ValueType.TFloat.__enum__ = ValueType;
-ValueType.TBool = ["TBool",3];
-ValueType.TBool.toString = $estr;
-ValueType.TBool.__enum__ = ValueType;
-ValueType.TObject = ["TObject",4];
-ValueType.TObject.toString = $estr;
-ValueType.TObject.__enum__ = ValueType;
-ValueType.TFunction = ["TFunction",5];
-ValueType.TFunction.toString = $estr;
-ValueType.TFunction.__enum__ = ValueType;
-ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
-ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; };
-ValueType.TUnknown = ["TUnknown",8];
-ValueType.TUnknown.toString = $estr;
-ValueType.TUnknown.__enum__ = ValueType;
-ValueType.__empty_constructs__ = [ValueType.TNull,ValueType.TInt,ValueType.TFloat,ValueType.TBool,ValueType.TObject,ValueType.TFunction,ValueType.TUnknown];
 var Type = function() { };
 $hxClasses["Type"] = Type;
-Type.__name__ = ["Type"];
-Type.getClass = function(o) {
-	if(o == null) {
-		return null;
-	} else {
-		return js_Boot.getClass(o);
-	}
-};
-Type.getEnum = function(o) {
-	if(o == null) {
-		return null;
-	}
-	return o.__enum__;
-};
-Type.getSuperClass = function(c) {
-	return c.__super__;
-};
-Type.getClassName = function(c) {
-	var a = c.__name__;
-	if(a == null) {
-		return null;
-	}
-	return a.join(".");
-};
-Type.getEnumName = function(e) {
-	var a = e.__ename__;
-	return a.join(".");
-};
+Type.__name__ = true;
 Type.resolveClass = function(name) {
 	var cl = $hxClasses[name];
 	if(cl == null || !cl.__name__) {
@@ -1884,43 +443,6 @@ Type.resolveEnum = function(name) {
 		return null;
 	}
 	return e;
-};
-Type.createInstance = function(cl,args) {
-	var _g = args.length;
-	switch(_g) {
-	case 0:
-		return new cl();
-	case 1:
-		return new cl(args[0]);
-	case 2:
-		return new cl(args[0],args[1]);
-	case 3:
-		return new cl(args[0],args[1],args[2]);
-	case 4:
-		return new cl(args[0],args[1],args[2],args[3]);
-	case 5:
-		return new cl(args[0],args[1],args[2],args[3],args[4]);
-	case 6:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5]);
-	case 7:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6]);
-	case 8:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
-	case 9:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8]);
-	case 10:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9]);
-	case 11:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9],args[10]);
-	case 12:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9],args[10],args[11]);
-	case 13:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9],args[10],args[11],args[12]);
-	case 14:
-		return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9],args[10],args[11],args[12],args[13]);
-	default:
-		throw new js__$Boot_HaxeError("Too many arguments");
-	}
 };
 Type.createEmptyInstance = function(cl) {
 	function empty() {}; empty.prototype = cl.prototype;
@@ -1942,13 +464,6 @@ Type.createEnum = function(e,constr,params) {
 	}
 	return f;
 };
-Type.createEnumIndex = function(e,index,params) {
-	var c = e.__constructs__[index];
-	if(c == null) {
-		throw new js__$Boot_HaxeError(index + " is not a valid enum constructor index");
-	}
-	return Type.createEnum(e,c,params);
-};
 Type.getInstanceFields = function(c) {
 	var a = [];
 	for(var i in c.prototype) a.push(i);
@@ -1956,107 +471,9 @@ Type.getInstanceFields = function(c) {
 	HxOverrides.remove(a,"__properties__");
 	return a;
 };
-Type.getClassFields = function(c) {
-	var a = Reflect.fields(c);
-	HxOverrides.remove(a,"__name__");
-	HxOverrides.remove(a,"__interfaces__");
-	HxOverrides.remove(a,"__properties__");
-	HxOverrides.remove(a,"__super__");
-	HxOverrides.remove(a,"__meta__");
-	HxOverrides.remove(a,"prototype");
-	return a;
-};
-Type.getEnumConstructs = function(e) {
-	return e.__constructs__.slice();
-};
-Type["typeof"] = function(v) {
-	var _g = typeof(v);
-	switch(_g) {
-	case "boolean":
-		return ValueType.TBool;
-	case "function":
-		if(v.__name__ || v.__ename__) {
-			return ValueType.TObject;
-		}
-		return ValueType.TFunction;
-	case "number":
-		if(Math.ceil(v) == v % 2147483648.0) {
-			return ValueType.TInt;
-		}
-		return ValueType.TFloat;
-	case "object":
-		if(v == null) {
-			return ValueType.TNull;
-		}
-		var e = v.__enum__;
-		if(e != null) {
-			return ValueType.TEnum(e);
-		}
-		var c = js_Boot.getClass(v);
-		if(c != null) {
-			return ValueType.TClass(c);
-		}
-		return ValueType.TObject;
-	case "string":
-		return ValueType.TClass(String);
-	case "undefined":
-		return ValueType.TNull;
-	default:
-		return ValueType.TUnknown;
-	}
-};
-Type.enumEq = function(a,b) {
-	if(a == b) {
-		return true;
-	}
-	try {
-		if(a[0] != b[0]) {
-			return false;
-		}
-		var _g1 = 2;
-		var _g = a.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			if(!Type.enumEq(a[i],b[i])) {
-				return false;
-			}
-		}
-		var e = a.__enum__;
-		if(e != b.__enum__ || e == null) {
-			return false;
-		}
-	} catch( e1 ) {
-		return false;
-	}
-	return true;
-};
-Type.enumConstructor = function(e) {
-	return e[0];
-};
-Type.enumParameters = function(e) {
-	return e.slice(2);
-};
-Type.enumIndex = function(e) {
-	return e[1];
-};
-Type.allEnums = function(e) {
-	return e.__empty_constructs__;
-};
 var _$UInt_UInt_$Impl_$ = {};
 $hxClasses["_UInt.UInt_Impl_"] = _$UInt_UInt_$Impl_$;
-_$UInt_UInt_$Impl_$.__name__ = ["_UInt","UInt_Impl_"];
-_$UInt_UInt_$Impl_$.add = function(a,b) {
-	return a + b;
-};
-_$UInt_UInt_$Impl_$.div = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) / _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.mul = function(a,b) {
-	return a * b;
-};
-_$UInt_UInt_$Impl_$.sub = function(a,b) {
-	return a - b;
-};
+_$UInt_UInt_$Impl_$.__name__ = true;
 _$UInt_UInt_$Impl_$.gt = function(a,b) {
 	var aNeg = a < 0;
 	var bNeg = b < 0;
@@ -2075,114 +492,6 @@ _$UInt_UInt_$Impl_$.gte = function(a,b) {
 		return a >= b;
 	}
 };
-_$UInt_UInt_$Impl_$.lt = function(a,b) {
-	return _$UInt_UInt_$Impl_$.gt(b,a);
-};
-_$UInt_UInt_$Impl_$.lte = function(a,b) {
-	return _$UInt_UInt_$Impl_$.gte(b,a);
-};
-_$UInt_UInt_$Impl_$.and = function(a,b) {
-	return a & b;
-};
-_$UInt_UInt_$Impl_$.or = function(a,b) {
-	return a | b;
-};
-_$UInt_UInt_$Impl_$.xor = function(a,b) {
-	return a ^ b;
-};
-_$UInt_UInt_$Impl_$.shl = function(a,b) {
-	return a << b;
-};
-_$UInt_UInt_$Impl_$.shr = function(a,b) {
-	return a >>> b;
-};
-_$UInt_UInt_$Impl_$.ushr = function(a,b) {
-	return a >>> b;
-};
-_$UInt_UInt_$Impl_$.mod = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) % _$UInt_UInt_$Impl_$.toFloat(b) | 0;
-};
-_$UInt_UInt_$Impl_$.addWithFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) + b;
-};
-_$UInt_UInt_$Impl_$.mulWithFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) * b;
-};
-_$UInt_UInt_$Impl_$.divFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) / b;
-};
-_$UInt_UInt_$Impl_$.floatDiv = function(a,b) {
-	return a / _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.subFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) - b;
-};
-_$UInt_UInt_$Impl_$.floatSub = function(a,b) {
-	return a - _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.gtFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) > b;
-};
-_$UInt_UInt_$Impl_$.equalsInt = function(a,b) {
-	return a == b;
-};
-_$UInt_UInt_$Impl_$.notEqualsInt = function(a,b) {
-	return a != b;
-};
-_$UInt_UInt_$Impl_$.equalsFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) == b;
-};
-_$UInt_UInt_$Impl_$.notEqualsFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) != b;
-};
-_$UInt_UInt_$Impl_$.gteFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) >= b;
-};
-_$UInt_UInt_$Impl_$.floatGt = function(a,b) {
-	return a > _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.floatGte = function(a,b) {
-	return a >= _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.ltFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) < b;
-};
-_$UInt_UInt_$Impl_$.lteFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) <= b;
-};
-_$UInt_UInt_$Impl_$.floatLt = function(a,b) {
-	return a < _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.floatLte = function(a,b) {
-	return a <= _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.modFloat = function(a,b) {
-	return _$UInt_UInt_$Impl_$.toFloat(a) % b;
-};
-_$UInt_UInt_$Impl_$.floatMod = function(a,b) {
-	return a % _$UInt_UInt_$Impl_$.toFloat(b);
-};
-_$UInt_UInt_$Impl_$.negBits = function(this1) {
-	return ~this1;
-};
-_$UInt_UInt_$Impl_$.prefixIncrement = function(this1) {
-	return ++this1;
-};
-_$UInt_UInt_$Impl_$.postfixIncrement = function(this1) {
-	return this1++;
-};
-_$UInt_UInt_$Impl_$.prefixDecrement = function(this1) {
-	return --this1;
-};
-_$UInt_UInt_$Impl_$.postfixDecrement = function(this1) {
-	return this1--;
-};
-_$UInt_UInt_$Impl_$.toString = function(this1,radix) {
-	return Std.string(_$UInt_UInt_$Impl_$.toFloat(this1));
-};
-_$UInt_UInt_$Impl_$.toInt = function(this1) {
-	return this1;
-};
 _$UInt_UInt_$Impl_$.toFloat = function(this1) {
 	var $int = this1;
 	if($int < 0) {
@@ -2193,1188 +502,32 @@ _$UInt_UInt_$Impl_$.toFloat = function(this1) {
 };
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = ["haxe","IMap"];
+haxe_IMap.__name__ = true;
 haxe_IMap.prototype = {
-	get: null
-	,set: null
-	,exists: null
-	,remove: null
-	,keys: null
-	,iterator: null
-	,toString: null
+	iterator: null
 	,__class__: haxe_IMap
-};
-var haxe_Http = function(url) {
-	this.url = url;
-	this.headers = new List();
-	this.params = new List();
-	this.async = true;
-	this.withCredentials = false;
-};
-$hxClasses["haxe.Http"] = haxe_Http;
-haxe_Http.__name__ = ["haxe","Http"];
-haxe_Http.requestUrl = function(url) {
-	var h = new haxe_Http(url);
-	h.async = false;
-	var r = null;
-	h.onData = function(d) {
-		r = d;
-	};
-	h.onError = function(e) {
-		throw new js__$Boot_HaxeError(e);
-	};
-	h.request(false);
-	return r;
-};
-haxe_Http.prototype = {
-	url: null
-	,responseData: null
-	,async: null
-	,withCredentials: null
-	,postData: null
-	,headers: null
-	,params: null
-	,setHeader: function(header,value) {
-		this.headers = Lambda.filter(this.headers,function(h) {
-			return h.header != header;
-		});
-		this.headers.push({ header : header, value : value});
-		return this;
-	}
-	,addHeader: function(header,value) {
-		this.headers.push({ header : header, value : value});
-		return this;
-	}
-	,setParameter: function(param,value) {
-		this.params = Lambda.filter(this.params,function(p) {
-			return p.param != param;
-		});
-		this.params.push({ param : param, value : value});
-		return this;
-	}
-	,addParameter: function(param,value) {
-		this.params.push({ param : param, value : value});
-		return this;
-	}
-	,setPostData: function(data) {
-		this.postData = data;
-		return this;
-	}
-	,req: null
-	,cancel: function() {
-		if(this.req == null) {
-			return;
-		}
-		this.req.abort();
-		this.req = null;
-	}
-	,request: function(post) {
-		var me = this;
-		me.responseData = null;
-		var r = this.req = js_Browser.createXMLHttpRequest();
-		var onreadystatechange = function(_) {
-			if(r.readyState != 4) {
-				return;
-			}
-			var s;
-			try {
-				s = r.status;
-			} catch( e ) {
-				s = null;
-			}
-			if(s != null && "undefined" !== typeof window) {
-				var protocol = window.location.protocol.toLowerCase();
-				var rlocalProtocol = new EReg("^(?:about|app|app-storage|.+-extension|file|res|widget):$","");
-				var isLocal = rlocalProtocol.match(protocol);
-				if(isLocal) {
-					if(r.responseText != null) {
-						s = 200;
-					} else {
-						s = 404;
-					}
-				}
-			}
-			if(s == undefined) {
-				s = null;
-			}
-			if(s != null) {
-				me.onStatus(s);
-			}
-			if(s != null && s >= 200 && s < 400) {
-				me.req = null;
-				me.onData(me.responseData = r.responseText);
-			} else if(s == null) {
-				me.req = null;
-				me.onError("Failed to connect or resolve host");
-			} else {
-				switch(s) {
-				case 12007:
-					me.req = null;
-					me.onError("Unknown host");
-					break;
-				case 12029:
-					me.req = null;
-					me.onError("Failed to connect to host");
-					break;
-				default:
-					me.req = null;
-					me.responseData = r.responseText;
-					me.onError("Http Error #" + r.status);
-				}
-			}
-		};
-		if(this.async) {
-			r.onreadystatechange = onreadystatechange;
-		}
-		var uri = this.postData;
-		if(uri != null) {
-			post = true;
-		} else {
-			var _g_head = this.params.h;
-			while(_g_head != null) {
-				var val = _g_head.item;
-				_g_head = _g_head.next;
-				var p = val;
-				if(uri == null) {
-					uri = "";
-				} else {
-					uri += "&";
-				}
-				var s1 = p.param;
-				var uri1 = encodeURIComponent(s1) + "=";
-				var s2 = p.value;
-				uri += uri1 + encodeURIComponent(s2);
-			}
-		}
-		try {
-			if(post) {
-				r.open("POST",this.url,this.async);
-			} else if(uri != null) {
-				var question = this.url.split("?").length <= 1;
-				r.open("GET",this.url + (question ? "?" : "&") + uri,this.async);
-				uri = null;
-			} else {
-				r.open("GET",this.url,this.async);
-			}
-		} catch( e1 ) {
-			if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
-			me.req = null;
-			this.onError(e1.toString());
-			return;
-		}
-		r.withCredentials = this.withCredentials;
-		if(!Lambda.exists(this.headers,function(h) {
-			return h.header == "Content-Type";
-		}) && post && this.postData == null) {
-			r.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-		}
-		var _g_head1 = this.headers.h;
-		while(_g_head1 != null) {
-			var val1 = _g_head1.item;
-			_g_head1 = _g_head1.next;
-			var h1 = val1;
-			r.setRequestHeader(h1.header,h1.value);
-		}
-		r.send(uri);
-		if(!this.async) {
-			onreadystatechange(null);
-		}
-	}
-	,onData: function(data) {
-	}
-	,onError: function(msg) {
-	}
-	,onStatus: function(status) {
-	}
-	,__class__: haxe_Http
-};
-var haxe__$Int32_Int32_$Impl_$ = {};
-$hxClasses["haxe._Int32.Int32_Impl_"] = haxe__$Int32_Int32_$Impl_$;
-haxe__$Int32_Int32_$Impl_$.__name__ = ["haxe","_Int32","Int32_Impl_"];
-haxe__$Int32_Int32_$Impl_$.preIncrement = function(this1) {
-	this1 = ++this1 | 0;
-	return this1;
-};
-haxe__$Int32_Int32_$Impl_$.postIncrement = function(this1) {
-	var ret = this1++;
-	this1 |= 0;
-	return ret;
-};
-haxe__$Int32_Int32_$Impl_$.preDecrement = function(this1) {
-	this1 = --this1 | 0;
-	return this1;
-};
-haxe__$Int32_Int32_$Impl_$.postDecrement = function(this1) {
-	var ret = this1--;
-	this1 |= 0;
-	return ret;
-};
-haxe__$Int32_Int32_$Impl_$.add = function(a,b) {
-	return a + b | 0;
-};
-haxe__$Int32_Int32_$Impl_$.addInt = function(a,b) {
-	return a + b | 0;
-};
-haxe__$Int32_Int32_$Impl_$.sub = function(a,b) {
-	return a - b | 0;
-};
-haxe__$Int32_Int32_$Impl_$.subInt = function(a,b) {
-	return a - b | 0;
-};
-haxe__$Int32_Int32_$Impl_$.intSub = function(a,b) {
-	return a - b | 0;
-};
-haxe__$Int32_Int32_$Impl_$.mul = function(a,b) {
-	return haxe__$Int32_Int32_$Impl_$._mul(a,b);
-};
-haxe__$Int32_Int32_$Impl_$.mulInt = function(a,b) {
-	return haxe__$Int32_Int32_$Impl_$._mul(a,b);
-};
-haxe__$Int32_Int32_$Impl_$.toFloat = function(this1) {
-	return this1;
-};
-haxe__$Int32_Int32_$Impl_$.ucompare = function(a,b) {
-	if(a < 0) {
-		if(b < 0) {
-			return ~b - ~a | 0;
-		} else {
-			return 1;
-		}
-	}
-	if(b < 0) {
-		return -1;
-	} else {
-		return a - b | 0;
-	}
-};
-haxe__$Int32_Int32_$Impl_$.clamp = function(x) {
-	return x | 0;
-};
-var haxe__$Int64_Int64_$Impl_$ = {};
-$hxClasses["haxe._Int64.Int64_Impl_"] = haxe__$Int64_Int64_$Impl_$;
-haxe__$Int64_Int64_$Impl_$.__name__ = ["haxe","_Int64","Int64_Impl_"];
-haxe__$Int64_Int64_$Impl_$.__properties__ = {get_low:"get_low",get_high:"get_high"};
-haxe__$Int64_Int64_$Impl_$._new = function(x) {
-	var this1 = x;
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.copy = function(this1) {
-	var this2 = new haxe__$Int64__$_$_$Int64(this1.high,this1.low);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.make = function(high,low) {
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.ofInt = function(x) {
-	var this1 = new haxe__$Int64__$_$_$Int64(x >> 31,x);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.toInt = function(x) {
-	if(x.high != x.low >> 31) {
-		throw new js__$Boot_HaxeError("Overflow");
-	}
-	return x.low;
-};
-haxe__$Int64_Int64_$Impl_$["is"] = function(val) {
-	return js_Boot.__instanceof(val,haxe__$Int64__$_$_$Int64);
-};
-haxe__$Int64_Int64_$Impl_$.getHigh = function(x) {
-	return x.high;
-};
-haxe__$Int64_Int64_$Impl_$.getLow = function(x) {
-	return x.low;
-};
-haxe__$Int64_Int64_$Impl_$.isNeg = function(x) {
-	return x.high < 0;
-};
-haxe__$Int64_Int64_$Impl_$.isZero = function(x) {
-	var this1 = new haxe__$Int64__$_$_$Int64(0,0);
-	var b = this1;
-	if(x.high == b.high) {
-		return x.low == b.low;
-	} else {
-		return false;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.compare = function(a,b) {
-	var v = a.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-	if(a.high < 0) {
-		if(b.high < 0) {
-			return v;
-		} else {
-			return -1;
-		}
-	} else if(b.high >= 0) {
-		return v;
-	} else {
-		return 1;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.ucompare = function(a,b) {
-	var v = haxe__$Int32_Int32_$Impl_$.ucompare(a.high,b.high);
-	if(v != 0) {
-		return v;
-	} else {
-		return haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-};
-haxe__$Int64_Int64_$Impl_$.toStr = function(x) {
-	return haxe__$Int64_Int64_$Impl_$.toString(x);
-};
-haxe__$Int64_Int64_$Impl_$.toString = function(this1) {
-	var i = this1;
-	var this2 = new haxe__$Int64__$_$_$Int64(0,0);
-	var b = this2;
-	if(i.high == b.high && i.low == b.low) {
-		return "0";
-	}
-	var str = "";
-	var neg = false;
-	if(i.high < 0) {
-		neg = true;
-	}
-	var this3 = new haxe__$Int64__$_$_$Int64(0,10);
-	var ten = this3;
-	while(true) {
-		var this4 = new haxe__$Int64__$_$_$Int64(0,0);
-		var b1 = this4;
-		if(!(i.high != b1.high || i.low != b1.low)) {
-			break;
-		}
-		var r = haxe__$Int64_Int64_$Impl_$.divMod(i,ten);
-		if(r.modulus.high < 0) {
-			var x = r.modulus;
-			var high = ~x.high;
-			var low = -x.low;
-			if(low == 0) {
-				var ret = high++;
-				high = high | 0;
-			}
-			var this5 = new haxe__$Int64__$_$_$Int64(high,low);
-			str = this5.low + str;
-			var x1 = r.quotient;
-			var high1 = ~x1.high;
-			var low1 = -x1.low;
-			if(low1 == 0) {
-				var ret1 = high1++;
-				high1 = high1 | 0;
-			}
-			var this6 = new haxe__$Int64__$_$_$Int64(high1,low1);
-			i = this6;
-		} else {
-			str = r.modulus.low + str;
-			i = r.quotient;
-		}
-	}
-	if(neg) {
-		str = "-" + str;
-	}
-	return str;
-};
-haxe__$Int64_Int64_$Impl_$.parseString = function(sParam) {
-	return haxe_Int64Helper.parseString(sParam);
-};
-haxe__$Int64_Int64_$Impl_$.fromFloat = function(f) {
-	return haxe_Int64Helper.fromFloat(f);
-};
-haxe__$Int64_Int64_$Impl_$.divMod = function(dividend,divisor) {
-	if(divisor.high == 0) {
-		var _g = divisor.low;
-		switch(_g) {
-		case 0:
-			throw new js__$Boot_HaxeError("divide by zero");
-			break;
-		case 1:
-			var this1 = new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low);
-			var this2 = new haxe__$Int64__$_$_$Int64(0,0);
-			return { quotient : this1, modulus : this2};
-		}
-	}
-	var divSign = dividend.high < 0 != divisor.high < 0;
-	var modulus;
-	if(dividend.high < 0) {
-		var high = ~dividend.high;
-		var low = -dividend.low;
-		if(low == 0) {
-			var ret = high++;
-			high = high | 0;
-		}
-		var this3 = new haxe__$Int64__$_$_$Int64(high,low);
-		modulus = this3;
-	} else {
-		var this4 = new haxe__$Int64__$_$_$Int64(dividend.high,dividend.low);
-		modulus = this4;
-	}
-	if(divisor.high < 0) {
-		var high1 = ~divisor.high;
-		var low1 = -divisor.low;
-		if(low1 == 0) {
-			var ret1 = high1++;
-			high1 = high1 | 0;
-		}
-		var this5 = new haxe__$Int64__$_$_$Int64(high1,low1);
-		divisor = this5;
-	} else {
-		divisor = divisor;
-	}
-	var this6 = new haxe__$Int64__$_$_$Int64(0,0);
-	var quotient = this6;
-	var this7 = new haxe__$Int64__$_$_$Int64(0,1);
-	var mask = this7;
-	while(!(divisor.high < 0)) {
-		var v = haxe__$Int32_Int32_$Impl_$.ucompare(divisor.high,modulus.high);
-		var cmp = v != 0 ? v : haxe__$Int32_Int32_$Impl_$.ucompare(divisor.low,modulus.low);
-		var b = 1;
-		b &= 63;
-		if(b == 0) {
-			var this8 = new haxe__$Int64__$_$_$Int64(divisor.high,divisor.low);
-			divisor = this8;
-		} else if(b < 32) {
-			var this9 = new haxe__$Int64__$_$_$Int64(divisor.high << b | divisor.low >>> 32 - b,divisor.low << b);
-			divisor = this9;
-		} else {
-			var this10 = new haxe__$Int64__$_$_$Int64(divisor.low << b - 32,0);
-			divisor = this10;
-		}
-		var b1 = 1;
-		b1 &= 63;
-		if(b1 == 0) {
-			var this11 = new haxe__$Int64__$_$_$Int64(mask.high,mask.low);
-			mask = this11;
-		} else if(b1 < 32) {
-			var this12 = new haxe__$Int64__$_$_$Int64(mask.high << b1 | mask.low >>> 32 - b1,mask.low << b1);
-			mask = this12;
-		} else {
-			var this13 = new haxe__$Int64__$_$_$Int64(mask.low << b1 - 32,0);
-			mask = this13;
-		}
-		if(cmp >= 0) {
-			break;
-		}
-	}
-	while(true) {
-		var this14 = new haxe__$Int64__$_$_$Int64(0,0);
-		var b2 = this14;
-		if(!(mask.high != b2.high || mask.low != b2.low)) {
-			break;
-		}
-		var v1 = haxe__$Int32_Int32_$Impl_$.ucompare(modulus.high,divisor.high);
-		if((v1 != 0 ? v1 : haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low)) >= 0) {
-			var this15 = new haxe__$Int64__$_$_$Int64(quotient.high | mask.high,quotient.low | mask.low);
-			quotient = this15;
-			var high2 = modulus.high - divisor.high | 0;
-			var low2 = modulus.low - divisor.low | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(modulus.low,divisor.low) < 0) {
-				var ret2 = high2--;
-				high2 = high2 | 0;
-			}
-			var this16 = new haxe__$Int64__$_$_$Int64(high2,low2);
-			modulus = this16;
-		}
-		var b3 = 1;
-		b3 &= 63;
-		if(b3 == 0) {
-			var this17 = new haxe__$Int64__$_$_$Int64(mask.high,mask.low);
-			mask = this17;
-		} else if(b3 < 32) {
-			var this18 = new haxe__$Int64__$_$_$Int64(mask.high >>> b3,mask.high << 32 - b3 | mask.low >>> b3);
-			mask = this18;
-		} else {
-			var this19 = new haxe__$Int64__$_$_$Int64(0,mask.high >>> b3 - 32);
-			mask = this19;
-		}
-		var b4 = 1;
-		b4 &= 63;
-		if(b4 == 0) {
-			var this20 = new haxe__$Int64__$_$_$Int64(divisor.high,divisor.low);
-			divisor = this20;
-		} else if(b4 < 32) {
-			var this21 = new haxe__$Int64__$_$_$Int64(divisor.high >>> b4,divisor.high << 32 - b4 | divisor.low >>> b4);
-			divisor = this21;
-		} else {
-			var this22 = new haxe__$Int64__$_$_$Int64(0,divisor.high >>> b4 - 32);
-			divisor = this22;
-		}
-	}
-	if(divSign) {
-		var high3 = ~quotient.high;
-		var low3 = -quotient.low;
-		if(low3 == 0) {
-			var ret3 = high3++;
-			high3 = high3 | 0;
-		}
-		var this23 = new haxe__$Int64__$_$_$Int64(high3,low3);
-		quotient = this23;
-	}
-	if(dividend.high < 0) {
-		var high4 = ~modulus.high;
-		var low4 = -modulus.low;
-		if(low4 == 0) {
-			var ret4 = high4++;
-			high4 = high4 | 0;
-		}
-		var this24 = new haxe__$Int64__$_$_$Int64(high4,low4);
-		modulus = this24;
-	}
-	return { quotient : quotient, modulus : modulus};
-};
-haxe__$Int64_Int64_$Impl_$.neg = function(x) {
-	var high = ~x.high;
-	var low = -x.low;
-	if(low == 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.preIncrement = function(this1) {
-	var this2 = new haxe__$Int64__$_$_$Int64(this1.high,this1.low);
-	this1 = this2;
-	var ret = this1.low++;
-	this1.low = this1.low | 0;
-	if(this1.low == 0) {
-		var ret1 = this1.high++;
-		this1.high = this1.high | 0;
-	}
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.postIncrement = function(this1) {
-	var ret = this1;
-	var this2 = new haxe__$Int64__$_$_$Int64(this1.high,this1.low);
-	this1 = this2;
-	var ret1 = this1.low++;
-	this1.low = this1.low | 0;
-	if(this1.low == 0) {
-		var ret2 = this1.high++;
-		this1.high = this1.high | 0;
-	}
-	return ret;
-};
-haxe__$Int64_Int64_$Impl_$.preDecrement = function(this1) {
-	var this2 = new haxe__$Int64__$_$_$Int64(this1.high,this1.low);
-	this1 = this2;
-	if(this1.low == 0) {
-		var ret = this1.high--;
-		this1.high = this1.high | 0;
-	}
-	var ret1 = this1.low--;
-	this1.low = this1.low | 0;
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.postDecrement = function(this1) {
-	var ret = this1;
-	var this2 = new haxe__$Int64__$_$_$Int64(this1.high,this1.low);
-	this1 = this2;
-	if(this1.low == 0) {
-		var ret1 = this1.high--;
-		this1.high = this1.high | 0;
-	}
-	var ret2 = this1.low--;
-	this1.low = this1.low | 0;
-	return ret;
-};
-haxe__$Int64_Int64_$Impl_$.add = function(a,b) {
-	var high = a.high + b.high | 0;
-	var low = a.low + b.low | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.addInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var high = a.high + b1.high | 0;
-	var low = a.low + b1.low | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,a.low) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	var this2 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.sub = function(a,b) {
-	var high = a.high - b.high | 0;
-	var low = a.low - b.low | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low) < 0) {
-		var ret = high--;
-		high = high | 0;
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.subInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var high = a.high - b1.high | 0;
-	var low = a.low - b1.low | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b1.low) < 0) {
-		var ret = high--;
-		high = high | 0;
-	}
-	var this2 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.intSub = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var a1 = this1;
-	var high = a1.high - b.high | 0;
-	var low = a1.low - b.low | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(a1.low,b.low) < 0) {
-		var ret = high--;
-		high = high | 0;
-	}
-	var this2 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.mul = function(a,b) {
-	var mask = 65535;
-	var al = a.low & mask;
-	var ah = a.low >>> 16;
-	var bl = b.low & mask;
-	var bh = b.low >>> 16;
-	var p00 = haxe__$Int32_Int32_$Impl_$._mul(al,bl);
-	var p10 = haxe__$Int32_Int32_$Impl_$._mul(ah,bl);
-	var p01 = haxe__$Int32_Int32_$Impl_$._mul(al,bh);
-	var p11 = haxe__$Int32_Int32_$Impl_$._mul(ah,bh);
-	var low = p00;
-	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
-	p01 = p01 << 16;
-	low = low + p01 | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	p10 = p10 << 16;
-	low = low + p10 | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
-		var ret1 = high++;
-		high = high | 0;
-	}
-	high = high + (haxe__$Int32_Int32_$Impl_$._mul(a.low,b.high) + haxe__$Int32_Int32_$Impl_$._mul(a.high,b.low) | 0) | 0;
-	var this1 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.mulInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var mask = 65535;
-	var al = a.low & mask;
-	var ah = a.low >>> 16;
-	var bl = b1.low & mask;
-	var bh = b1.low >>> 16;
-	var p00 = haxe__$Int32_Int32_$Impl_$._mul(al,bl);
-	var p10 = haxe__$Int32_Int32_$Impl_$._mul(ah,bl);
-	var p01 = haxe__$Int32_Int32_$Impl_$._mul(al,bh);
-	var p11 = haxe__$Int32_Int32_$Impl_$._mul(ah,bh);
-	var low = p00;
-	var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
-	p01 = p01 << 16;
-	low = low + p01 | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
-		var ret = high++;
-		high = high | 0;
-	}
-	p10 = p10 << 16;
-	low = low + p10 | 0;
-	if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
-		var ret1 = high++;
-		high = high | 0;
-	}
-	high = high + (haxe__$Int32_Int32_$Impl_$._mul(a.low,b1.high) + haxe__$Int32_Int32_$Impl_$._mul(a.high,b1.low) | 0) | 0;
-	var this2 = new haxe__$Int64__$_$_$Int64(high,low);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.div = function(a,b) {
-	return haxe__$Int64_Int64_$Impl_$.divMod(a,b).quotient;
-};
-haxe__$Int64_Int64_$Impl_$.divInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	return haxe__$Int64_Int64_$Impl_$.divMod(a,this1).quotient;
-};
-haxe__$Int64_Int64_$Impl_$.intDiv = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,b).quotient;
-	if(x.high != x.low >> 31) {
-		throw new js__$Boot_HaxeError("Overflow");
-	}
-	var x1 = x.low;
-	var this2 = new haxe__$Int64__$_$_$Int64(x1 >> 31,x1);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.mod = function(a,b) {
-	return haxe__$Int64_Int64_$Impl_$.divMod(a,b).modulus;
-};
-haxe__$Int64_Int64_$Impl_$.modInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var x = haxe__$Int64_Int64_$Impl_$.divMod(a,this1).modulus;
-	if(x.high != x.low >> 31) {
-		throw new js__$Boot_HaxeError("Overflow");
-	}
-	var x1 = x.low;
-	var this2 = new haxe__$Int64__$_$_$Int64(x1 >> 31,x1);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.intMod = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var x = haxe__$Int64_Int64_$Impl_$.divMod(this1,b).modulus;
-	if(x.high != x.low >> 31) {
-		throw new js__$Boot_HaxeError("Overflow");
-	}
-	var x1 = x.low;
-	var this2 = new haxe__$Int64__$_$_$Int64(x1 >> 31,x1);
-	return this2;
-};
-haxe__$Int64_Int64_$Impl_$.eq = function(a,b) {
-	if(a.high == b.high) {
-		return a.low == b.low;
-	} else {
-		return false;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.eqInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	if(a.high == b1.high) {
-		return a.low == b1.low;
-	} else {
-		return false;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.neq = function(a,b) {
-	if(!(a.high != b.high)) {
-		return a.low != b.low;
-	} else {
-		return true;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.neqInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	if(!(a.high != b1.high)) {
-		return a.low != b1.low;
-	} else {
-		return true;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.lt = function(a,b) {
-	var v = a.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-	return (a.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) < 0;
-};
-haxe__$Int64_Int64_$Impl_$.ltInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var v = a.high - b1.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b1.low);
-	}
-	return (a.high < 0 ? b1.high < 0 ? v : -1 : b1.high >= 0 ? v : 1) < 0;
-};
-haxe__$Int64_Int64_$Impl_$.intLt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var a1 = this1;
-	var v = a1.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a1.low,b.low);
-	}
-	return (a1.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) < 0;
-};
-haxe__$Int64_Int64_$Impl_$.lte = function(a,b) {
-	var v = a.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-	return (a.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) <= 0;
-};
-haxe__$Int64_Int64_$Impl_$.lteInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var v = a.high - b1.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b1.low);
-	}
-	return (a.high < 0 ? b1.high < 0 ? v : -1 : b1.high >= 0 ? v : 1) <= 0;
-};
-haxe__$Int64_Int64_$Impl_$.intLte = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var a1 = this1;
-	var v = a1.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a1.low,b.low);
-	}
-	return (a1.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) <= 0;
-};
-haxe__$Int64_Int64_$Impl_$.gt = function(a,b) {
-	var v = a.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-	return (a.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) > 0;
-};
-haxe__$Int64_Int64_$Impl_$.gtInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var v = a.high - b1.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b1.low);
-	}
-	return (a.high < 0 ? b1.high < 0 ? v : -1 : b1.high >= 0 ? v : 1) > 0;
-};
-haxe__$Int64_Int64_$Impl_$.intGt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var a1 = this1;
-	var v = a1.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a1.low,b.low);
-	}
-	return (a1.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) > 0;
-};
-haxe__$Int64_Int64_$Impl_$.gte = function(a,b) {
-	var v = a.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b.low);
-	}
-	return (a.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) >= 0;
-};
-haxe__$Int64_Int64_$Impl_$.gteInt = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(b >> 31,b);
-	var b1 = this1;
-	var v = a.high - b1.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a.low,b1.low);
-	}
-	return (a.high < 0 ? b1.high < 0 ? v : -1 : b1.high >= 0 ? v : 1) >= 0;
-};
-haxe__$Int64_Int64_$Impl_$.intGte = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a >> 31,a);
-	var a1 = this1;
-	var v = a1.high - b.high | 0;
-	if(v != 0) {
-		v = v;
-	} else {
-		v = haxe__$Int32_Int32_$Impl_$.ucompare(a1.low,b.low);
-	}
-	return (a1.high < 0 ? b.high < 0 ? v : -1 : b.high >= 0 ? v : 1) >= 0;
-};
-haxe__$Int64_Int64_$Impl_$.complement = function(a) {
-	var this1 = new haxe__$Int64__$_$_$Int64(~a.high,~a.low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.and = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a.high & b.high,a.low & b.low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.or = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a.high | b.high,a.low | b.low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.xor = function(a,b) {
-	var this1 = new haxe__$Int64__$_$_$Int64(a.high ^ b.high,a.low ^ b.low);
-	return this1;
-};
-haxe__$Int64_Int64_$Impl_$.shl = function(a,b) {
-	b &= 63;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a.high,a.low);
-		return this1;
-	} else if(b < 32) {
-		var this2 = new haxe__$Int64__$_$_$Int64(a.high << b | a.low >>> 32 - b,a.low << b);
-		return this2;
-	} else {
-		var this3 = new haxe__$Int64__$_$_$Int64(a.low << b - 32,0);
-		return this3;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.shr = function(a,b) {
-	b &= 63;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a.high,a.low);
-		return this1;
-	} else if(b < 32) {
-		var this2 = new haxe__$Int64__$_$_$Int64(a.high >> b,a.high << 32 - b | a.low >>> b);
-		return this2;
-	} else {
-		var this3 = new haxe__$Int64__$_$_$Int64(a.high >> 31,a.high >> b - 32);
-		return this3;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.ushr = function(a,b) {
-	b &= 63;
-	if(b == 0) {
-		var this1 = new haxe__$Int64__$_$_$Int64(a.high,a.low);
-		return this1;
-	} else if(b < 32) {
-		var this2 = new haxe__$Int64__$_$_$Int64(a.high >>> b,a.high << 32 - b | a.low >>> b);
-		return this2;
-	} else {
-		var this3 = new haxe__$Int64__$_$_$Int64(0,a.high >>> b - 32);
-		return this3;
-	}
-};
-haxe__$Int64_Int64_$Impl_$.get_high = function(this1) {
-	return this1.high;
-};
-haxe__$Int64_Int64_$Impl_$.set_high = function(this1,x) {
-	return this1.high = x;
-};
-haxe__$Int64_Int64_$Impl_$.get_low = function(this1) {
-	return this1.low;
-};
-haxe__$Int64_Int64_$Impl_$.set_low = function(this1,x) {
-	return this1.low = x;
 };
 var haxe__$Int64__$_$_$Int64 = function(high,low) {
 	this.high = high;
 	this.low = low;
 };
 $hxClasses["haxe._Int64.___Int64"] = haxe__$Int64__$_$_$Int64;
-haxe__$Int64__$_$_$Int64.__name__ = ["haxe","_Int64","___Int64"];
+haxe__$Int64__$_$_$Int64.__name__ = true;
 haxe__$Int64__$_$_$Int64.prototype = {
 	high: null
 	,low: null
-	,toString: function() {
-		return haxe__$Int64_Int64_$Impl_$.toString(this);
-	}
 	,__class__: haxe__$Int64__$_$_$Int64
-};
-var haxe_Int64Helper = function() { };
-$hxClasses["haxe.Int64Helper"] = haxe_Int64Helper;
-haxe_Int64Helper.__name__ = ["haxe","Int64Helper"];
-haxe_Int64Helper.parseString = function(sParam) {
-	var this1 = new haxe__$Int64__$_$_$Int64(0,10);
-	var base = this1;
-	var this2 = new haxe__$Int64__$_$_$Int64(0,0);
-	var current = this2;
-	var this3 = new haxe__$Int64__$_$_$Int64(0,1);
-	var multiplier = this3;
-	var sIsNegative = false;
-	var s = StringTools.trim(sParam);
-	if(s.charAt(0) == "-") {
-		sIsNegative = true;
-		s = s.substring(1,s.length);
-	}
-	var len = s.length;
-	var _g1 = 0;
-	var _g = len;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var digitInt = HxOverrides.cca(s,len - 1 - i) - 48;
-		if(digitInt < 0 || digitInt > 9) {
-			throw new js__$Boot_HaxeError("NumberFormatError");
-		}
-		var this4 = new haxe__$Int64__$_$_$Int64(digitInt >> 31,digitInt);
-		var digit = this4;
-		if(sIsNegative) {
-			var mask = 65535;
-			var al = multiplier.low & mask;
-			var ah = multiplier.low >>> 16;
-			var bl = digit.low & mask;
-			var bh = digit.low >>> 16;
-			var p00 = haxe__$Int32_Int32_$Impl_$._mul(al,bl);
-			var p10 = haxe__$Int32_Int32_$Impl_$._mul(ah,bl);
-			var p01 = haxe__$Int32_Int32_$Impl_$._mul(al,bh);
-			var p11 = haxe__$Int32_Int32_$Impl_$._mul(ah,bh);
-			var low = p00;
-			var high = (p11 + (p01 >>> 16) | 0) + (p10 >>> 16) | 0;
-			p01 = p01 << 16;
-			low = low + p01 | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p01) < 0) {
-				var ret = high++;
-				high = high | 0;
-			}
-			p10 = p10 << 16;
-			low = low + p10 | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,p10) < 0) {
-				var ret1 = high++;
-				high = high | 0;
-			}
-			high = high + (haxe__$Int32_Int32_$Impl_$._mul(multiplier.low,digit.high) + haxe__$Int32_Int32_$Impl_$._mul(multiplier.high,digit.low) | 0) | 0;
-			var this5 = new haxe__$Int64__$_$_$Int64(high,low);
-			var b = this5;
-			var high1 = current.high - b.high | 0;
-			var low1 = current.low - b.low | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(current.low,b.low) < 0) {
-				var ret2 = high1--;
-				high1 = high1 | 0;
-			}
-			var this6 = new haxe__$Int64__$_$_$Int64(high1,low1);
-			current = this6;
-			if(!(current.high < 0)) {
-				throw new js__$Boot_HaxeError("NumberFormatError: Underflow");
-			}
-		} else {
-			var mask1 = 65535;
-			var al1 = multiplier.low & mask1;
-			var ah1 = multiplier.low >>> 16;
-			var bl1 = digit.low & mask1;
-			var bh1 = digit.low >>> 16;
-			var p001 = haxe__$Int32_Int32_$Impl_$._mul(al1,bl1);
-			var p101 = haxe__$Int32_Int32_$Impl_$._mul(ah1,bl1);
-			var p011 = haxe__$Int32_Int32_$Impl_$._mul(al1,bh1);
-			var p111 = haxe__$Int32_Int32_$Impl_$._mul(ah1,bh1);
-			var low2 = p001;
-			var high2 = (p111 + (p011 >>> 16) | 0) + (p101 >>> 16) | 0;
-			p011 = p011 << 16;
-			low2 = low2 + p011 | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p011) < 0) {
-				var ret3 = high2++;
-				high2 = high2 | 0;
-			}
-			p101 = p101 << 16;
-			low2 = low2 + p101 | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low2,p101) < 0) {
-				var ret4 = high2++;
-				high2 = high2 | 0;
-			}
-			high2 = high2 + (haxe__$Int32_Int32_$Impl_$._mul(multiplier.low,digit.high) + haxe__$Int32_Int32_$Impl_$._mul(multiplier.high,digit.low) | 0) | 0;
-			var this7 = new haxe__$Int64__$_$_$Int64(high2,low2);
-			var b1 = this7;
-			var high3 = current.high + b1.high | 0;
-			var low3 = current.low + b1.low | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low3,current.low) < 0) {
-				var ret5 = high3++;
-				high3 = high3 | 0;
-			}
-			var this8 = new haxe__$Int64__$_$_$Int64(high3,low3);
-			current = this8;
-			if(current.high < 0) {
-				throw new js__$Boot_HaxeError("NumberFormatError: Overflow");
-			}
-		}
-		var mask2 = 65535;
-		var al2 = multiplier.low & mask2;
-		var ah2 = multiplier.low >>> 16;
-		var bl2 = base.low & mask2;
-		var bh2 = base.low >>> 16;
-		var p002 = haxe__$Int32_Int32_$Impl_$._mul(al2,bl2);
-		var p102 = haxe__$Int32_Int32_$Impl_$._mul(ah2,bl2);
-		var p012 = haxe__$Int32_Int32_$Impl_$._mul(al2,bh2);
-		var p112 = haxe__$Int32_Int32_$Impl_$._mul(ah2,bh2);
-		var low4 = p002;
-		var high4 = (p112 + (p012 >>> 16) | 0) + (p102 >>> 16) | 0;
-		p012 = p012 << 16;
-		low4 = low4 + p012 | 0;
-		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,p012) < 0) {
-			var ret6 = high4++;
-			high4 = high4 | 0;
-		}
-		p102 = p102 << 16;
-		low4 = low4 + p102 | 0;
-		if(haxe__$Int32_Int32_$Impl_$.ucompare(low4,p102) < 0) {
-			var ret7 = high4++;
-			high4 = high4 | 0;
-		}
-		high4 = high4 + (haxe__$Int32_Int32_$Impl_$._mul(multiplier.low,base.high) + haxe__$Int32_Int32_$Impl_$._mul(multiplier.high,base.low) | 0) | 0;
-		var this9 = new haxe__$Int64__$_$_$Int64(high4,low4);
-		multiplier = this9;
-	}
-	return current;
-};
-haxe_Int64Helper.fromFloat = function(f) {
-	if(isNaN(f) || !isFinite(f)) {
-		throw new js__$Boot_HaxeError("Number is NaN or Infinite");
-	}
-	var noFractions = f - f % 1;
-	if(noFractions > 9007199254740991) {
-		throw new js__$Boot_HaxeError("Conversion overflow");
-	}
-	if(noFractions < -9007199254740991) {
-		throw new js__$Boot_HaxeError("Conversion underflow");
-	}
-	var this1 = new haxe__$Int64__$_$_$Int64(0,0);
-	var result = this1;
-	var neg = noFractions < 0;
-	var rest = neg ? -noFractions : noFractions;
-	var i = 0;
-	while(rest >= 1) {
-		var curr = rest % 2;
-		rest /= 2;
-		if(curr >= 1) {
-			var this2 = new haxe__$Int64__$_$_$Int64(0,1);
-			var a = this2;
-			var b = i;
-			b &= 63;
-			var b1;
-			if(b == 0) {
-				var this3 = new haxe__$Int64__$_$_$Int64(a.high,a.low);
-				b1 = this3;
-			} else if(b < 32) {
-				var this4 = new haxe__$Int64__$_$_$Int64(a.high << b | a.low >>> 32 - b,a.low << b);
-				b1 = this4;
-			} else {
-				var this5 = new haxe__$Int64__$_$_$Int64(a.low << b - 32,0);
-				b1 = this5;
-			}
-			var high = result.high + b1.high | 0;
-			var low = result.low + b1.low | 0;
-			if(haxe__$Int32_Int32_$Impl_$.ucompare(low,result.low) < 0) {
-				var ret = high++;
-				high = high | 0;
-			}
-			var this6 = new haxe__$Int64__$_$_$Int64(high,low);
-			result = this6;
-		}
-		++i;
-	}
-	if(neg) {
-		var high1 = ~result.high;
-		var low1 = -result.low;
-		if(low1 == 0) {
-			var ret1 = high1++;
-			high1 = high1 | 0;
-		}
-		var this7 = new haxe__$Int64__$_$_$Int64(high1,low1);
-		result = this7;
-	}
-	return result;
 };
 var haxe_Log = function() { };
 $hxClasses["haxe.Log"] = haxe_Log;
-haxe_Log.__name__ = ["haxe","Log"];
+haxe_Log.__name__ = true;
 haxe_Log.trace = function(v,infos) {
 	js_Boot.__trace(v,infos);
-};
-haxe_Log.clear = function() {
-	js_Boot.__clear_trace();
 };
 var haxe__$Unserializer_DefaultResolver = function() {
 };
 $hxClasses["haxe._Unserializer.DefaultResolver"] = haxe__$Unserializer_DefaultResolver;
-haxe__$Unserializer_DefaultResolver.__name__ = ["haxe","_Unserializer","DefaultResolver"];
+haxe__$Unserializer_DefaultResolver.__name__ = true;
 haxe__$Unserializer_DefaultResolver.prototype = {
 	resolveClass: function(name) {
 		return Type.resolveClass(name);
@@ -3398,7 +551,7 @@ var haxe_Unserializer = function(buf) {
 	this.resolver = r;
 };
 $hxClasses["haxe.Unserializer"] = haxe_Unserializer;
-haxe_Unserializer.__name__ = ["haxe","Unserializer"];
+haxe_Unserializer.__name__ = true;
 haxe_Unserializer.initCodes = function() {
 	var codes = [];
 	var _g1 = 0;
@@ -3419,22 +572,6 @@ haxe_Unserializer.prototype = {
 	,cache: null
 	,scache: null
 	,resolver: null
-	,setResolver: function(r) {
-		if(r == null) {
-			if(haxe__$Unserializer_NullResolver.instance == null) {
-				haxe__$Unserializer_NullResolver.instance = new haxe__$Unserializer_NullResolver();
-			}
-			this.resolver = haxe__$Unserializer_NullResolver.instance;
-		} else {
-			this.resolver = r;
-		}
-	}
-	,getResolver: function() {
-		return this.resolver;
-	}
-	,get: function(p) {
-		return this.buf.charCodeAt(p);
-	}
 	,readDigits: function() {
 		var k = 0;
 		var s = false;
@@ -3741,74 +878,6 @@ haxe_Unserializer.prototype = {
 	}
 	,__class__: haxe_Unserializer
 };
-var haxe__$Unserializer_NullResolver = function() {
-};
-$hxClasses["haxe._Unserializer.NullResolver"] = haxe__$Unserializer_NullResolver;
-haxe__$Unserializer_NullResolver.__name__ = ["haxe","_Unserializer","NullResolver"];
-haxe__$Unserializer_NullResolver.__properties__ = {get_instance:"get_instance"};
-haxe__$Unserializer_NullResolver.instance = null;
-haxe__$Unserializer_NullResolver.get_instance = function() {
-	if(haxe__$Unserializer_NullResolver.instance == null) {
-		haxe__$Unserializer_NullResolver.instance = new haxe__$Unserializer_NullResolver();
-	}
-	return haxe__$Unserializer_NullResolver.instance;
-};
-haxe__$Unserializer_NullResolver.prototype = {
-	resolveClass: function(name) {
-		return null;
-	}
-	,resolveEnum: function(name) {
-		return null;
-	}
-	,__class__: haxe__$Unserializer_NullResolver
-};
-var haxe_Utf8 = function(size) {
-	this.__b = "";
-};
-$hxClasses["haxe.Utf8"] = haxe_Utf8;
-haxe_Utf8.__name__ = ["haxe","Utf8"];
-haxe_Utf8.iter = function(s,chars) {
-	var _g1 = 0;
-	var _g = s.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		chars(HxOverrides.cca(s,i));
-	}
-};
-haxe_Utf8.encode = function(s) {
-	throw new js__$Boot_HaxeError("Not implemented");
-};
-haxe_Utf8.decode = function(s) {
-	throw new js__$Boot_HaxeError("Not implemented");
-};
-haxe_Utf8.charCodeAt = function(s,index) {
-	return HxOverrides.cca(s,index);
-};
-haxe_Utf8.validate = function(s) {
-	return true;
-};
-haxe_Utf8.compare = function(a,b) {
-	if(a > b) {
-		return 1;
-	} else if(a == b) {
-		return 0;
-	} else {
-		return -1;
-	}
-};
-haxe_Utf8.sub = function(s,pos,len) {
-	return HxOverrides.substr(s,pos,len);
-};
-haxe_Utf8.prototype = {
-	__b: null
-	,addChar: function(c) {
-		this.__b += String.fromCharCode(c);
-	}
-	,toString: function() {
-		return this.__b;
-	}
-	,__class__: haxe_Utf8
-};
 var haxe_io_Bytes = function(data) {
 	this.length = data.byteLength;
 	this.b = new Uint8Array(data);
@@ -3817,10 +886,7 @@ var haxe_io_Bytes = function(data) {
 	data.bytes = this.b;
 };
 $hxClasses["haxe.io.Bytes"] = haxe_io_Bytes;
-haxe_io_Bytes.__name__ = ["haxe","io","Bytes"];
-haxe_io_Bytes.alloc = function(length) {
-	return new haxe_io_Bytes(new ArrayBuffer(length));
-};
+haxe_io_Bytes.__name__ = true;
 haxe_io_Bytes.ofString = function(s) {
 	var a = [];
 	var i = 0;
@@ -3854,19 +920,10 @@ haxe_io_Bytes.ofData = function(b) {
 	}
 	return new haxe_io_Bytes(b);
 };
-haxe_io_Bytes.fastGet = function(b,pos) {
-	return b.bytes[pos];
-};
 haxe_io_Bytes.prototype = {
 	length: null
 	,b: null
 	,data: null
-	,get: function(pos) {
-		return this.b[pos];
-	}
-	,set: function(pos,v) {
-		this.b[pos] = v & 255;
-	}
 	,blit: function(pos,src,srcpos,len) {
 		if(pos < 0 || srcpos < 0 || len < 0 || pos + len > this.length || srcpos + len > src.length) {
 			throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
@@ -3877,38 +934,11 @@ haxe_io_Bytes.prototype = {
 			this.b.set(src.b.subarray(srcpos,srcpos + len),pos);
 		}
 	}
-	,fill: function(pos,len,value) {
-		var _g1 = 0;
-		var _g = len;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.b[pos++] = value & 255;
-		}
-	}
 	,sub: function(pos,len) {
 		if(pos < 0 || len < 0 || pos + len > this.length) {
 			throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
 		}
 		return new haxe_io_Bytes(this.b.buffer.slice(pos + this.b.byteOffset,pos + this.b.byteOffset + len));
-	}
-	,compare: function(other) {
-		var b1 = this.b;
-		var b2 = other.b;
-		var len = this.length < other.length ? this.length : other.length;
-		var _g1 = 0;
-		var _g = len;
-		while(_g1 < _g) {
-			var i = _g1++;
-			if(b1[i] != b2[i]) {
-				return b1[i] - b2[i];
-			}
-		}
-		return this.length - other.length;
-	}
-	,initData: function() {
-		if(this.data == null) {
-			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
-		}
 	}
 	,getDouble: function(pos) {
 		if(this.data == null) {
@@ -3940,12 +970,6 @@ haxe_io_Bytes.prototype = {
 		}
 		return this.data.getUint16(pos,true);
 	}
-	,setUInt16: function(pos,v) {
-		if(this.data == null) {
-			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
-		}
-		this.data.setUint16(pos,v,true);
-	}
 	,getInt32: function(pos) {
 		if(this.data == null) {
 			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
@@ -3957,14 +981,6 @@ haxe_io_Bytes.prototype = {
 			this.data = new DataView(this.b.buffer,this.b.byteOffset,this.b.byteLength);
 		}
 		this.data.setInt32(pos,v,true);
-	}
-	,getInt64: function(pos) {
-		var this1 = new haxe__$Int64__$_$_$Int64(this.getInt32(pos + 4),this.getInt32(pos));
-		return this1;
-	}
-	,setInt64: function(pos,v) {
-		this.setInt32(pos,v.low);
-		this.setInt32(pos + 4,v.high);
 	}
 	,getString: function(pos,len) {
 		if(pos < 0 || len < 0 || pos + len > this.length) {
@@ -3997,40 +1013,14 @@ haxe_io_Bytes.prototype = {
 		}
 		return s;
 	}
-	,readString: function(pos,len) {
-		return this.getString(pos,len);
-	}
 	,toString: function() {
 		return this.getString(0,this.length);
-	}
-	,toHex: function() {
-		var s_b = "";
-		var chars = [];
-		var str = "0123456789abcdef";
-		var _g1 = 0;
-		var _g = str.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			chars.push(HxOverrides.cca(str,i));
-		}
-		var _g11 = 0;
-		var _g2 = this.length;
-		while(_g11 < _g2) {
-			var i1 = _g11++;
-			var c = this.b[i1];
-			s_b += String.fromCharCode(chars[c >> 4]);
-			s_b += String.fromCharCode(chars[c & 15]);
-		}
-		return s_b;
-	}
-	,getData: function() {
-		return this.b.bufferValue;
 	}
 	,__class__: haxe_io_Bytes
 };
 var haxe_crypto_Base64 = function() { };
 $hxClasses["haxe.crypto.Base64"] = haxe_crypto_Base64;
-haxe_crypto_Base64.__name__ = ["haxe","crypto","Base64"];
+haxe_crypto_Base64.__name__ = true;
 haxe_crypto_Base64.encode = function(bytes,complement) {
 	if(complement == null) {
 		complement = true;
@@ -4050,15 +1040,6 @@ haxe_crypto_Base64.encode = function(bytes,complement) {
 	}
 	return str;
 };
-haxe_crypto_Base64.decode = function(str,complement) {
-	if(complement == null) {
-		complement = true;
-	}
-	if(complement) {
-		while(HxOverrides.cca(str,str.length - 1) == 61) str = HxOverrides.substr(str,0,-1);
-	}
-	return new haxe_crypto_BaseCode(haxe_crypto_Base64.BYTES).decodeBytes(haxe_io_Bytes.ofString(str));
-};
 var haxe_crypto_BaseCode = function(base) {
 	var len = base.length;
 	var nbits = 1;
@@ -4070,19 +1051,10 @@ var haxe_crypto_BaseCode = function(base) {
 	this.nbits = nbits;
 };
 $hxClasses["haxe.crypto.BaseCode"] = haxe_crypto_BaseCode;
-haxe_crypto_BaseCode.__name__ = ["haxe","crypto","BaseCode"];
-haxe_crypto_BaseCode.encode = function(s,base) {
-	var b = new haxe_crypto_BaseCode(haxe_io_Bytes.ofString(base));
-	return b.encodeString(s);
-};
-haxe_crypto_BaseCode.decode = function(s,base) {
-	var b = new haxe_crypto_BaseCode(haxe_io_Bytes.ofString(base));
-	return b.decodeString(s);
-};
+haxe_crypto_BaseCode.__name__ = true;
 haxe_crypto_BaseCode.prototype = {
 	base: null
 	,nbits: null
-	,tbl: null
 	,encodeBytes: function(b) {
 		var nbits = this.nbits;
 		var base = this.base;
@@ -4107,60 +1079,11 @@ haxe_crypto_BaseCode.prototype = {
 		}
 		return out;
 	}
-	,initTable: function() {
-		var tbl = [];
-		var _g = 0;
-		while(_g < 256) {
-			var i = _g++;
-			tbl[i] = -1;
-		}
-		var _g1 = 0;
-		var _g2 = this.base.length;
-		while(_g1 < _g2) {
-			var i1 = _g1++;
-			tbl[this.base.b[i1]] = i1;
-		}
-		this.tbl = tbl;
-	}
-	,decodeBytes: function(b) {
-		var nbits = this.nbits;
-		var base = this.base;
-		if(this.tbl == null) {
-			this.initTable();
-		}
-		var tbl = this.tbl;
-		var size = b.length * nbits >> 3;
-		var out = new haxe_io_Bytes(new ArrayBuffer(size));
-		var buf = 0;
-		var curbits = 0;
-		var pin = 0;
-		var pout = 0;
-		while(pout < size) {
-			while(curbits < 8) {
-				curbits += nbits;
-				buf <<= nbits;
-				var i = tbl[b.b[pin++]];
-				if(i == -1) {
-					throw new js__$Boot_HaxeError("BaseCode : invalid encoded char");
-				}
-				buf |= i;
-			}
-			curbits -= 8;
-			out.b[pout++] = buf >> curbits & 255 & 255;
-		}
-		return out;
-	}
-	,encodeString: function(s) {
-		return this.encodeBytes(haxe_io_Bytes.ofString(s)).toString();
-	}
-	,decodeString: function(s) {
-		return this.decodeBytes(haxe_io_Bytes.ofString(s)).toString();
-	}
 	,__class__: haxe_crypto_BaseCode
 };
 var haxe_ds_ArraySort = function() { };
 $hxClasses["haxe.ds.ArraySort"] = haxe_ds_ArraySort;
-haxe_ds_ArraySort.__name__ = ["haxe","ds","ArraySort"];
+haxe_ds_ArraySort.__name__ = true;
 haxe_ds_ArraySort.sort = function(a,cmp) {
 	haxe_ds_ArraySort.rec(a,cmp,0,a.length);
 };
@@ -4289,333 +1212,14 @@ haxe_ds_ArraySort.swap = function(a,i,j) {
 	a[i] = a[j];
 	a[j] = tmp;
 };
-haxe_ds_ArraySort.compare = function(a,cmp,i,j) {
-	return cmp(a[i],a[j]);
-};
-var haxe_ds_BalancedTree = function() {
-};
-$hxClasses["haxe.ds.BalancedTree"] = haxe_ds_BalancedTree;
-haxe_ds_BalancedTree.__name__ = ["haxe","ds","BalancedTree"];
-haxe_ds_BalancedTree.prototype = {
-	root: null
-	,set: function(key,value) {
-		this.root = this.setLoop(key,value,this.root);
-	}
-	,get: function(key) {
-		var node = this.root;
-		while(node != null) {
-			var c = this.compare(key,node.key);
-			if(c == 0) {
-				return node.value;
-			}
-			if(c < 0) {
-				node = node.left;
-			} else {
-				node = node.right;
-			}
-		}
-		return null;
-	}
-	,remove: function(key) {
-		try {
-			this.root = this.removeLoop(key,this.root);
-			return true;
-		} catch( e ) {
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			if( js_Boot.__instanceof(e,String) ) {
-				return false;
-			} else throw(e);
-		}
-	}
-	,exists: function(key) {
-		var node = this.root;
-		while(node != null) {
-			var c = this.compare(key,node.key);
-			if(c == 0) {
-				return true;
-			} else if(c < 0) {
-				node = node.left;
-			} else {
-				node = node.right;
-			}
-		}
-		return false;
-	}
-	,iterator: function() {
-		var ret = [];
-		this.iteratorLoop(this.root,ret);
-		return HxOverrides.iter(ret);
-	}
-	,keys: function() {
-		var ret = [];
-		this.keysLoop(this.root,ret);
-		return HxOverrides.iter(ret);
-	}
-	,setLoop: function(k,v,node) {
-		if(node == null) {
-			return new haxe_ds_TreeNode(null,k,v,null);
-		}
-		var c = this.compare(k,node.key);
-		if(c == 0) {
-			return new haxe_ds_TreeNode(node.left,k,v,node.right,node == null ? 0 : node._height);
-		} else if(c < 0) {
-			var nl = this.setLoop(k,v,node.left);
-			return this.balance(nl,node.key,node.value,node.right);
-		} else {
-			var nr = this.setLoop(k,v,node.right);
-			return this.balance(node.left,node.key,node.value,nr);
-		}
-	}
-	,removeLoop: function(k,node) {
-		if(node == null) {
-			throw new js__$Boot_HaxeError("Not_found");
-		}
-		var c = this.compare(k,node.key);
-		if(c == 0) {
-			return this.merge(node.left,node.right);
-		} else if(c < 0) {
-			return this.balance(this.removeLoop(k,node.left),node.key,node.value,node.right);
-		} else {
-			return this.balance(node.left,node.key,node.value,this.removeLoop(k,node.right));
-		}
-	}
-	,iteratorLoop: function(node,acc) {
-		if(node != null) {
-			this.iteratorLoop(node.left,acc);
-			acc.push(node.value);
-			this.iteratorLoop(node.right,acc);
-		}
-	}
-	,keysLoop: function(node,acc) {
-		if(node != null) {
-			this.keysLoop(node.left,acc);
-			acc.push(node.key);
-			this.keysLoop(node.right,acc);
-		}
-	}
-	,merge: function(t1,t2) {
-		if(t1 == null) {
-			return t2;
-		}
-		if(t2 == null) {
-			return t1;
-		}
-		var t = this.minBinding(t2);
-		return this.balance(t1,t.key,t.value,this.removeMinBinding(t2));
-	}
-	,minBinding: function(t) {
-		if(t == null) {
-			throw new js__$Boot_HaxeError("Not_found");
-		} else if(t.left == null) {
-			return t;
-		} else {
-			return this.minBinding(t.left);
-		}
-	}
-	,removeMinBinding: function(t) {
-		if(t.left == null) {
-			return t.right;
-		} else {
-			return this.balance(this.removeMinBinding(t.left),t.key,t.value,t.right);
-		}
-	}
-	,balance: function(l,k,v,r) {
-		var hl = l == null ? 0 : l._height;
-		var hr = r == null ? 0 : r._height;
-		if(hl > hr + 2) {
-			var _this = l.left;
-			var _this1 = l.right;
-			if((_this == null ? 0 : _this._height) >= (_this1 == null ? 0 : _this1._height)) {
-				return new haxe_ds_TreeNode(l.left,l.key,l.value,new haxe_ds_TreeNode(l.right,k,v,r));
-			} else {
-				return new haxe_ds_TreeNode(new haxe_ds_TreeNode(l.left,l.key,l.value,l.right.left),l.right.key,l.right.value,new haxe_ds_TreeNode(l.right.right,k,v,r));
-			}
-		} else if(hr > hl + 2) {
-			var _this2 = r.right;
-			var _this3 = r.left;
-			if((_this2 == null ? 0 : _this2._height) > (_this3 == null ? 0 : _this3._height)) {
-				return new haxe_ds_TreeNode(new haxe_ds_TreeNode(l,k,v,r.left),r.key,r.value,r.right);
-			} else {
-				return new haxe_ds_TreeNode(new haxe_ds_TreeNode(l,k,v,r.left.left),r.left.key,r.left.value,new haxe_ds_TreeNode(r.left.right,r.key,r.value,r.right));
-			}
-		} else {
-			return new haxe_ds_TreeNode(l,k,v,r,(hl > hr ? hl : hr) + 1);
-		}
-	}
-	,compare: function(k1,k2) {
-		return Reflect.compare(k1,k2);
-	}
-	,toString: function() {
-		if(this.root == null) {
-			return "{}";
-		} else {
-			return "{" + this.root.toString() + "}";
-		}
-	}
-	,__class__: haxe_ds_BalancedTree
-};
-var haxe_ds_TreeNode = function(l,k,v,r,h) {
-	if(h == null) {
-		h = -1;
-	}
-	this.left = l;
-	this.key = k;
-	this.value = v;
-	this.right = r;
-	if(h == -1) {
-		var tmp;
-		var _this = this.left;
-		var _this1 = this.right;
-		if((_this == null ? 0 : _this._height) > (_this1 == null ? 0 : _this1._height)) {
-			var _this2 = this.left;
-			if(_this2 == null) {
-				tmp = 0;
-			} else {
-				tmp = _this2._height;
-			}
-		} else {
-			var _this3 = this.right;
-			if(_this3 == null) {
-				tmp = 0;
-			} else {
-				tmp = _this3._height;
-			}
-		}
-		this._height = tmp + 1;
-	} else {
-		this._height = h;
-	}
-};
-$hxClasses["haxe.ds.TreeNode"] = haxe_ds_TreeNode;
-haxe_ds_TreeNode.__name__ = ["haxe","ds","TreeNode"];
-haxe_ds_TreeNode.prototype = {
-	left: null
-	,right: null
-	,key: null
-	,value: null
-	,_height: null
-	,toString: function() {
-		return (this.left == null ? "" : this.left.toString() + ", ") + ("" + Std.string(this.key) + "=" + Std.string(this.value)) + (this.right == null ? "" : ", " + this.right.toString());
-	}
-	,__class__: haxe_ds_TreeNode
-};
-var haxe_ds_EnumValueMap = function() {
-	haxe_ds_BalancedTree.call(this);
-};
-$hxClasses["haxe.ds.EnumValueMap"] = haxe_ds_EnumValueMap;
-haxe_ds_EnumValueMap.__name__ = ["haxe","ds","EnumValueMap"];
-haxe_ds_EnumValueMap.__interfaces__ = [haxe_IMap];
-haxe_ds_EnumValueMap.__super__ = haxe_ds_BalancedTree;
-haxe_ds_EnumValueMap.prototype = $extend(haxe_ds_BalancedTree.prototype,{
-	compare: function(k1,k2) {
-		var d = k1[1] - k2[1];
-		if(d != 0) {
-			return d;
-		}
-		var p1 = k1.slice(2);
-		var p2 = k2.slice(2);
-		if(p1.length == 0 && p2.length == 0) {
-			return 0;
-		}
-		return this.compareArgs(p1,p2);
-	}
-	,compareArgs: function(a1,a2) {
-		var ld = a1.length - a2.length;
-		if(ld != 0) {
-			return ld;
-		}
-		var _g1 = 0;
-		var _g = a1.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var d = this.compareArg(a1[i],a2[i]);
-			if(d != 0) {
-				return d;
-			}
-		}
-		return 0;
-	}
-	,compareArg: function(v1,v2) {
-		if(Reflect.isEnumValue(v1) && Reflect.isEnumValue(v2)) {
-			return this.compare(v1,v2);
-		} else if((v1 instanceof Array) && v1.__enum__ == null && ((v2 instanceof Array) && v2.__enum__ == null)) {
-			return this.compareArgs(v1,v2);
-		} else {
-			return Reflect.compare(v1,v2);
-		}
-	}
-	,__class__: haxe_ds_EnumValueMap
-});
-var haxe_ds__$HashMap_HashMap_$Impl_$ = {};
-$hxClasses["haxe.ds._HashMap.HashMap_Impl_"] = haxe_ds__$HashMap_HashMap_$Impl_$;
-haxe_ds__$HashMap_HashMap_$Impl_$.__name__ = ["haxe","ds","_HashMap","HashMap_Impl_"];
-haxe_ds__$HashMap_HashMap_$Impl_$._new = function() {
-	var this1 = new haxe_ds__$HashMap_HashMapData();
-	return this1;
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.set = function(this1,k,v) {
-	var _this = this1.keys;
-	var key = k.hashCode();
-	_this.h[key] = k;
-	var _this1 = this1.values;
-	var key1 = k.hashCode();
-	_this1.h[key1] = v;
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.get = function(this1,k) {
-	var _this = this1.values;
-	var key = k.hashCode();
-	return _this.h[key];
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.exists = function(this1,k) {
-	var _this = this1.values;
-	var key = k.hashCode();
-	return _this.h.hasOwnProperty(key);
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.remove = function(this1,k) {
-	this1.values.remove(k.hashCode());
-	return this1.keys.remove(k.hashCode());
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.keys = function(this1) {
-	return this1.keys.iterator();
-};
-haxe_ds__$HashMap_HashMap_$Impl_$.iterator = function(this1) {
-	return this1.values.iterator();
-};
-var haxe_ds__$HashMap_HashMapData = function() {
-	this.keys = new haxe_ds_IntMap();
-	this.values = new haxe_ds_IntMap();
-};
-$hxClasses["haxe.ds._HashMap.HashMapData"] = haxe_ds__$HashMap_HashMapData;
-haxe_ds__$HashMap_HashMapData.__name__ = ["haxe","ds","_HashMap","HashMapData"];
-haxe_ds__$HashMap_HashMapData.prototype = {
-	keys: null
-	,values: null
-	,__class__: haxe_ds__$HashMap_HashMapData
-};
 var haxe_ds_IntMap = function() {
 	this.h = { };
 };
 $hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
-haxe_ds_IntMap.__name__ = ["haxe","ds","IntMap"];
+haxe_ds_IntMap.__name__ = true;
 haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
 haxe_ds_IntMap.prototype = {
 	h: null
-	,set: function(key,value) {
-		this.h[key] = value;
-	}
-	,get: function(key) {
-		return this.h[key];
-	}
-	,exists: function(key) {
-		return this.h.hasOwnProperty(key);
-	}
-	,remove: function(key) {
-		if(!this.h.hasOwnProperty(key)) {
-			return false;
-		}
-		delete(this.h[key]);
-		return true;
-	}
 	,keys: function() {
 		var a = [];
 		for( var key in this.h ) if(this.h.hasOwnProperty(key)) {
@@ -4631,58 +1235,20 @@ haxe_ds_IntMap.prototype = {
 			return this.ref[i];
 		}};
 	}
-	,toString: function() {
-		var s_b = "";
-		s_b += "{";
-		var it = this.keys();
-		var i = it;
-		while(i.hasNext()) {
-			var i1 = i.next();
-			s_b += i1 == null ? "null" : "" + i1;
-			s_b += " => ";
-			s_b += Std.string(Std.string(this.h[i1]));
-			if(it.hasNext()) {
-				s_b += ", ";
-			}
-		}
-		s_b += "}";
-		return s_b;
-	}
 	,__class__: haxe_ds_IntMap
 };
 var haxe_ds_ObjectMap = function() {
 	this.h = { __keys__ : { }};
 };
 $hxClasses["haxe.ds.ObjectMap"] = haxe_ds_ObjectMap;
-haxe_ds_ObjectMap.__name__ = ["haxe","ds","ObjectMap"];
+haxe_ds_ObjectMap.__name__ = true;
 haxe_ds_ObjectMap.__interfaces__ = [haxe_IMap];
-haxe_ds_ObjectMap.assignId = function(obj) {
-	return obj.__id__ = ++haxe_ds_ObjectMap.count;
-};
-haxe_ds_ObjectMap.getId = function(obj) {
-	return obj.__id__;
-};
 haxe_ds_ObjectMap.prototype = {
 	h: null
 	,set: function(key,value) {
 		var id = key.__id__ || (key.__id__ = ++haxe_ds_ObjectMap.count);
 		this.h[id] = value;
 		this.h.__keys__[id] = key;
-	}
-	,get: function(key) {
-		return this.h[key.__id__];
-	}
-	,exists: function(key) {
-		return this.h.__keys__[key.__id__] != null;
-	}
-	,remove: function(key) {
-		var id = key.__id__;
-		if(this.h.__keys__[id] == null) {
-			return false;
-		}
-		delete(this.h[id]);
-		delete(this.h.__keys__[id]);
-		return true;
 	}
 	,keys: function() {
 		var a = [];
@@ -4701,23 +1267,6 @@ haxe_ds_ObjectMap.prototype = {
 			return this.ref[i.__id__];
 		}};
 	}
-	,toString: function() {
-		var s_b = "";
-		s_b += "{";
-		var it = this.keys();
-		var i = it;
-		while(i.hasNext()) {
-			var i1 = i.next();
-			s_b += Std.string(Std.string(i1));
-			s_b += " => ";
-			s_b += Std.string(Std.string(this.h[i1.__id__]));
-			if(it.hasNext()) {
-				s_b += ", ";
-			}
-		}
-		s_b += "}";
-		return s_b;
-	}
 	,__class__: haxe_ds_ObjectMap
 };
 var haxe_ds__$StringMap_StringMapIterator = function(map,keys) {
@@ -4727,7 +1276,7 @@ var haxe_ds__$StringMap_StringMapIterator = function(map,keys) {
 	this.count = keys.length;
 };
 $hxClasses["haxe.ds._StringMap.StringMapIterator"] = haxe_ds__$StringMap_StringMapIterator;
-haxe_ds__$StringMap_StringMapIterator.__name__ = ["haxe","ds","_StringMap","StringMapIterator"];
+haxe_ds__$StringMap_StringMapIterator.__name__ = true;
 haxe_ds__$StringMap_StringMapIterator.prototype = {
 	map: null
 	,keys: null
@@ -4751,33 +1300,11 @@ var haxe_ds_StringMap = function() {
 	this.h = { };
 };
 $hxClasses["haxe.ds.StringMap"] = haxe_ds_StringMap;
-haxe_ds_StringMap.__name__ = ["haxe","ds","StringMap"];
+haxe_ds_StringMap.__name__ = true;
 haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
 haxe_ds_StringMap.prototype = {
 	h: null
 	,rh: null
-	,isReserved: function(key) {
-		return __map_reserved[key] != null;
-	}
-	,set: function(key,value) {
-		if(__map_reserved[key] != null) {
-			this.setReserved(key,value);
-		} else {
-			this.h[key] = value;
-		}
-	}
-	,get: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.getReserved(key);
-		}
-		return this.h[key];
-	}
-	,exists: function(key) {
-		if(__map_reserved[key] != null) {
-			return this.existsReserved(key);
-		}
-		return this.h.hasOwnProperty(key);
-	}
 	,setReserved: function(key,value) {
 		if(this.rh == null) {
 			this.rh = { };
@@ -4796,25 +1323,6 @@ haxe_ds_StringMap.prototype = {
 			return false;
 		}
 		return this.rh.hasOwnProperty("$" + key);
-	}
-	,remove: function(key) {
-		if(__map_reserved[key] != null) {
-			key = "$" + key;
-			if(this.rh == null || !this.rh.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.rh[key]);
-			return true;
-		} else {
-			if(!this.h.hasOwnProperty(key)) {
-				return false;
-			}
-			delete(this.h[key]);
-			return true;
-		}
-	}
-	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
 	}
 	,arrayKeys: function() {
 		var out = [];
@@ -4835,262 +1343,25 @@ haxe_ds_StringMap.prototype = {
 	,iterator: function() {
 		return new haxe_ds__$StringMap_StringMapIterator(this,this.arrayKeys());
 	}
-	,toString: function() {
-		var s_b = "";
-		s_b += "{";
-		var keys = this.arrayKeys();
-		var _g1 = 0;
-		var _g = keys.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var k = keys[i];
-			s_b += k == null ? "null" : "" + k;
-			s_b += " => ";
-			s_b += Std.string(Std.string(__map_reserved[k] != null ? this.getReserved(k) : this.h[k]));
-			if(i < keys.length - 1) {
-				s_b += ", ";
-			}
-		}
-		s_b += "}";
-		return s_b;
-	}
 	,__class__: haxe_ds_StringMap
-};
-var haxe_ds__$Vector_Vector_$Impl_$ = {};
-$hxClasses["haxe.ds._Vector.Vector_Impl_"] = haxe_ds__$Vector_Vector_$Impl_$;
-haxe_ds__$Vector_Vector_$Impl_$.__name__ = ["haxe","ds","_Vector","Vector_Impl_"];
-haxe_ds__$Vector_Vector_$Impl_$.__properties__ = {get_length:"get_length"};
-haxe_ds__$Vector_Vector_$Impl_$._new = function(length) {
-	var this1 = new Array(length);
-	return this1;
-};
-haxe_ds__$Vector_Vector_$Impl_$.get = function(this1,index) {
-	return this1[index];
-};
-haxe_ds__$Vector_Vector_$Impl_$.set = function(this1,index,val) {
-	return this1[index] = val;
-};
-haxe_ds__$Vector_Vector_$Impl_$.get_length = function(this1) {
-	return this1.length;
-};
-haxe_ds__$Vector_Vector_$Impl_$.blit = function(src,srcPos,dest,destPos,len) {
-	if(src == dest) {
-		if(srcPos < destPos) {
-			var i = srcPos + len;
-			var j = destPos + len;
-			var _g1 = 0;
-			var _g = len;
-			while(_g1 < _g) {
-				var k = _g1++;
-				--i;
-				--j;
-				src[j] = src[i];
-			}
-		} else if(srcPos > destPos) {
-			var i1 = srcPos;
-			var j1 = destPos;
-			var _g11 = 0;
-			var _g2 = len;
-			while(_g11 < _g2) {
-				var k1 = _g11++;
-				src[j1] = src[i1];
-				++i1;
-				++j1;
-			}
-		}
-	} else {
-		var _g12 = 0;
-		var _g3 = len;
-		while(_g12 < _g3) {
-			var i2 = _g12++;
-			dest[destPos + i2] = src[srcPos + i2];
-		}
-	}
-};
-haxe_ds__$Vector_Vector_$Impl_$.toArray = function(this1) {
-	return this1.slice(0);
-};
-haxe_ds__$Vector_Vector_$Impl_$.toData = function(this1) {
-	return this1;
-};
-haxe_ds__$Vector_Vector_$Impl_$.fromData = function(data) {
-	return data;
-};
-haxe_ds__$Vector_Vector_$Impl_$.fromArrayCopy = function(array) {
-	return array.slice(0);
-};
-haxe_ds__$Vector_Vector_$Impl_$.copy = function(this1) {
-	var length = this1.length;
-	var this2 = new Array(length);
-	var r = this2;
-	haxe_ds__$Vector_Vector_$Impl_$.blit(this1,0,r,0,this1.length);
-	return r;
-};
-haxe_ds__$Vector_Vector_$Impl_$.join = function(this1,sep) {
-	var b_b = "";
-	var i = 0;
-	var len = this1.length;
-	var _g1 = 0;
-	var _g = len;
-	while(_g1 < _g) {
-		var i1 = _g1++;
-		b_b += Std.string(Std.string(this1[i1]));
-		if(i1 < len - 1) {
-			b_b += sep == null ? "null" : "" + sep;
-		}
-	}
-	return b_b;
-};
-haxe_ds__$Vector_Vector_$Impl_$.map = function(this1,f) {
-	var length = this1.length;
-	var this2 = new Array(length);
-	var r = this2;
-	var i = 0;
-	var len = length;
-	var _g1 = 0;
-	var _g = len;
-	while(_g1 < _g) {
-		var i1 = _g1++;
-		var v = f(this1[i1]);
-		r[i1] = v;
-	}
-	return r;
-};
-haxe_ds__$Vector_Vector_$Impl_$.sort = function(this1,f) {
-	this1.sort(f);
-};
-var haxe_ds_WeakMap = function() {
-	throw new js__$Boot_HaxeError("Not implemented for this platform");
-};
-$hxClasses["haxe.ds.WeakMap"] = haxe_ds_WeakMap;
-haxe_ds_WeakMap.__name__ = ["haxe","ds","WeakMap"];
-haxe_ds_WeakMap.__interfaces__ = [haxe_IMap];
-haxe_ds_WeakMap.prototype = {
-	set: function(key,value) {
-	}
-	,get: function(key) {
-		return null;
-	}
-	,exists: function(key) {
-		return false;
-	}
-	,remove: function(key) {
-		return false;
-	}
-	,keys: function() {
-		return null;
-	}
-	,iterator: function() {
-		return null;
-	}
-	,toString: function() {
-		return null;
-	}
-	,__class__: haxe_ds_WeakMap
-};
-var haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$ = {};
-$hxClasses["haxe.io._ArrayBufferView.ArrayBufferView_Impl_"] = haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$;
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.__name__ = ["haxe","io","_ArrayBufferView","ArrayBufferView_Impl_"];
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.__properties__ = {get_byteLength:"get_byteLength",get_byteOffset:"get_byteOffset",get_buffer:"get_buffer",get_EMULATED:"get_EMULATED"};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.get_EMULATED = function() {
-	return ArrayBuffer == js_html_compat_ArrayBuffer;
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$._new = function(size) {
-	var this1 = new Uint8Array(size);
-	return this1;
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.get_byteOffset = function(this1) {
-	return this1.byteOffset;
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.get_byteLength = function(this1) {
-	return this1.byteLength;
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.get_buffer = function(this1) {
-	return haxe_io_Bytes.ofData(this1.buffer);
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.sub = function(this1,begin,length) {
-	return new Uint8Array(this1.buffer.slice(begin,length == null ? null : begin + length));
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.getData = function(this1) {
-	return this1;
-};
-haxe_io__$ArrayBufferView_ArrayBufferView_$Impl_$.fromData = function(a) {
-	return a;
 };
 var haxe_io_BytesBuffer = function() {
 	this.b = [];
 };
 $hxClasses["haxe.io.BytesBuffer"] = haxe_io_BytesBuffer;
-haxe_io_BytesBuffer.__name__ = ["haxe","io","BytesBuffer"];
+haxe_io_BytesBuffer.__name__ = true;
 haxe_io_BytesBuffer.prototype = {
 	b: null
-	,get_length: function() {
-		return this.b.length;
-	}
-	,addByte: function($byte) {
-		this.b.push($byte);
-	}
-	,add: function(src) {
-		var b1 = this.b;
-		var b2 = src.b;
-		var _g1 = 0;
-		var _g = src.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.b.push(b2[i]);
-		}
-	}
-	,addString: function(v) {
-		var src = haxe_io_Bytes.ofString(v);
-		var b1 = this.b;
-		var b2 = src.b;
-		var _g1 = 0;
-		var _g = src.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.b.push(b2[i]);
-		}
-	}
-	,addInt32: function(v) {
-		this.b.push(v & 255);
-		this.b.push(v >> 8 & 255);
-		this.b.push(v >> 16 & 255);
-		this.b.push(v >>> 24);
-	}
-	,addInt64: function(v) {
-		this.addInt32(v.low);
-		this.addInt32(v.high);
-	}
-	,addFloat: function(v) {
-		this.addInt32(haxe_io_FPHelper.floatToI32(v));
-	}
-	,addDouble: function(v) {
-		this.addInt64(haxe_io_FPHelper.doubleToI64(v));
-	}
-	,addBytes: function(src,pos,len) {
-		if(pos < 0 || len < 0 || pos + len > src.length) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
-		}
-		var b1 = this.b;
-		var b2 = src.b;
-		var _g1 = pos;
-		var _g = pos + len;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.b.push(b2[i]);
-		}
-	}
 	,getBytes: function() {
 		var bytes = new haxe_io_Bytes(new Uint8Array(this.b).buffer);
 		this.b = null;
 		return bytes;
 	}
 	,__class__: haxe_io_BytesBuffer
-	,__properties__: {get_length:"get_length"}
 };
 var haxe_io_Input = function() { };
 $hxClasses["haxe.io.Input"] = haxe_io_Input;
-haxe_io_Input.__name__ = ["haxe","io","Input"];
+haxe_io_Input.__name__ = true;
 haxe_io_Input.prototype = {
 	bigEndian: null
 	,readByte: function() {
@@ -5115,43 +1386,6 @@ haxe_io_Input.prototype = {
 		}
 		return len - k;
 	}
-	,close: function() {
-	}
-	,set_bigEndian: function(b) {
-		this.bigEndian = b;
-		return b;
-	}
-	,readAll: function(bufsize) {
-		if(bufsize == null) {
-			bufsize = 16384;
-		}
-		var buf = new haxe_io_Bytes(new ArrayBuffer(bufsize));
-		var total = new haxe_io_BytesBuffer();
-		try {
-			while(true) {
-				var len = this.readBytes(buf,0,bufsize);
-				if(len == 0) {
-					throw new js__$Boot_HaxeError(haxe_io_Error.Blocked);
-				}
-				if(len < 0 || len > buf.length) {
-					throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
-				}
-				var b1 = total.b;
-				var b2 = buf.b;
-				var _g1 = 0;
-				var _g = len;
-				while(_g1 < _g) {
-					var i = _g1++;
-					total.b.push(b2[i]);
-				}
-			}
-		} catch( e ) {
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			if( js_Boot.__instanceof(e,haxe_io_Eof) ) {
-			} else throw(e);
-		}
-		return total.getBytes();
-	}
 	,readFullBytes: function(s,pos,len) {
 		while(len > 0) {
 			var k = this.readBytes(s,pos,len);
@@ -5175,102 +1409,6 @@ haxe_io_Input.prototype = {
 		}
 		return s;
 	}
-	,readUntil: function(end) {
-		var buf = new haxe_io_BytesBuffer();
-		var last;
-		while(true) {
-			last = this.readByte();
-			if(!(last != end)) {
-				break;
-			}
-			buf.b.push(last);
-		}
-		return buf.getBytes().toString();
-	}
-	,readLine: function() {
-		var buf = new haxe_io_BytesBuffer();
-		var last;
-		var s;
-		try {
-			while(true) {
-				last = this.readByte();
-				if(!(last != 10)) {
-					break;
-				}
-				buf.b.push(last);
-			}
-			s = buf.getBytes().toString();
-			if(HxOverrides.cca(s,s.length - 1) == 13) {
-				s = HxOverrides.substr(s,0,-1);
-			}
-		} catch( e ) {
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			if( js_Boot.__instanceof(e,haxe_io_Eof) ) {
-				s = buf.getBytes().toString();
-				if(s.length == 0) {
-					throw new js__$Boot_HaxeError(e);
-				}
-			} else throw(e);
-		}
-		return s;
-	}
-	,readFloat: function() {
-		return haxe_io_FPHelper.i32ToFloat(this.readInt32());
-	}
-	,readDouble: function() {
-		var i1 = this.readInt32();
-		var i2 = this.readInt32();
-		if(this.bigEndian) {
-			return haxe_io_FPHelper.i64ToDouble(i2,i1);
-		} else {
-			return haxe_io_FPHelper.i64ToDouble(i1,i2);
-		}
-	}
-	,readInt8: function() {
-		var n = this.readByte();
-		if(n >= 128) {
-			return n - 256;
-		}
-		return n;
-	}
-	,readInt16: function() {
-		var ch1 = this.readByte();
-		var ch2 = this.readByte();
-		var n = this.bigEndian ? ch2 | ch1 << 8 : ch1 | ch2 << 8;
-		if((n & 32768) != 0) {
-			return n - 65536;
-		}
-		return n;
-	}
-	,readUInt16: function() {
-		var ch1 = this.readByte();
-		var ch2 = this.readByte();
-		if(this.bigEndian) {
-			return ch2 | ch1 << 8;
-		} else {
-			return ch1 | ch2 << 8;
-		}
-	}
-	,readInt24: function() {
-		var ch1 = this.readByte();
-		var ch2 = this.readByte();
-		var ch3 = this.readByte();
-		var n = this.bigEndian ? ch3 | ch2 << 8 | ch1 << 16 : ch1 | ch2 << 8 | ch3 << 16;
-		if((n & 8388608) != 0) {
-			return n - 16777216;
-		}
-		return n;
-	}
-	,readUInt24: function() {
-		var ch1 = this.readByte();
-		var ch2 = this.readByte();
-		var ch3 = this.readByte();
-		if(this.bigEndian) {
-			return ch3 | ch2 << 8 | ch1 << 16;
-		} else {
-			return ch1 | ch2 << 8 | ch3 << 16;
-		}
-	}
 	,readInt32: function() {
 		var ch1 = this.readByte();
 		var ch2 = this.readByte();
@@ -5287,11 +1425,7 @@ haxe_io_Input.prototype = {
 		this.readFullBytes(b,0,len);
 		return b.toString();
 	}
-	,getDoubleSig: function(bytes) {
-		return ((bytes[1] & 15) << 16 | bytes[2] << 8 | bytes[3]) * 4294967296. + (bytes[4] >> 7) * 2147483648 + ((bytes[4] & 127) << 24 | bytes[5] << 16 | bytes[6] << 8 | bytes[7]);
-	}
 	,__class__: haxe_io_Input
-	,__properties__: {set_bigEndian:"set_bigEndian"}
 };
 var haxe_io_BytesInput = function(b,pos,len) {
 	if(pos == null) {
@@ -5309,19 +1443,13 @@ var haxe_io_BytesInput = function(b,pos,len) {
 	this.totlen = len;
 };
 $hxClasses["haxe.io.BytesInput"] = haxe_io_BytesInput;
-haxe_io_BytesInput.__name__ = ["haxe","io","BytesInput"];
+haxe_io_BytesInput.__name__ = true;
 haxe_io_BytesInput.__super__ = haxe_io_Input;
 haxe_io_BytesInput.prototype = $extend(haxe_io_Input.prototype,{
 	b: null
 	,pos: null
 	,len: null
 	,totlen: null
-	,get_position: function() {
-		return this.pos;
-	}
-	,get_length: function() {
-		return this.totlen;
-	}
 	,set_position: function(p) {
 		if(p < 0) {
 			p = 0;
@@ -5361,11 +1489,10 @@ haxe_io_BytesInput.prototype = $extend(haxe_io_Input.prototype,{
 		return len;
 	}
 	,__class__: haxe_io_BytesInput
-	,__properties__: $extend(haxe_io_Input.prototype.__properties__,{get_length:"get_length",set_position:"set_position",get_position:"get_position"})
 });
 var haxe_io_Output = function() { };
 $hxClasses["haxe.io.Output"] = haxe_io_Output;
-haxe_io_Output.__name__ = ["haxe","io","Output"];
+haxe_io_Output.__name__ = true;
 haxe_io_Output.prototype = {
 	bigEndian: null
 	,writeByte: function(c) {
@@ -5384,14 +1511,6 @@ haxe_io_Output.prototype = {
 		}
 		return len;
 	}
-	,flush: function() {
-	}
-	,close: function() {
-	}
-	,set_bigEndian: function(b) {
-		this.bigEndian = b;
-		return b;
-	}
 	,write: function(s) {
 		var l = s.length;
 		var p = 0;
@@ -5404,69 +1523,8 @@ haxe_io_Output.prototype = {
 			l -= k;
 		}
 	}
-	,writeFullBytes: function(s,pos,len) {
-		while(len > 0) {
-			var k = this.writeBytes(s,pos,len);
-			pos += k;
-			len -= k;
-		}
-	}
 	,writeFloat: function(x) {
 		this.writeInt32(haxe_io_FPHelper.floatToI32(x));
-	}
-	,writeDouble: function(x) {
-		var i64 = haxe_io_FPHelper.doubleToI64(x);
-		if(this.bigEndian) {
-			this.writeInt32(i64.high);
-			this.writeInt32(i64.low);
-		} else {
-			this.writeInt32(i64.low);
-			this.writeInt32(i64.high);
-		}
-	}
-	,writeInt8: function(x) {
-		if(x < -128 || x >= 128) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.Overflow);
-		}
-		this.writeByte(x & 255);
-	}
-	,writeInt16: function(x) {
-		if(x < -32768 || x >= 32768) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.Overflow);
-		}
-		this.writeUInt16(x & 65535);
-	}
-	,writeUInt16: function(x) {
-		if(x < 0 || x >= 65536) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.Overflow);
-		}
-		if(this.bigEndian) {
-			this.writeByte(x >> 8);
-			this.writeByte(x & 255);
-		} else {
-			this.writeByte(x & 255);
-			this.writeByte(x >> 8);
-		}
-	}
-	,writeInt24: function(x) {
-		if(x < -8388608 || x >= 8388608) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.Overflow);
-		}
-		this.writeUInt24(x & 16777215);
-	}
-	,writeUInt24: function(x) {
-		if(x < 0 || x >= 16777216) {
-			throw new js__$Boot_HaxeError(haxe_io_Error.Overflow);
-		}
-		if(this.bigEndian) {
-			this.writeByte(x >> 16);
-			this.writeByte(x >> 8 & 255);
-			this.writeByte(x & 255);
-		} else {
-			this.writeByte(x & 255);
-			this.writeByte(x >> 8 & 255);
-			this.writeByte(x >> 16);
-		}
 	}
 	,writeInt32: function(x) {
 		if(this.bigEndian) {
@@ -5481,53 +1539,16 @@ haxe_io_Output.prototype = {
 			this.writeByte(x >>> 24);
 		}
 	}
-	,prepare: function(nbytes) {
-	}
-	,writeInput: function(i,bufsize) {
-		if(bufsize == null) {
-			bufsize = 4096;
-		}
-		var buf = new haxe_io_Bytes(new ArrayBuffer(bufsize));
-		try {
-			while(true) {
-				var len = i.readBytes(buf,0,bufsize);
-				if(len == 0) {
-					throw new js__$Boot_HaxeError(haxe_io_Error.Blocked);
-				}
-				var p = 0;
-				while(len > 0) {
-					var k = this.writeBytes(buf,p,len);
-					if(k == 0) {
-						throw new js__$Boot_HaxeError(haxe_io_Error.Blocked);
-					}
-					p += k;
-					len -= k;
-				}
-			}
-		} catch( e ) {
-			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			if( js_Boot.__instanceof(e,haxe_io_Eof) ) {
-			} else throw(e);
-		}
-	}
-	,writeString: function(s) {
-		var b = haxe_io_Bytes.ofString(s);
-		this.writeFullBytes(b,0,b.length);
-	}
 	,__class__: haxe_io_Output
-	,__properties__: {set_bigEndian:"set_bigEndian"}
 };
 var haxe_io_BytesOutput = function() {
 	this.b = new haxe_io_BytesBuffer();
 };
 $hxClasses["haxe.io.BytesOutput"] = haxe_io_BytesOutput;
-haxe_io_BytesOutput.__name__ = ["haxe","io","BytesOutput"];
+haxe_io_BytesOutput.__name__ = true;
 haxe_io_BytesOutput.__super__ = haxe_io_Output;
 haxe_io_BytesOutput.prototype = $extend(haxe_io_Output.prototype,{
 	b: null
-	,get_length: function() {
-		return this.b.b.length;
-	}
 	,writeByte: function(c) {
 		this.b.b.push(c);
 	}
@@ -5550,19 +1571,18 @@ haxe_io_BytesOutput.prototype = $extend(haxe_io_Output.prototype,{
 		return this.b.getBytes();
 	}
 	,__class__: haxe_io_BytesOutput
-	,__properties__: $extend(haxe_io_Output.prototype.__properties__,{get_length:"get_length"})
 });
 var haxe_io_Eof = function() {
 };
 $hxClasses["haxe.io.Eof"] = haxe_io_Eof;
-haxe_io_Eof.__name__ = ["haxe","io","Eof"];
+haxe_io_Eof.__name__ = true;
 haxe_io_Eof.prototype = {
 	toString: function() {
 		return "Eof";
 	}
 	,__class__: haxe_io_Eof
 };
-var haxe_io_Error = $hxClasses["haxe.io.Error"] = { __ename__ : ["haxe","io","Error"], __constructs__ : ["Blocked","Overflow","OutsideBounds","Custom"] };
+var haxe_io_Error = $hxClasses["haxe.io.Error"] = { __ename__ : true, __constructs__ : ["Blocked","Overflow","OutsideBounds","Custom"] };
 haxe_io_Error.Blocked = ["Blocked",0];
 haxe_io_Error.Blocked.toString = $estr;
 haxe_io_Error.Blocked.__enum__ = haxe_io_Error;
@@ -5573,10 +1593,9 @@ haxe_io_Error.OutsideBounds = ["OutsideBounds",2];
 haxe_io_Error.OutsideBounds.toString = $estr;
 haxe_io_Error.OutsideBounds.__enum__ = haxe_io_Error;
 haxe_io_Error.Custom = function(e) { var $x = ["Custom",3,e]; $x.__enum__ = haxe_io_Error; $x.toString = $estr; return $x; };
-haxe_io_Error.__empty_constructs__ = [haxe_io_Error.Blocked,haxe_io_Error.Overflow,haxe_io_Error.OutsideBounds];
 var haxe_io_FPHelper = function() { };
 $hxClasses["haxe.io.FPHelper"] = haxe_io_FPHelper;
-haxe_io_FPHelper.__name__ = ["haxe","io","FPHelper"];
+haxe_io_FPHelper.__name__ = true;
 haxe_io_FPHelper.i32ToFloat = function(i) {
 	var sign = 1 - (i >>> 31 << 1);
 	var exp = i >>> 23 & 255;
@@ -5637,134 +1656,9 @@ haxe_io_FPHelper.doubleToI64 = function(v) {
 	}
 	return i64;
 };
-var haxe_io__$Float32Array_Float32Array_$Impl_$ = {};
-$hxClasses["haxe.io._Float32Array.Float32Array_Impl_"] = haxe_io__$Float32Array_Float32Array_$Impl_$;
-haxe_io__$Float32Array_Float32Array_$Impl_$.__name__ = ["haxe","io","_Float32Array","Float32Array_Impl_"];
-haxe_io__$Float32Array_Float32Array_$Impl_$.__properties__ = {get_view:"get_view",get_length:"get_length"};
-haxe_io__$Float32Array_Float32Array_$Impl_$._new = function(elements) {
-	var this1 = new Float32Array(elements);
-	return this1;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.get_length = function(this1) {
-	return this1.length;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.get_view = function(this1) {
-	return this1;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.get = function(this1,index) {
-	return this1[index];
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.set = function(this1,index,value) {
-	return this1[index] = value;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.sub = function(this1,begin,length) {
-	return this1.subarray(begin,length == null ? this1.length : begin + length);
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.subarray = function(this1,begin,end) {
-	return this1.subarray(begin,end);
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.getData = function(this1) {
-	return this1;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.fromData = function(d) {
-	return d;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.fromArray = function(a,pos,length) {
-	if(pos == null) {
-		pos = 0;
-	}
-	if(length == null) {
-		length = a.length - pos;
-	}
-	if(pos < 0 || length < 0 || pos + length > a.length) {
-		throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
-	}
-	if(pos == 0 && length == a.length) {
-		return new Float32Array(a);
-	}
-	var this1 = new Float32Array(a.length);
-	var i = this1;
-	var _g1 = 0;
-	var _g = length;
-	while(_g1 < _g) {
-		var idx = _g1++;
-		i[idx] = a[idx + pos];
-	}
-	return i;
-};
-haxe_io__$Float32Array_Float32Array_$Impl_$.fromBytes = function(bytes,bytePos,length) {
-	if(bytePos == null) {
-		bytePos = 0;
-	}
-	if(length == null) {
-		length = bytes.length - bytePos >> 2;
-	}
-	return new Float32Array(bytes.b.bufferValue,bytePos,length);
-};
-var haxe_io_StringInput = function(s) {
-	haxe_io_BytesInput.call(this,haxe_io_Bytes.ofString(s));
-};
-$hxClasses["haxe.io.StringInput"] = haxe_io_StringInput;
-haxe_io_StringInput.__name__ = ["haxe","io","StringInput"];
-haxe_io_StringInput.__super__ = haxe_io_BytesInput;
-haxe_io_StringInput.prototype = $extend(haxe_io_BytesInput.prototype,{
-	__class__: haxe_io_StringInput
-});
 var haxe_io__$UInt8Array_UInt8Array_$Impl_$ = {};
 $hxClasses["haxe.io._UInt8Array.UInt8Array_Impl_"] = haxe_io__$UInt8Array_UInt8Array_$Impl_$;
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.__name__ = ["haxe","io","_UInt8Array","UInt8Array_Impl_"];
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.__properties__ = {get_view:"get_view",get_length:"get_length"};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$._new = function(elements) {
-	var this1 = new Uint8Array(elements);
-	return this1;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.get_length = function(this1) {
-	return this1.length;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.get_view = function(this1) {
-	return this1;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.get = function(this1,index) {
-	return this1[index];
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.set = function(this1,index,value) {
-	return this1[index] = value & 255;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.sub = function(this1,begin,length) {
-	return this1.subarray(begin,length == null ? this1.length : begin + length);
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.subarray = function(this1,begin,end) {
-	return this1.subarray(begin,end);
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.getData = function(this1) {
-	return this1;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.fromData = function(d) {
-	return d;
-};
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.fromArray = function(a,pos,length) {
-	if(pos == null) {
-		pos = 0;
-	}
-	if(length == null) {
-		length = a.length - pos;
-	}
-	if(pos < 0 || length < 0 || pos + length > a.length) {
-		throw new js__$Boot_HaxeError(haxe_io_Error.OutsideBounds);
-	}
-	if(pos == 0 && length == a.length) {
-		return new Uint8Array(a);
-	}
-	var this1 = new Uint8Array(a.length);
-	var i = this1;
-	var _g1 = 0;
-	var _g = length;
-	while(_g1 < _g) {
-		var idx = _g1++;
-		i[idx] = a[idx + pos] & 255;
-	}
-	return i;
-};
+haxe_io__$UInt8Array_UInt8Array_$Impl_$.__name__ = true;
 haxe_io__$UInt8Array_UInt8Array_$Impl_$.fromBytes = function(bytes,bytePos,length) {
 	if(bytePos == null) {
 		bytePos = 0;
@@ -5774,362 +1668,9 @@ haxe_io__$UInt8Array_UInt8Array_$Impl_$.fromBytes = function(bytes,bytePos,lengt
 	}
 	return new Uint8Array(bytes.b.bufferValue,bytePos,length);
 };
-var haxe_macro_Context = function() { };
-$hxClasses["haxe.macro.Context"] = haxe_macro_Context;
-haxe_macro_Context.__name__ = ["haxe","macro","Context"];
-var haxe_macro_Constant = $hxClasses["haxe.macro.Constant"] = { __ename__ : ["haxe","macro","Constant"], __constructs__ : ["CInt","CFloat","CString","CIdent","CRegexp"] };
-haxe_macro_Constant.CInt = function(v) { var $x = ["CInt",0,v]; $x.__enum__ = haxe_macro_Constant; $x.toString = $estr; return $x; };
-haxe_macro_Constant.CFloat = function(f) { var $x = ["CFloat",1,f]; $x.__enum__ = haxe_macro_Constant; $x.toString = $estr; return $x; };
-haxe_macro_Constant.CString = function(s) { var $x = ["CString",2,s]; $x.__enum__ = haxe_macro_Constant; $x.toString = $estr; return $x; };
-haxe_macro_Constant.CIdent = function(s) { var $x = ["CIdent",3,s]; $x.__enum__ = haxe_macro_Constant; $x.toString = $estr; return $x; };
-haxe_macro_Constant.CRegexp = function(r,opt) { var $x = ["CRegexp",4,r,opt]; $x.__enum__ = haxe_macro_Constant; $x.toString = $estr; return $x; };
-haxe_macro_Constant.__empty_constructs__ = [];
-var haxe_macro_Binop = $hxClasses["haxe.macro.Binop"] = { __ename__ : ["haxe","macro","Binop"], __constructs__ : ["OpAdd","OpMult","OpDiv","OpSub","OpAssign","OpEq","OpNotEq","OpGt","OpGte","OpLt","OpLte","OpAnd","OpOr","OpXor","OpBoolAnd","OpBoolOr","OpShl","OpShr","OpUShr","OpMod","OpAssignOp","OpInterval","OpArrow"] };
-haxe_macro_Binop.OpAdd = ["OpAdd",0];
-haxe_macro_Binop.OpAdd.toString = $estr;
-haxe_macro_Binop.OpAdd.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpMult = ["OpMult",1];
-haxe_macro_Binop.OpMult.toString = $estr;
-haxe_macro_Binop.OpMult.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpDiv = ["OpDiv",2];
-haxe_macro_Binop.OpDiv.toString = $estr;
-haxe_macro_Binop.OpDiv.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpSub = ["OpSub",3];
-haxe_macro_Binop.OpSub.toString = $estr;
-haxe_macro_Binop.OpSub.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpAssign = ["OpAssign",4];
-haxe_macro_Binop.OpAssign.toString = $estr;
-haxe_macro_Binop.OpAssign.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpEq = ["OpEq",5];
-haxe_macro_Binop.OpEq.toString = $estr;
-haxe_macro_Binop.OpEq.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpNotEq = ["OpNotEq",6];
-haxe_macro_Binop.OpNotEq.toString = $estr;
-haxe_macro_Binop.OpNotEq.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpGt = ["OpGt",7];
-haxe_macro_Binop.OpGt.toString = $estr;
-haxe_macro_Binop.OpGt.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpGte = ["OpGte",8];
-haxe_macro_Binop.OpGte.toString = $estr;
-haxe_macro_Binop.OpGte.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpLt = ["OpLt",9];
-haxe_macro_Binop.OpLt.toString = $estr;
-haxe_macro_Binop.OpLt.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpLte = ["OpLte",10];
-haxe_macro_Binop.OpLte.toString = $estr;
-haxe_macro_Binop.OpLte.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpAnd = ["OpAnd",11];
-haxe_macro_Binop.OpAnd.toString = $estr;
-haxe_macro_Binop.OpAnd.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpOr = ["OpOr",12];
-haxe_macro_Binop.OpOr.toString = $estr;
-haxe_macro_Binop.OpOr.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpXor = ["OpXor",13];
-haxe_macro_Binop.OpXor.toString = $estr;
-haxe_macro_Binop.OpXor.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpBoolAnd = ["OpBoolAnd",14];
-haxe_macro_Binop.OpBoolAnd.toString = $estr;
-haxe_macro_Binop.OpBoolAnd.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpBoolOr = ["OpBoolOr",15];
-haxe_macro_Binop.OpBoolOr.toString = $estr;
-haxe_macro_Binop.OpBoolOr.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpShl = ["OpShl",16];
-haxe_macro_Binop.OpShl.toString = $estr;
-haxe_macro_Binop.OpShl.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpShr = ["OpShr",17];
-haxe_macro_Binop.OpShr.toString = $estr;
-haxe_macro_Binop.OpShr.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpUShr = ["OpUShr",18];
-haxe_macro_Binop.OpUShr.toString = $estr;
-haxe_macro_Binop.OpUShr.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpMod = ["OpMod",19];
-haxe_macro_Binop.OpMod.toString = $estr;
-haxe_macro_Binop.OpMod.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpAssignOp = function(op) { var $x = ["OpAssignOp",20,op]; $x.__enum__ = haxe_macro_Binop; $x.toString = $estr; return $x; };
-haxe_macro_Binop.OpInterval = ["OpInterval",21];
-haxe_macro_Binop.OpInterval.toString = $estr;
-haxe_macro_Binop.OpInterval.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.OpArrow = ["OpArrow",22];
-haxe_macro_Binop.OpArrow.toString = $estr;
-haxe_macro_Binop.OpArrow.__enum__ = haxe_macro_Binop;
-haxe_macro_Binop.__empty_constructs__ = [haxe_macro_Binop.OpAdd,haxe_macro_Binop.OpMult,haxe_macro_Binop.OpDiv,haxe_macro_Binop.OpSub,haxe_macro_Binop.OpAssign,haxe_macro_Binop.OpEq,haxe_macro_Binop.OpNotEq,haxe_macro_Binop.OpGt,haxe_macro_Binop.OpGte,haxe_macro_Binop.OpLt,haxe_macro_Binop.OpLte,haxe_macro_Binop.OpAnd,haxe_macro_Binop.OpOr,haxe_macro_Binop.OpXor,haxe_macro_Binop.OpBoolAnd,haxe_macro_Binop.OpBoolOr,haxe_macro_Binop.OpShl,haxe_macro_Binop.OpShr,haxe_macro_Binop.OpUShr,haxe_macro_Binop.OpMod,haxe_macro_Binop.OpInterval,haxe_macro_Binop.OpArrow];
-var haxe_macro_Unop = $hxClasses["haxe.macro.Unop"] = { __ename__ : ["haxe","macro","Unop"], __constructs__ : ["OpIncrement","OpDecrement","OpNot","OpNeg","OpNegBits"] };
-haxe_macro_Unop.OpIncrement = ["OpIncrement",0];
-haxe_macro_Unop.OpIncrement.toString = $estr;
-haxe_macro_Unop.OpIncrement.__enum__ = haxe_macro_Unop;
-haxe_macro_Unop.OpDecrement = ["OpDecrement",1];
-haxe_macro_Unop.OpDecrement.toString = $estr;
-haxe_macro_Unop.OpDecrement.__enum__ = haxe_macro_Unop;
-haxe_macro_Unop.OpNot = ["OpNot",2];
-haxe_macro_Unop.OpNot.toString = $estr;
-haxe_macro_Unop.OpNot.__enum__ = haxe_macro_Unop;
-haxe_macro_Unop.OpNeg = ["OpNeg",3];
-haxe_macro_Unop.OpNeg.toString = $estr;
-haxe_macro_Unop.OpNeg.__enum__ = haxe_macro_Unop;
-haxe_macro_Unop.OpNegBits = ["OpNegBits",4];
-haxe_macro_Unop.OpNegBits.toString = $estr;
-haxe_macro_Unop.OpNegBits.__enum__ = haxe_macro_Unop;
-haxe_macro_Unop.__empty_constructs__ = [haxe_macro_Unop.OpIncrement,haxe_macro_Unop.OpDecrement,haxe_macro_Unop.OpNot,haxe_macro_Unop.OpNeg,haxe_macro_Unop.OpNegBits];
-var haxe_macro_ExprDef = $hxClasses["haxe.macro.ExprDef"] = { __ename__ : ["haxe","macro","ExprDef"], __constructs__ : ["EConst","EArray","EBinop","EField","EParenthesis","EObjectDecl","EArrayDecl","ECall","ENew","EUnop","EVars","EFunction","EBlock","EFor","EIn","EIf","EWhile","ESwitch","ETry","EReturn","EBreak","EContinue","EUntyped","EThrow","ECast","EDisplay","EDisplayNew","ETernary","ECheckType","EMeta"] };
-haxe_macro_ExprDef.EConst = function(c) { var $x = ["EConst",0,c]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EArray = function(e1,e2) { var $x = ["EArray",1,e1,e2]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EBinop = function(op,e1,e2) { var $x = ["EBinop",2,op,e1,e2]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EField = function(e,field) { var $x = ["EField",3,e,field]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EParenthesis = function(e) { var $x = ["EParenthesis",4,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EObjectDecl = function(fields) { var $x = ["EObjectDecl",5,fields]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EArrayDecl = function(values) { var $x = ["EArrayDecl",6,values]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ECall = function(e,params) { var $x = ["ECall",7,e,params]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ENew = function(t,params) { var $x = ["ENew",8,t,params]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EUnop = function(op,postFix,e) { var $x = ["EUnop",9,op,postFix,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EVars = function(vars) { var $x = ["EVars",10,vars]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EFunction = function(name,f) { var $x = ["EFunction",11,name,f]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EBlock = function(exprs) { var $x = ["EBlock",12,exprs]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EFor = function(it,expr) { var $x = ["EFor",13,it,expr]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EIn = function(e1,e2) { var $x = ["EIn",14,e1,e2]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EIf = function(econd,eif,eelse) { var $x = ["EIf",15,econd,eif,eelse]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EWhile = function(econd,e,normalWhile) { var $x = ["EWhile",16,econd,e,normalWhile]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ESwitch = function(e,cases,edef) { var $x = ["ESwitch",17,e,cases,edef]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ETry = function(e,catches) { var $x = ["ETry",18,e,catches]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EReturn = function(e) { var $x = ["EReturn",19,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EBreak = ["EBreak",20];
-haxe_macro_ExprDef.EBreak.toString = $estr;
-haxe_macro_ExprDef.EBreak.__enum__ = haxe_macro_ExprDef;
-haxe_macro_ExprDef.EContinue = ["EContinue",21];
-haxe_macro_ExprDef.EContinue.toString = $estr;
-haxe_macro_ExprDef.EContinue.__enum__ = haxe_macro_ExprDef;
-haxe_macro_ExprDef.EUntyped = function(e) { var $x = ["EUntyped",22,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EThrow = function(e) { var $x = ["EThrow",23,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ECast = function(e,t) { var $x = ["ECast",24,e,t]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EDisplay = function(e,isCall) { var $x = ["EDisplay",25,e,isCall]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EDisplayNew = function(t) { var $x = ["EDisplayNew",26,t]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ETernary = function(econd,eif,eelse) { var $x = ["ETernary",27,econd,eif,eelse]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.ECheckType = function(e,t) { var $x = ["ECheckType",28,e,t]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.EMeta = function(s,e) { var $x = ["EMeta",29,s,e]; $x.__enum__ = haxe_macro_ExprDef; $x.toString = $estr; return $x; };
-haxe_macro_ExprDef.__empty_constructs__ = [haxe_macro_ExprDef.EBreak,haxe_macro_ExprDef.EContinue];
-var haxe_macro_ComplexType = $hxClasses["haxe.macro.ComplexType"] = { __ename__ : ["haxe","macro","ComplexType"], __constructs__ : ["TPath","TFunction","TAnonymous","TParent","TExtend","TOptional"] };
-haxe_macro_ComplexType.TPath = function(p) { var $x = ["TPath",0,p]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.TFunction = function(args,ret) { var $x = ["TFunction",1,args,ret]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.TAnonymous = function(fields) { var $x = ["TAnonymous",2,fields]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.TParent = function(t) { var $x = ["TParent",3,t]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.TExtend = function(p,fields) { var $x = ["TExtend",4,p,fields]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.TOptional = function(t) { var $x = ["TOptional",5,t]; $x.__enum__ = haxe_macro_ComplexType; $x.toString = $estr; return $x; };
-haxe_macro_ComplexType.__empty_constructs__ = [];
-var haxe_macro_TypeParam = $hxClasses["haxe.macro.TypeParam"] = { __ename__ : ["haxe","macro","TypeParam"], __constructs__ : ["TPType","TPExpr"] };
-haxe_macro_TypeParam.TPType = function(t) { var $x = ["TPType",0,t]; $x.__enum__ = haxe_macro_TypeParam; $x.toString = $estr; return $x; };
-haxe_macro_TypeParam.TPExpr = function(e) { var $x = ["TPExpr",1,e]; $x.__enum__ = haxe_macro_TypeParam; $x.toString = $estr; return $x; };
-haxe_macro_TypeParam.__empty_constructs__ = [];
-var haxe_macro_Access = $hxClasses["haxe.macro.Access"] = { __ename__ : ["haxe","macro","Access"], __constructs__ : ["APublic","APrivate","AStatic","AOverride","ADynamic","AInline","AMacro"] };
-haxe_macro_Access.APublic = ["APublic",0];
-haxe_macro_Access.APublic.toString = $estr;
-haxe_macro_Access.APublic.__enum__ = haxe_macro_Access;
-haxe_macro_Access.APrivate = ["APrivate",1];
-haxe_macro_Access.APrivate.toString = $estr;
-haxe_macro_Access.APrivate.__enum__ = haxe_macro_Access;
-haxe_macro_Access.AStatic = ["AStatic",2];
-haxe_macro_Access.AStatic.toString = $estr;
-haxe_macro_Access.AStatic.__enum__ = haxe_macro_Access;
-haxe_macro_Access.AOverride = ["AOverride",3];
-haxe_macro_Access.AOverride.toString = $estr;
-haxe_macro_Access.AOverride.__enum__ = haxe_macro_Access;
-haxe_macro_Access.ADynamic = ["ADynamic",4];
-haxe_macro_Access.ADynamic.toString = $estr;
-haxe_macro_Access.ADynamic.__enum__ = haxe_macro_Access;
-haxe_macro_Access.AInline = ["AInline",5];
-haxe_macro_Access.AInline.toString = $estr;
-haxe_macro_Access.AInline.__enum__ = haxe_macro_Access;
-haxe_macro_Access.AMacro = ["AMacro",6];
-haxe_macro_Access.AMacro.toString = $estr;
-haxe_macro_Access.AMacro.__enum__ = haxe_macro_Access;
-haxe_macro_Access.__empty_constructs__ = [haxe_macro_Access.APublic,haxe_macro_Access.APrivate,haxe_macro_Access.AStatic,haxe_macro_Access.AOverride,haxe_macro_Access.ADynamic,haxe_macro_Access.AInline,haxe_macro_Access.AMacro];
-var haxe_macro_FieldType = $hxClasses["haxe.macro.FieldType"] = { __ename__ : ["haxe","macro","FieldType"], __constructs__ : ["FVar","FFun","FProp"] };
-haxe_macro_FieldType.FVar = function(t,e) { var $x = ["FVar",0,t,e]; $x.__enum__ = haxe_macro_FieldType; $x.toString = $estr; return $x; };
-haxe_macro_FieldType.FFun = function(f) { var $x = ["FFun",1,f]; $x.__enum__ = haxe_macro_FieldType; $x.toString = $estr; return $x; };
-haxe_macro_FieldType.FProp = function(get,set,t,e) { var $x = ["FProp",2,get,set,t,e]; $x.__enum__ = haxe_macro_FieldType; $x.toString = $estr; return $x; };
-haxe_macro_FieldType.__empty_constructs__ = [];
-var haxe_macro_TypeDefKind = $hxClasses["haxe.macro.TypeDefKind"] = { __ename__ : ["haxe","macro","TypeDefKind"], __constructs__ : ["TDEnum","TDStructure","TDClass","TDAlias","TDAbstract"] };
-haxe_macro_TypeDefKind.TDEnum = ["TDEnum",0];
-haxe_macro_TypeDefKind.TDEnum.toString = $estr;
-haxe_macro_TypeDefKind.TDEnum.__enum__ = haxe_macro_TypeDefKind;
-haxe_macro_TypeDefKind.TDStructure = ["TDStructure",1];
-haxe_macro_TypeDefKind.TDStructure.toString = $estr;
-haxe_macro_TypeDefKind.TDStructure.__enum__ = haxe_macro_TypeDefKind;
-haxe_macro_TypeDefKind.TDClass = function(superClass,interfaces,isInterface) { var $x = ["TDClass",2,superClass,interfaces,isInterface]; $x.__enum__ = haxe_macro_TypeDefKind; $x.toString = $estr; return $x; };
-haxe_macro_TypeDefKind.TDAlias = function(t) { var $x = ["TDAlias",3,t]; $x.__enum__ = haxe_macro_TypeDefKind; $x.toString = $estr; return $x; };
-haxe_macro_TypeDefKind.TDAbstract = function(tthis,from,to) { var $x = ["TDAbstract",4,tthis,from,to]; $x.__enum__ = haxe_macro_TypeDefKind; $x.toString = $estr; return $x; };
-haxe_macro_TypeDefKind.__empty_constructs__ = [haxe_macro_TypeDefKind.TDEnum,haxe_macro_TypeDefKind.TDStructure];
-var haxe_macro_Error = function(m,p) {
-	this.message = m;
-	this.pos = p;
-};
-$hxClasses["haxe.macro.Error"] = haxe_macro_Error;
-haxe_macro_Error.__name__ = ["haxe","macro","Error"];
-haxe_macro_Error.prototype = {
-	message: null
-	,pos: null
-	,toString: function() {
-		return this.message;
-	}
-	,__class__: haxe_macro_Error
-};
-var haxe_macro_ImportMode = $hxClasses["haxe.macro.ImportMode"] = { __ename__ : ["haxe","macro","ImportMode"], __constructs__ : ["INormal","IAsName","IAll"] };
-haxe_macro_ImportMode.INormal = ["INormal",0];
-haxe_macro_ImportMode.INormal.toString = $estr;
-haxe_macro_ImportMode.INormal.__enum__ = haxe_macro_ImportMode;
-haxe_macro_ImportMode.IAsName = function(alias) { var $x = ["IAsName",1,alias]; $x.__enum__ = haxe_macro_ImportMode; $x.toString = $estr; return $x; };
-haxe_macro_ImportMode.IAll = ["IAll",2];
-haxe_macro_ImportMode.IAll.toString = $estr;
-haxe_macro_ImportMode.IAll.__enum__ = haxe_macro_ImportMode;
-haxe_macro_ImportMode.__empty_constructs__ = [haxe_macro_ImportMode.INormal,haxe_macro_ImportMode.IAll];
-var haxe_macro_Type = $hxClasses["haxe.macro.Type"] = { __ename__ : ["haxe","macro","Type"], __constructs__ : ["TMono","TEnum","TInst","TType","TFun","TAnonymous","TDynamic","TLazy","TAbstract"] };
-haxe_macro_Type.TMono = function(t) { var $x = ["TMono",0,t]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TEnum = function(t,params) { var $x = ["TEnum",1,t,params]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TInst = function(t,params) { var $x = ["TInst",2,t,params]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TType = function(t,params) { var $x = ["TType",3,t,params]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TFun = function(args,ret) { var $x = ["TFun",4,args,ret]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TAnonymous = function(a) { var $x = ["TAnonymous",5,a]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TDynamic = function(t) { var $x = ["TDynamic",6,t]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TLazy = function(f) { var $x = ["TLazy",7,f]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.TAbstract = function(t,params) { var $x = ["TAbstract",8,t,params]; $x.__enum__ = haxe_macro_Type; $x.toString = $estr; return $x; };
-haxe_macro_Type.__empty_constructs__ = [];
-var haxe_macro_AnonStatus = $hxClasses["haxe.macro.AnonStatus"] = { __ename__ : ["haxe","macro","AnonStatus"], __constructs__ : ["AClosed","AOpened","AConst","AExtend","AClassStatics","AEnumStatics","AAbstractStatics"] };
-haxe_macro_AnonStatus.AClosed = ["AClosed",0];
-haxe_macro_AnonStatus.AClosed.toString = $estr;
-haxe_macro_AnonStatus.AClosed.__enum__ = haxe_macro_AnonStatus;
-haxe_macro_AnonStatus.AOpened = ["AOpened",1];
-haxe_macro_AnonStatus.AOpened.toString = $estr;
-haxe_macro_AnonStatus.AOpened.__enum__ = haxe_macro_AnonStatus;
-haxe_macro_AnonStatus.AConst = ["AConst",2];
-haxe_macro_AnonStatus.AConst.toString = $estr;
-haxe_macro_AnonStatus.AConst.__enum__ = haxe_macro_AnonStatus;
-haxe_macro_AnonStatus.AExtend = function(tl) { var $x = ["AExtend",3,tl]; $x.__enum__ = haxe_macro_AnonStatus; $x.toString = $estr; return $x; };
-haxe_macro_AnonStatus.AClassStatics = function(t) { var $x = ["AClassStatics",4,t]; $x.__enum__ = haxe_macro_AnonStatus; $x.toString = $estr; return $x; };
-haxe_macro_AnonStatus.AEnumStatics = function(t) { var $x = ["AEnumStatics",5,t]; $x.__enum__ = haxe_macro_AnonStatus; $x.toString = $estr; return $x; };
-haxe_macro_AnonStatus.AAbstractStatics = function(t) { var $x = ["AAbstractStatics",6,t]; $x.__enum__ = haxe_macro_AnonStatus; $x.toString = $estr; return $x; };
-haxe_macro_AnonStatus.__empty_constructs__ = [haxe_macro_AnonStatus.AClosed,haxe_macro_AnonStatus.AOpened,haxe_macro_AnonStatus.AConst];
-var haxe_macro_ClassKind = $hxClasses["haxe.macro.ClassKind"] = { __ename__ : ["haxe","macro","ClassKind"], __constructs__ : ["KNormal","KTypeParameter","KExtension","KExpr","KGeneric","KGenericInstance","KMacroType","KAbstractImpl","KGenericBuild"] };
-haxe_macro_ClassKind.KNormal = ["KNormal",0];
-haxe_macro_ClassKind.KNormal.toString = $estr;
-haxe_macro_ClassKind.KNormal.__enum__ = haxe_macro_ClassKind;
-haxe_macro_ClassKind.KTypeParameter = function(constraints) { var $x = ["KTypeParameter",1,constraints]; $x.__enum__ = haxe_macro_ClassKind; $x.toString = $estr; return $x; };
-haxe_macro_ClassKind.KExtension = function(cl,params) { var $x = ["KExtension",2,cl,params]; $x.__enum__ = haxe_macro_ClassKind; $x.toString = $estr; return $x; };
-haxe_macro_ClassKind.KExpr = function(expr) { var $x = ["KExpr",3,expr]; $x.__enum__ = haxe_macro_ClassKind; $x.toString = $estr; return $x; };
-haxe_macro_ClassKind.KGeneric = ["KGeneric",4];
-haxe_macro_ClassKind.KGeneric.toString = $estr;
-haxe_macro_ClassKind.KGeneric.__enum__ = haxe_macro_ClassKind;
-haxe_macro_ClassKind.KGenericInstance = function(cl,params) { var $x = ["KGenericInstance",5,cl,params]; $x.__enum__ = haxe_macro_ClassKind; $x.toString = $estr; return $x; };
-haxe_macro_ClassKind.KMacroType = ["KMacroType",6];
-haxe_macro_ClassKind.KMacroType.toString = $estr;
-haxe_macro_ClassKind.KMacroType.__enum__ = haxe_macro_ClassKind;
-haxe_macro_ClassKind.KAbstractImpl = function(a) { var $x = ["KAbstractImpl",7,a]; $x.__enum__ = haxe_macro_ClassKind; $x.toString = $estr; return $x; };
-haxe_macro_ClassKind.KGenericBuild = ["KGenericBuild",8];
-haxe_macro_ClassKind.KGenericBuild.toString = $estr;
-haxe_macro_ClassKind.KGenericBuild.__enum__ = haxe_macro_ClassKind;
-haxe_macro_ClassKind.__empty_constructs__ = [haxe_macro_ClassKind.KNormal,haxe_macro_ClassKind.KGeneric,haxe_macro_ClassKind.KMacroType,haxe_macro_ClassKind.KGenericBuild];
-var haxe_macro_FieldKind = $hxClasses["haxe.macro.FieldKind"] = { __ename__ : ["haxe","macro","FieldKind"], __constructs__ : ["FVar","FMethod"] };
-haxe_macro_FieldKind.FVar = function(read,write) { var $x = ["FVar",0,read,write]; $x.__enum__ = haxe_macro_FieldKind; $x.toString = $estr; return $x; };
-haxe_macro_FieldKind.FMethod = function(k) { var $x = ["FMethod",1,k]; $x.__enum__ = haxe_macro_FieldKind; $x.toString = $estr; return $x; };
-haxe_macro_FieldKind.__empty_constructs__ = [];
-var haxe_macro_VarAccess = $hxClasses["haxe.macro.VarAccess"] = { __ename__ : ["haxe","macro","VarAccess"], __constructs__ : ["AccNormal","AccNo","AccNever","AccResolve","AccCall","AccInline","AccRequire"] };
-haxe_macro_VarAccess.AccNormal = ["AccNormal",0];
-haxe_macro_VarAccess.AccNormal.toString = $estr;
-haxe_macro_VarAccess.AccNormal.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccNo = ["AccNo",1];
-haxe_macro_VarAccess.AccNo.toString = $estr;
-haxe_macro_VarAccess.AccNo.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccNever = ["AccNever",2];
-haxe_macro_VarAccess.AccNever.toString = $estr;
-haxe_macro_VarAccess.AccNever.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccResolve = ["AccResolve",3];
-haxe_macro_VarAccess.AccResolve.toString = $estr;
-haxe_macro_VarAccess.AccResolve.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccCall = ["AccCall",4];
-haxe_macro_VarAccess.AccCall.toString = $estr;
-haxe_macro_VarAccess.AccCall.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccInline = ["AccInline",5];
-haxe_macro_VarAccess.AccInline.toString = $estr;
-haxe_macro_VarAccess.AccInline.__enum__ = haxe_macro_VarAccess;
-haxe_macro_VarAccess.AccRequire = function(r,msg) { var $x = ["AccRequire",6,r,msg]; $x.__enum__ = haxe_macro_VarAccess; $x.toString = $estr; return $x; };
-haxe_macro_VarAccess.__empty_constructs__ = [haxe_macro_VarAccess.AccNormal,haxe_macro_VarAccess.AccNo,haxe_macro_VarAccess.AccNever,haxe_macro_VarAccess.AccResolve,haxe_macro_VarAccess.AccCall,haxe_macro_VarAccess.AccInline];
-var haxe_macro_MethodKind = $hxClasses["haxe.macro.MethodKind"] = { __ename__ : ["haxe","macro","MethodKind"], __constructs__ : ["MethNormal","MethInline","MethDynamic","MethMacro"] };
-haxe_macro_MethodKind.MethNormal = ["MethNormal",0];
-haxe_macro_MethodKind.MethNormal.toString = $estr;
-haxe_macro_MethodKind.MethNormal.__enum__ = haxe_macro_MethodKind;
-haxe_macro_MethodKind.MethInline = ["MethInline",1];
-haxe_macro_MethodKind.MethInline.toString = $estr;
-haxe_macro_MethodKind.MethInline.__enum__ = haxe_macro_MethodKind;
-haxe_macro_MethodKind.MethDynamic = ["MethDynamic",2];
-haxe_macro_MethodKind.MethDynamic.toString = $estr;
-haxe_macro_MethodKind.MethDynamic.__enum__ = haxe_macro_MethodKind;
-haxe_macro_MethodKind.MethMacro = ["MethMacro",3];
-haxe_macro_MethodKind.MethMacro.toString = $estr;
-haxe_macro_MethodKind.MethMacro.__enum__ = haxe_macro_MethodKind;
-haxe_macro_MethodKind.__empty_constructs__ = [haxe_macro_MethodKind.MethNormal,haxe_macro_MethodKind.MethInline,haxe_macro_MethodKind.MethDynamic,haxe_macro_MethodKind.MethMacro];
-var haxe_macro_TConstant = $hxClasses["haxe.macro.TConstant"] = { __ename__ : ["haxe","macro","TConstant"], __constructs__ : ["TInt","TFloat","TString","TBool","TNull","TThis","TSuper"] };
-haxe_macro_TConstant.TInt = function(i) { var $x = ["TInt",0,i]; $x.__enum__ = haxe_macro_TConstant; $x.toString = $estr; return $x; };
-haxe_macro_TConstant.TFloat = function(s) { var $x = ["TFloat",1,s]; $x.__enum__ = haxe_macro_TConstant; $x.toString = $estr; return $x; };
-haxe_macro_TConstant.TString = function(s) { var $x = ["TString",2,s]; $x.__enum__ = haxe_macro_TConstant; $x.toString = $estr; return $x; };
-haxe_macro_TConstant.TBool = function(b) { var $x = ["TBool",3,b]; $x.__enum__ = haxe_macro_TConstant; $x.toString = $estr; return $x; };
-haxe_macro_TConstant.TNull = ["TNull",4];
-haxe_macro_TConstant.TNull.toString = $estr;
-haxe_macro_TConstant.TNull.__enum__ = haxe_macro_TConstant;
-haxe_macro_TConstant.TThis = ["TThis",5];
-haxe_macro_TConstant.TThis.toString = $estr;
-haxe_macro_TConstant.TThis.__enum__ = haxe_macro_TConstant;
-haxe_macro_TConstant.TSuper = ["TSuper",6];
-haxe_macro_TConstant.TSuper.toString = $estr;
-haxe_macro_TConstant.TSuper.__enum__ = haxe_macro_TConstant;
-haxe_macro_TConstant.__empty_constructs__ = [haxe_macro_TConstant.TNull,haxe_macro_TConstant.TThis,haxe_macro_TConstant.TSuper];
-var haxe_macro_ModuleType = $hxClasses["haxe.macro.ModuleType"] = { __ename__ : ["haxe","macro","ModuleType"], __constructs__ : ["TClassDecl","TEnumDecl","TTypeDecl","TAbstract"] };
-haxe_macro_ModuleType.TClassDecl = function(c) { var $x = ["TClassDecl",0,c]; $x.__enum__ = haxe_macro_ModuleType; $x.toString = $estr; return $x; };
-haxe_macro_ModuleType.TEnumDecl = function(e) { var $x = ["TEnumDecl",1,e]; $x.__enum__ = haxe_macro_ModuleType; $x.toString = $estr; return $x; };
-haxe_macro_ModuleType.TTypeDecl = function(t) { var $x = ["TTypeDecl",2,t]; $x.__enum__ = haxe_macro_ModuleType; $x.toString = $estr; return $x; };
-haxe_macro_ModuleType.TAbstract = function(a) { var $x = ["TAbstract",3,a]; $x.__enum__ = haxe_macro_ModuleType; $x.toString = $estr; return $x; };
-haxe_macro_ModuleType.__empty_constructs__ = [];
-var haxe_macro_FieldAccess = $hxClasses["haxe.macro.FieldAccess"] = { __ename__ : ["haxe","macro","FieldAccess"], __constructs__ : ["FInstance","FStatic","FAnon","FDynamic","FClosure","FEnum"] };
-haxe_macro_FieldAccess.FInstance = function(c,params,cf) { var $x = ["FInstance",0,c,params,cf]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.FStatic = function(c,cf) { var $x = ["FStatic",1,c,cf]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.FAnon = function(cf) { var $x = ["FAnon",2,cf]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.FDynamic = function(s) { var $x = ["FDynamic",3,s]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.FClosure = function(c,cf) { var $x = ["FClosure",4,c,cf]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.FEnum = function(e,ef) { var $x = ["FEnum",5,e,ef]; $x.__enum__ = haxe_macro_FieldAccess; $x.toString = $estr; return $x; };
-haxe_macro_FieldAccess.__empty_constructs__ = [];
-var haxe_macro_TypedExprDef = $hxClasses["haxe.macro.TypedExprDef"] = { __ename__ : ["haxe","macro","TypedExprDef"], __constructs__ : ["TConst","TLocal","TArray","TBinop","TField","TTypeExpr","TParenthesis","TObjectDecl","TArrayDecl","TCall","TNew","TUnop","TFunction","TVar","TBlock","TFor","TIf","TWhile","TSwitch","TTry","TReturn","TBreak","TContinue","TThrow","TCast","TMeta","TEnumParameter"] };
-haxe_macro_TypedExprDef.TConst = function(c) { var $x = ["TConst",0,c]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TLocal = function(v) { var $x = ["TLocal",1,v]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TArray = function(e1,e2) { var $x = ["TArray",2,e1,e2]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TBinop = function(op,e1,e2) { var $x = ["TBinop",3,op,e1,e2]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TField = function(e,fa) { var $x = ["TField",4,e,fa]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TTypeExpr = function(m) { var $x = ["TTypeExpr",5,m]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TParenthesis = function(e) { var $x = ["TParenthesis",6,e]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TObjectDecl = function(fields) { var $x = ["TObjectDecl",7,fields]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TArrayDecl = function(el) { var $x = ["TArrayDecl",8,el]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TCall = function(e,el) { var $x = ["TCall",9,e,el]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TNew = function(c,params,el) { var $x = ["TNew",10,c,params,el]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TUnop = function(op,postFix,e) { var $x = ["TUnop",11,op,postFix,e]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TFunction = function(tfunc) { var $x = ["TFunction",12,tfunc]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TVar = function(v,expr) { var $x = ["TVar",13,v,expr]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TBlock = function(el) { var $x = ["TBlock",14,el]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TFor = function(v,e1,e2) { var $x = ["TFor",15,v,e1,e2]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TIf = function(econd,eif,eelse) { var $x = ["TIf",16,econd,eif,eelse]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TWhile = function(econd,e,normalWhile) { var $x = ["TWhile",17,econd,e,normalWhile]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TSwitch = function(e,cases,edef) { var $x = ["TSwitch",18,e,cases,edef]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TTry = function(e,catches) { var $x = ["TTry",19,e,catches]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TReturn = function(e) { var $x = ["TReturn",20,e]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TBreak = ["TBreak",21];
-haxe_macro_TypedExprDef.TBreak.toString = $estr;
-haxe_macro_TypedExprDef.TBreak.__enum__ = haxe_macro_TypedExprDef;
-haxe_macro_TypedExprDef.TContinue = ["TContinue",22];
-haxe_macro_TypedExprDef.TContinue.toString = $estr;
-haxe_macro_TypedExprDef.TContinue.__enum__ = haxe_macro_TypedExprDef;
-haxe_macro_TypedExprDef.TThrow = function(e) { var $x = ["TThrow",23,e]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TCast = function(e,m) { var $x = ["TCast",24,e,m]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TMeta = function(m,e1) { var $x = ["TMeta",25,m,e1]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.TEnumParameter = function(e1,ef,index) { var $x = ["TEnumParameter",26,e1,ef,index]; $x.__enum__ = haxe_macro_TypedExprDef; $x.toString = $estr; return $x; };
-haxe_macro_TypedExprDef.__empty_constructs__ = [haxe_macro_TypedExprDef.TBreak,haxe_macro_TypedExprDef.TContinue];
 var hxPolyK__$PolyK_ArrayPairs_$Impl_$ = {};
 $hxClasses["hxPolyK._PolyK.ArrayPairs_Impl_"] = hxPolyK__$PolyK_ArrayPairs_$Impl_$;
-hxPolyK__$PolyK_ArrayPairs_$Impl_$.__name__ = ["hxPolyK","_PolyK","ArrayPairs_Impl_"];
-hxPolyK__$PolyK_ArrayPairs_$Impl_$.__properties__ = {get_length:"get_length"};
+hxPolyK__$PolyK_ArrayPairs_$Impl_$.__name__ = true;
 hxPolyK__$PolyK_ArrayPairs_$Impl_$._new = function(arr) {
 	var this1 = arr;
 	return this1;
@@ -6160,8 +1701,7 @@ hxPolyK__$PolyK_ArrayPairs_$Impl_$.reverse = function(this1) {
 };
 var hxPolyK__$PolyK_ArrayTriple_$Impl_$ = {};
 $hxClasses["hxPolyK._PolyK.ArrayTriple_Impl_"] = hxPolyK__$PolyK_ArrayTriple_$Impl_$;
-hxPolyK__$PolyK_ArrayTriple_$Impl_$.__name__ = ["hxPolyK","_PolyK","ArrayTriple_Impl_"];
-hxPolyK__$PolyK_ArrayTriple_$Impl_$.__properties__ = {get_length:"get_length"};
+hxPolyK__$PolyK_ArrayTriple_$Impl_$.__name__ = true;
 hxPolyK__$PolyK_ArrayTriple_$Impl_$._new = function(arr) {
 	var this1 = arr;
 	return this1;
@@ -6196,7 +1736,7 @@ hxPolyK__$PolyK_ArrayTriple_$Impl_$.reverse = function(this1) {
 var hxPolyK_PolyK = function() {
 };
 $hxClasses["hxPolyK.PolyK"] = hxPolyK_PolyK;
-hxPolyK_PolyK.__name__ = ["hxPolyK","PolyK"];
+hxPolyK_PolyK.__name__ = true;
 hxPolyK_PolyK.isSimple = function(p) {
 	var n = p.length >> 1;
 	if(n < 4) {
@@ -7232,8 +2772,8 @@ hxPolyK_PolyK.prototype = {
 };
 var jigsawx_JigsawMagicNumbers = function() { };
 $hxClasses["jigsawx.JigsawMagicNumbers"] = jigsawx_JigsawMagicNumbers;
-jigsawx_JigsawMagicNumbers.__name__ = ["jigsawx","JigsawMagicNumbers"];
-var jigsawx_Compass = $hxClasses["jigsawx.Compass"] = { __ename__ : ["jigsawx","Compass"], __constructs__ : ["NORTH","SOUTH","EAST","WEST"] };
+jigsawx_JigsawMagicNumbers.__name__ = true;
+var jigsawx_Compass = $hxClasses["jigsawx.Compass"] = { __ename__ : true, __constructs__ : ["NORTH","SOUTH","EAST","WEST"] };
 jigsawx_Compass.NORTH = ["NORTH",0];
 jigsawx_Compass.NORTH.toString = $estr;
 jigsawx_Compass.NORTH.__enum__ = jigsawx_Compass;
@@ -7246,7 +2786,6 @@ jigsawx_Compass.EAST.__enum__ = jigsawx_Compass;
 jigsawx_Compass.WEST = ["WEST",3];
 jigsawx_Compass.WEST.toString = $estr;
 jigsawx_Compass.WEST.__enum__ = jigsawx_Compass;
-jigsawx_Compass.__empty_constructs__ = [jigsawx_Compass.NORTH,jigsawx_Compass.SOUTH,jigsawx_Compass.EAST,jigsawx_Compass.WEST];
 var jigsawx_JigsawPiece = function(xy_,row,col,lt,rt,rb,lb,sideData_) {
 	this.enabled = true;
 	this.xy = new jigsawx_math_Vec2(xy_.x,xy_.y);
@@ -7272,7 +2811,7 @@ var jigsawx_JigsawPiece = function(xy_,row,col,lt,rt,rb,lb,sideData_) {
 	this.points.push(lt);
 };
 $hxClasses["jigsawx.JigsawPiece"] = jigsawx_JigsawPiece;
-jigsawx_JigsawPiece.__name__ = ["jigsawx","JigsawPiece"];
+jigsawx_JigsawPiece.__name__ = true;
 jigsawx_JigsawPiece.prototype = {
 	enabled: null
 	,curveBuilder: null
@@ -7586,18 +3125,17 @@ jigsawx_JigsawPiece.prototype = {
 	}
 	,__class__: jigsawx_JigsawPiece
 };
-var jigsawx_Bubble = $hxClasses["jigsawx.Bubble"] = { __ename__ : ["jigsawx","Bubble"], __constructs__ : ["IN","OUT"] };
+var jigsawx_Bubble = $hxClasses["jigsawx.Bubble"] = { __ename__ : true, __constructs__ : ["IN","OUT"] };
 jigsawx_Bubble.IN = ["IN",0];
 jigsawx_Bubble.IN.toString = $estr;
 jigsawx_Bubble.IN.__enum__ = jigsawx_Bubble;
 jigsawx_Bubble.OUT = ["OUT",1];
 jigsawx_Bubble.OUT.toString = $estr;
 jigsawx_Bubble.OUT.__enum__ = jigsawx_Bubble;
-jigsawx_Bubble.__empty_constructs__ = [jigsawx_Bubble.IN,jigsawx_Bubble.OUT];
 var jigsawx_JigsawSideData = function() {
 };
 $hxClasses["jigsawx.JigsawSideData"] = jigsawx_JigsawSideData;
-jigsawx_JigsawSideData.__name__ = ["jigsawx","JigsawSideData"];
+jigsawx_JigsawSideData.__name__ = true;
 jigsawx_JigsawSideData.halfPieceData = function() {
 	return { north : null, east : jigsawx_JigsawSideData.create(), south : jigsawx_JigsawSideData.create(), west : null};
 };
@@ -7744,7 +3282,7 @@ var jigsawx_Jigsawx = function(dx_,dy_,rows_,cols_) {
 	}
 };
 $hxClasses["jigsawx.Jigsawx"] = jigsawx_Jigsawx;
-jigsawx_Jigsawx.__name__ = ["jigsawx","Jigsawx"];
+jigsawx_Jigsawx.__name__ = true;
 jigsawx_Jigsawx.prototype = {
 	rows: null
 	,cols: null
@@ -7763,7 +3301,7 @@ jigsawx_Jigsawx.prototype = {
 var jigsawx_OpenEllipse = function() {
 };
 $hxClasses["jigsawx.OpenEllipse"] = jigsawx_OpenEllipse;
-jigsawx_OpenEllipse.__name__ = ["jigsawx","OpenEllipse"];
+jigsawx_OpenEllipse.__name__ = true;
 jigsawx_OpenEllipse.prototype = {
 	rotation: null
 	,beginAngle: null
@@ -7816,14 +3354,13 @@ jigsawx_OpenEllipse.prototype = {
 	}
 	,__class__: jigsawx_OpenEllipse
 };
-var jigsawx_ds_Sign = $hxClasses["jigsawx.ds.Sign"] = { __ename__ : ["jigsawx","ds","Sign"], __constructs__ : ["UP","DOWN"] };
+var jigsawx_ds_Sign = $hxClasses["jigsawx.ds.Sign"] = { __ename__ : true, __constructs__ : ["UP","DOWN"] };
 jigsawx_ds_Sign.UP = ["UP",0];
 jigsawx_ds_Sign.UP.toString = $estr;
 jigsawx_ds_Sign.UP.__enum__ = jigsawx_ds_Sign;
 jigsawx_ds_Sign.DOWN = ["DOWN",1];
 jigsawx_ds_Sign.DOWN.toString = $estr;
 jigsawx_ds_Sign.DOWN.__enum__ = jigsawx_ds_Sign;
-jigsawx_ds_Sign.__empty_constructs__ = [jigsawx_ds_Sign.UP,jigsawx_ds_Sign.DOWN];
 var jigsawx_ds_CircleIter = function(begin_,fin_,step_,min_,max_) {
 	this.begin = begin_;
 	this.current = this.begin;
@@ -7834,7 +3371,7 @@ var jigsawx_ds_CircleIter = function(begin_,fin_,step_,min_,max_) {
 	this.onDirection = this.step > 0 ? jigsawx_ds_Sign.UP : jigsawx_ds_Sign.DOWN;
 };
 $hxClasses["jigsawx.ds.CircleIter"] = jigsawx_ds_CircleIter;
-jigsawx_ds_CircleIter.__name__ = ["jigsawx","ds","CircleIter"];
+jigsawx_ds_CircleIter.__name__ = true;
 jigsawx_ds_CircleIter.pi2 = function(begin_,fin_,step_) {
 	return new jigsawx_ds_CircleIter(begin_,fin_,step_,0,2 * Math.PI);
 };
@@ -7905,54 +3442,171 @@ var jigsawx_math_Vec2 = function(x_,y_) {
 	this.y = y_;
 };
 $hxClasses["jigsawx.math.Vec2"] = jigsawx_math_Vec2;
-jigsawx_math_Vec2.__name__ = ["jigsawx","math","Vec2"];
+jigsawx_math_Vec2.__name__ = true;
 jigsawx_math_Vec2.prototype = {
 	x: null
 	,y: null
 	,__class__: jigsawx_math_Vec2
 };
-var jigsawxKha_JigsawImageBuilder = function(jigs_) {
-	this.colors = [-16777216,-65536,-33024,-256,-16711936,-16776961,-11861886,-7077677,-12303292,-13421773,-15987700,-15658735,-1,-16776961,-16711936,-65536];
-	this.countID = 0;
-	this.jigsawShapeArrayOutline = [];
-	this.jigsawShapeArray = [];
-	this.scaleImg = 1;
-	this.backgroundAlpha = 0.3;
-	this.showBackground = false;
-	this.jigs = jigs_;
-	trilateralXtra_kDrawing_PolyPainter.bufferSize = 6145334;
-	this.polyPainter = new trilateralXtra_kDrawing_PolyPainter();
-	this.polyPainter.textureAddressingX = kha_graphics4_TextureAddressing.Repeat;
-	this.polyPainter.textureAddressingY = kha_graphics4_TextureAddressing.Repeat;
-	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(1024,768);
-	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(this.fillDraw);
+var jigsawxKha_game_Jig = function(x_,y_,depth_) {
+	this.enabled = true;
+	this.rotation = 0;
+	this.depth = 0;
+	this.x = x_;
+	this.y = y_;
+	this.depth = depth_;
 };
-$hxClasses["jigsawxKha.JigsawImageBuilder"] = jigsawxKha_JigsawImageBuilder;
-jigsawxKha_JigsawImageBuilder.__name__ = ["jigsawxKha","JigsawImageBuilder"];
-jigsawxKha_JigsawImageBuilder.prototype = {
-	showBackground: null
-	,backgroundAlpha: null
-	,imageDrawing: null
-	,fillDraw: null
-	,scaleImg: null
-	,jigsawShapeArray: null
-	,jigsawShapeArrayOutline: null
-	,polyPainter: null
+$hxClasses["jigsawxKha.game.Jig"] = jigsawxKha_game_Jig;
+jigsawxKha_game_Jig.__name__ = true;
+jigsawxKha_game_Jig.prototype = {
+	x: null
+	,y: null
+	,depth: null
+	,rotation: null
+	,enabled: null
+	,__class__: jigsawxKha_game_Jig
+};
+var jigsawxKha_game_JigsawGame = function() {
+	this.topDepth = 100;
+	this.cols = 8;
+	this.rows = 6;
+	this.hi = 45;
+	this.wid = 45;
+	this.jigs = [];
+	this.jigsawx = new jigsawx_Jigsawx(this.wid,this.hi,this.rows,this.cols);
+	var jig;
+	var jj = this.jigsawx.jigs;
+	var _g1 = 0;
+	var _g = jj.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		jig = jj[i];
+		this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x,jig.xy.y,i);
+	}
+	var factor = 4;
+	var left = 320.;
+	var top = 265.;
+	var xRange = 370.;
+	var yRange = 250.;
+	var randomizeMost;
+	var _g2 = 0;
+	var _g11 = this.jigs;
+	while(_g2 < _g11.length) {
+		var jig1 = _g11[_g2];
+		++_g2;
+		randomizeMost = (Math.random() * factor | 0) != 0;
+		if(randomizeMost) {
+			jig1.x = Math.random() * xRange + left;
+			jig1.y = Math.random() * yRange + top;
+			jig1.rotation = Math.random() * Math.PI * 2 - Math.PI;
+		} else {
+			jig1.enabled = false;
+		}
+	}
+};
+$hxClasses["jigsawxKha.game.JigsawGame"] = jigsawxKha_game_JigsawGame;
+jigsawxKha_game_JigsawGame.__name__ = true;
+jigsawxKha_game_JigsawGame.prototype = {
+	jigsawx: null
 	,jigs: null
-	,countID: null
-	,colors: null
-	,drawMask: function() {
-		var path = new trilateral_path_FillOnly();
-		var jig = this.jigs[0];
-		var image;
+	,imageTiles: null
+	,gridDefFill: null
+	,gridDefOutline: null
+	,gridFill: null
+	,gridOutline: null
+	,outLineEdge: null
+	,wid: null
+	,hi: null
+	,rows: null
+	,cols: null
+	,offX: null
+	,offY: null
+	,selected: null
+	,selectedID: null
+	,topDepth: null
+	,jigsawShapeArray: null
+	,init: function() {
+		this.jigsawx = new jigsawx_Jigsawx(this.wid,this.hi,this.rows,this.cols);
+		var jig;
+		var jj = this.jigsawx.jigs;
+		var _g1 = 0;
+		var _g = jj.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = jj[i];
+			this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x,jig.xy.y,i);
+		}
+		var factor = 4;
+		var left = 320.;
+		var top = 265.;
+		var xRange = 370.;
+		var yRange = 250.;
+		var randomizeMost;
+		var _g2 = 0;
+		var _g11 = this.jigs;
+		while(_g2 < _g11.length) {
+			var jig1 = _g11[_g2];
+			++_g2;
+			randomizeMost = (Math.random() * factor | 0) != 0;
+			if(randomizeMost) {
+				jig1.x = Math.random() * xRange + left;
+				jig1.y = Math.random() * yRange + top;
+				jig1.rotation = Math.random() * Math.PI * 2 - Math.PI;
+			} else {
+				jig1.enabled = false;
+			}
+		}
+	}
+	,restart: function(image) {
+		this.jigsawx = new jigsawx_Jigsawx(this.wid,this.hi,this.rows,this.cols);
+		var jig;
+		var jj = this.jigsawx.jigs;
+		var _g1 = 0;
+		var _g = jj.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = jj[i];
+			this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x,jig.xy.y,i);
+		}
+		var factor = 4;
+		var left = 320.;
+		var top = 265.;
+		var xRange = 370.;
+		var yRange = 250.;
+		var randomizeMost;
+		var _g2 = 0;
+		var _g11 = this.jigs;
+		while(_g2 < _g11.length) {
+			var jig1 = _g11[_g2];
+			++_g2;
+			randomizeMost = (Math.random() * factor | 0) != 0;
+			if(randomizeMost) {
+				jig1.x = Math.random() * xRange + left;
+				jig1.y = Math.random() * yRange + top;
+				jig1.rotation = Math.random() * Math.PI * 2 - Math.PI;
+			} else {
+				jig1.enabled = false;
+			}
+		}
+		this.start(image);
+	}
+	,start: function(image) {
+		this.imageTiles = new jigsawxKha_tileImage_ImageTiles();
+		var _this = this.imageTiles;
+		var jigs = this.jigsawx.jigs;
+		var _this1 = _this.shapeBuilder;
+		var path = _this1.base;
+		var jigs1 = jigs;
+		var jig = jigs1[0];
 		var ox;
 		var oy;
 		var count = 0;
+		var shapeArray = [];
 		var _g1 = 0;
-		var _g = this.jigs.length;
+		var _g = jigs1.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			jig = this.jigs[i];
+			jig = jigs1[i];
 			path.reset();
 			ox = jig.xy.x;
 			oy = jig.xy.y;
@@ -7993,24 +3647,989 @@ jigsawxKha_JigsawImageBuilder.prototype = {
 					path.y = y_;
 				}
 			}
-			this.fillDraw.triangles = [];
-			this.fillDraw.fill(path.points,0);
-			this.jigsawShapeArray[count] = new jigsawxKha_JigsawShape(jig,this.fillDraw.triangles,ox,oy);
+			_this1.fillDraw.triangles = [];
+			_this1.fillDraw.fill(path.points,0);
+			shapeArray[count] = new jigsawxKha_tileImage_JigsawShape(jig,_this1.fillDraw.triangles,ox,oy);
 			++count;
 		}
+		_this.jigsawShapeArray = shapeArray;
+		var path1 = _this.outlineBuilder.base;
+		path1.width = 2;
+		var jigs2 = jigs;
+		var jig1 = jigs2[0];
+		var ox1;
+		var oy1;
+		var count1 = 0;
+		var shapeArray1 = [];
+		var _g11 = 0;
+		var _g3 = jigs2.length;
+		while(_g11 < _g3) {
+			var i1 = _g11++;
+			jig1 = jigs2[i1];
+			path1.reset();
+			ox1 = jig1.xy.x;
+			oy1 = jig1.xy.y;
+			var first1 = jig1.getFirst();
+			path1.moveTo(first1.x + ox1,first1.y + oy1);
+			var p2 = jig1.getPoints();
+			var _g21 = 0;
+			while(_g21 < p2.length) {
+				var v1 = p2[_g21];
+				++_g21;
+				var x_1 = v1.x + ox1;
+				var y_1 = v1.y + oy1;
+				var repeat1 = path1.x == x_1 && path1.y == y_1;
+				if(!repeat1) {
+					if(path1.widthFunction != null) {
+						path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_1,y_1);
+					}
+					path1.line(x_1,y_1);
+					var l1 = path1.points.length;
+					var p3 = path1.points[l1 - 1];
+					var l21 = p3.length;
+					p3[l21] = x_1;
+					p3[l21 + 1] = y_1;
+					var d1 = path1.dim[path1.dim.length - 1];
+					if(x_1 < d1.minX) {
+						d1.minX = x_1;
+					}
+					if(x_1 > d1.maxX) {
+						d1.maxX = x_1;
+					}
+					if(y_1 < d1.minY) {
+						d1.minY = y_1;
+					}
+					if(y_1 > d1.maxY) {
+						d1.maxY = y_1;
+					}
+					path1.x = x_1;
+					path1.y = y_1;
+				}
+			}
+			var x_2 = first1.x + ox1;
+			var y_2 = first1.y + oy1;
+			var repeat2 = path1.x == x_2 && path1.y == y_2;
+			if(!repeat2) {
+				if(path1.widthFunction != null) {
+					path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_2,y_2);
+				}
+				path1.line(x_2,y_2);
+				var l3 = path1.points.length;
+				var p4 = path1.points[l3 - 1];
+				var l22 = p4.length;
+				p4[l22] = x_2;
+				p4[l22 + 1] = y_2;
+				var d2 = path1.dim[path1.dim.length - 1];
+				if(x_2 < d2.minX) {
+					d2.minX = x_2;
+				}
+				if(x_2 > d2.maxX) {
+					d2.maxX = x_2;
+				}
+				if(y_2 < d2.minY) {
+					d2.minY = y_2;
+				}
+				if(y_2 > d2.maxY) {
+					d2.maxY = y_2;
+				}
+				path1.x = x_2;
+				path1.y = y_2;
+			}
+			var this1 = trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new([]);
+			var triangles = this1;
+			var triArr = path1.trilateralArray;
+			var tri;
+			var _g4 = 0;
+			while(_g4 < triArr.length) {
+				var t = triArr[_g4];
+				++_g4;
+				if(t != null) {
+					var t1 = Type.createEmptyInstance(trilateral_tri_Triangle);
+					t1.id = count1;
+					t1.ax = t.ax;
+					t1.ay = t.ay;
+					t1.bx = t.bx;
+					t1.by = t.by;
+					t1.cx = t.cx;
+					t1.cy = t.cy;
+					t1.mark = t.mark;
+					t1.depth = 0;
+					t1.alpha = 1.;
+					t1.colorID = 1;
+					t1.colorA = 1;
+					t1.colorB = 1;
+					t1.colorC = 1;
+					t1.windingAdjusted = t.windingAdjusted;
+					tri = t1;
+					triangles[triangles.length] = tri;
+				}
+			}
+			shapeArray1[i1] = new jigsawxKha_tileImage_JigsawShape(jig1,triangles,ox1,oy1);
+			++count1;
+		}
+		_this.jigsawShapeArrayOutline = shapeArray1;
+		var fillSheet = new jigsawxKha_tileImage_FillSheet();
+		var outlineSheet = new jigsawxKha_tileImage_OutlineSheet();
+		var jigsawShapes = _this.jigsawShapeArray;
+		var poly = fillSheet.imageDrawing.polyPainter;
+		var jigsawShape;
+		var scale = 1.;
+		var x = 0.;
+		var y = 0.;
+		fillSheet.imageDrawing.startImage();
+		var _g12 = 0;
+		var _g5 = jigsawShapes.length;
+		while(_g12 < _g5) {
+			var i2 = _g12++;
+			jigsawShape = jigsawShapes[i2];
+			fillSheet.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * fillSheet.scaleImg;
+			var dy = jigsawShape.y * fillSheet.scaleImg;
+			fillSheet.imageDrawing.renderImageTrianglesOffset(image,scale,dx,dy,-dx,-dy);
+		}
+		fillSheet.imageDrawing.end();
+		_this.fillImage = fillSheet.imageDrawing.image;
+		var jigsawShapes1 = _this.jigsawShapeArrayOutline;
+		var poly1 = outlineSheet.polyPainter;
+		var jigsawShape1;
+		var scale1 = 1.;
+		var x1 = 0.;
+		var y1 = 0.;
+		poly1.set_canvas(outlineSheet.img);
+		poly1.begin(0,true,null);
+		var dx1;
+		var dy1;
+		var _g13 = 0;
+		var _g6 = jigsawShapes1.length;
+		while(_g13 < _g6) {
+			var i3 = _g13++;
+			jigsawShape1 = jigsawShapes1[i3];
+			var triangles1 = jigsawShape1.triangles;
+			dx1 = jigsawShape1.x + 1;
+			dy1 = jigsawShape1.y + 1;
+			var tri1;
+			var _g31 = 0;
+			var _g22 = triangles1.length;
+			while(_g31 < _g22) {
+				var i4 = _g31++;
+				tri1 = triangles1[i4];
+				poly1.drawFillTriangle(tri1.ax + dx1,tri1.ay + dy1,tri1.bx + dx1,tri1.by + dy1,tri1.cx + dx1,tri1.cy + dy1,-1);
+			}
+		}
+		poly1.end();
+		_this.outlineImage = outlineSheet.img;
+		this.jigsawShapeArray = this.imageTiles.jigsawShapeArray;
+		this.outLineEdge = new jigsawxKha_game_OutLineEdge(this);
+		this.gridDefFill = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imageTiles.fillImage};
+		this.gridDefOutline = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imageTiles.outlineImage};
+		this.gridFill = new trilateralXtra_kDrawing_GridSheet(this.gridDefFill);
+		this.gridFill.dx = -this.wid / 2 + 1;
+		this.gridFill.dy = -this.hi / 2 + 1;
+		this.gridOutline = new trilateralXtra_kDrawing_GridSheet(this.gridDefOutline);
+		this.gridOutline.dx = -this.wid / 2 + 1;
+		this.gridOutline.dy = -this.hi / 2 + 1;
 	}
-	,drawOutline: function() {
-		var path = new trilateral_path_MediumOverlap(null,null,3);
-		path.width = 2;
-		var jig = this.jigs[0];
+	,render: function(g) {
+		this.gridOutline.renderGrid(g,this.outLineEdge,false);
+		this.gridFill.renderGrid(g,this,false);
+	}
+	,createJigs: function() {
+		var jig;
+		var jj = this.jigsawx.jigs;
+		var _g1 = 0;
+		var _g = jj.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = jj[i];
+			this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x,jig.xy.y,i);
+		}
+	}
+	,randomizePieces: function() {
+		var factor = 4;
+		var left = 320.;
+		var top = 265.;
+		var xRange = 370.;
+		var yRange = 250.;
+		var randomizeMost;
+		var _g = 0;
+		var _g1 = this.jigs;
+		while(_g < _g1.length) {
+			var jig = _g1[_g];
+			++_g;
+			randomizeMost = (Math.random() * factor | 0) != 0;
+			if(randomizeMost) {
+				jig.x = Math.random() * xRange + left;
+				jig.y = Math.random() * yRange + top;
+				jig.rotation = Math.random() * Math.PI * 2 - Math.PI;
+			} else {
+				jig.enabled = false;
+			}
+		}
+	}
+	,getItem: function(col,row) {
+		var id = row * this.cols + col;
+		var jig = this.jigs[id];
+		var color = -1;
+		var depth = jig.depth;
+		var redHighLight = kha__$Color_Color_$Impl_$._new(-74275);
+		var transform = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		var x = jig.x;
+		var y = jig.y;
+		var dx = x + this.wid;
+		var dy = y + this.hi;
+		var rotation = jig.rotation;
+		if(rotation != 0) {
+			var _this__22;
+			var _this__21;
+			var _this__20;
+			var _this__12;
+			var _this__11;
+			var _this__10;
+			var _this__02;
+			var _this__01;
+			var _this__00;
+			var _this__221;
+			var _this__211;
+			var _this__201;
+			var _this__121;
+			var _this__111;
+			var _this__101;
+			var _this__021;
+			var _this__011;
+			var _this__001 = 1;
+			_this__101 = 0;
+			_this__201 = dx;
+			_this__011 = 0;
+			_this__111 = 1;
+			_this__211 = dy;
+			_this__021 = 0;
+			_this__121 = 0;
+			_this__221 = 1;
+			var m__22;
+			var m__21;
+			var m__20;
+			var m__12;
+			var m__11;
+			var m__10;
+			var m__02;
+			var m__01;
+			var m__00 = Math.cos(rotation);
+			m__10 = -Math.sin(rotation);
+			m__20 = 0;
+			m__01 = Math.sin(rotation);
+			m__11 = Math.cos(rotation);
+			m__21 = 0;
+			m__02 = 0;
+			m__12 = 0;
+			m__22 = 1;
+			_this__00 = _this__001 * m__00 + _this__101 * m__01 + _this__201 * m__02;
+			_this__10 = _this__001 * m__10 + _this__101 * m__11 + _this__201 * m__12;
+			_this__20 = _this__001 * m__20 + _this__101 * m__21 + _this__201 * m__22;
+			_this__01 = _this__011 * m__00 + _this__111 * m__01 + _this__211 * m__02;
+			_this__11 = _this__011 * m__10 + _this__111 * m__11 + _this__211 * m__12;
+			_this__21 = _this__011 * m__20 + _this__111 * m__21 + _this__211 * m__22;
+			_this__02 = _this__021 * m__00 + _this__121 * m__01 + _this__221 * m__02;
+			_this__12 = _this__021 * m__10 + _this__121 * m__11 + _this__221 * m__12;
+			_this__22 = _this__021 * m__20 + _this__121 * m__21 + _this__221 * m__22;
+			var m__221;
+			var m__211;
+			var m__201;
+			var m__121;
+			var m__111;
+			var m__101;
+			var m__021;
+			var m__011;
+			var m__001 = 1;
+			m__101 = 0;
+			m__201 = -dx;
+			m__011 = 0;
+			m__111 = 1;
+			m__211 = -dy;
+			m__021 = 0;
+			m__121 = 0;
+			m__221 = 1;
+			transform = new kha_math_FastMatrix3(_this__00 * m__001 + _this__10 * m__011 + _this__20 * m__021,_this__00 * m__101 + _this__10 * m__111 + _this__20 * m__121,_this__00 * m__201 + _this__10 * m__211 + _this__20 * m__221,_this__01 * m__001 + _this__11 * m__011 + _this__21 * m__021,_this__01 * m__101 + _this__11 * m__111 + _this__21 * m__121,_this__01 * m__201 + _this__11 * m__211 + _this__21 * m__221,_this__02 * m__001 + _this__12 * m__011 + _this__22 * m__021,_this__02 * m__101 + _this__12 * m__111 + _this__22 * m__121,_this__02 * m__201 + _this__12 * m__211 + _this__22 * m__221);
+		}
+		if(jig == this.selected) {
+			color = redHighLight;
+			depth = this.topDepth++;
+			jig.depth = this.topDepth;
+		}
+		var alpha = 0.8;
+		if(jig.enabled == false) {
+			alpha = 1.;
+			color = -1;
+		}
+		return { x : x, y : y, color : color, alpha : alpha, transform : transform, depth : depth};
+	}
+	,updateRotations: function(theta) {
+		if(this.selected != null) {
+			this.selected.rotation -= theta;
+		}
+	}
+	,hitTest: function(x,y) {
+		var hits = [];
+		var hitCount = 0;
+		var jigsawShape;
+		var ox;
+		var oy;
+		var jig;
+		var _g1 = 0;
+		var _g = this.jigsawShapeArray.length;
+		while(_g1 < _g) {
+			var s = _g1++;
+			jigsawShape = this.jigsawShapeArray[s];
+			ox = jigsawShape.x;
+			oy = jigsawShape.y;
+			jig = this.jigs[s];
+			var t = HxOverrides.iter(jigsawShape.triangles);
+			while(t.hasNext()) {
+				var t1 = t.next();
+				if(t1.fullHit(x + -jig.x + ox,y + -jig.y + oy)) {
+					hits[hitCount] = s;
+					++hitCount;
+					break;
+				}
+			}
+		}
+		return hits;
+	}
+	,isInPlace: function(id,jig) {
+		var shape = this.jigsawShapeArray[id];
+		var dist = Math.pow(shape.x - jig.x,2) + Math.pow(shape.y - jig.y,2);
+		return dist < 40;
+	}
+	,getShapeXY: function(id) {
+		var shape = this.jigsawShapeArray[id];
+		return { x : shape.x, y : shape.y};
+	}
+	,setupImageGrid: function() {
+		this.gridDefFill = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imageTiles.fillImage};
+		this.gridDefOutline = { gridX : this.wid * 2, gridY : this.hi * 2, totalRows : this.rows, totalCols : this.cols, scaleX : 1., scaleY : 1., image : this.imageTiles.outlineImage};
+		this.gridFill = new trilateralXtra_kDrawing_GridSheet(this.gridDefFill);
+		this.gridFill.dx = -this.wid / 2 + 1;
+		this.gridFill.dy = -this.hi / 2 + 1;
+		this.gridOutline = new trilateralXtra_kDrawing_GridSheet(this.gridDefOutline);
+		this.gridOutline.dx = -this.wid / 2 + 1;
+		this.gridOutline.dy = -this.hi / 2 + 1;
+	}
+	,sortByDistance: function(arr,x,y) {
+		var _gthis = this;
+		var mx = x;
+		var my = y;
+		haxe_ds_ArraySort.sort(arr,function(a,b) {
+			var j = _gthis.jigs[a];
+			var k = _gthis.jigs[b];
+			var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
+			var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
+			if(distA < distB) {
+				return -1;
+			} else if(distA > distB) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+	}
+	,distP: function(px,py,x,y) {
+		return Math.pow(x - px,2) + Math.pow(y - py,2);
+	}
+	,selectCheck: function(x,y) {
+		var _gthis = this;
+		var x1 = x - this.wid / 2;
+		var y1 = y - this.hi / 2;
+		var hits = [];
+		var hitCount = 0;
+		var jigsawShape;
+		var ox;
+		var oy;
+		var jig;
+		var _g1 = 0;
+		var _g = this.jigsawShapeArray.length;
+		while(_g1 < _g) {
+			var s = _g1++;
+			jigsawShape = this.jigsawShapeArray[s];
+			ox = jigsawShape.x;
+			oy = jigsawShape.y;
+			jig = this.jigs[s];
+			var t = HxOverrides.iter(jigsawShape.triangles);
+			while(t.hasNext()) {
+				var t1 = t.next();
+				if(t1.fullHit(x1 + -jig.x + ox,y1 + -jig.y + oy)) {
+					hits[hitCount] = s;
+					++hitCount;
+					break;
+				}
+			}
+		}
+		var arr = hits;
+		arr = arr.filter(function(i) {
+			return _gthis.jigs[i].enabled;
+		});
+		if(arr.length > 1) {
+			var _gthis1 = this;
+			var mx = x - this.wid;
+			var my = y - this.hi;
+			haxe_ds_ArraySort.sort(arr,function(a,b) {
+				var j = _gthis1.jigs[a];
+				var k = _gthis1.jigs[b];
+				var distA = Math.pow(j.x - mx,2) + Math.pow(j.y - my,2);
+				var distB = Math.pow(k.x - mx,2) + Math.pow(k.y - my,2);
+				if(distA < distB) {
+					return -1;
+				} else if(distA > distB) {
+					return 1;
+				} else {
+					return 0;
+				}
+			});
+		}
+		if(arr.length > 0) {
+			this.selectedID = arr[0];
+			var jig1 = this.jigs[this.selectedID];
+			this.selected = jig1;
+			this.offX = x - this.wid - this.selected.x;
+			this.offY = y - this.hi - this.selected.y;
+		}
+	}
+	,storeMouseOffset: function(x,y) {
+		this.offX = x - this.wid - this.selected.x;
+		this.offY = y - this.hi - this.selected.y;
+	}
+	,deselect: function() {
+		this.selected = null;
+		this.selectedID = null;
+	}
+	,clampCorrect: function() {
+		if(this.selected != null) {
+			var id = this.selectedID;
+			var angle = this.selected.rotation;
+			var tmp;
+			if(angle <= Math.PI && angle > -Math.PI) {
+				tmp = angle;
+			} else {
+				var a = (angle + Math.PI) % (2 * Math.PI);
+				if(a >= 0) {
+					tmp = a - Math.PI;
+				} else {
+					tmp = a + Math.PI;
+				}
+			}
+			this.selected.rotation = tmp;
+			if(this.selected.rotation < Math.PI / 16 && this.selected.rotation > -Math.PI / 16) {
+				if(this.isInPlace(id,this.selected)) {
+					this.selected.rotation = 0;
+					this.selected.enabled = false;
+					var p = this.getShapeXY(id);
+					this.selected.x = p.x;
+					this.selected.y = p.y;
+				}
+			}
+		}
+	}
+	,moveSelected: function(x,y) {
+		if(this.selected != null) {
+			this.selected.x = x - this.wid - this.offX;
+			this.selected.y = y - this.hi - this.offY;
+			this.offX /= 1.025;
+			this.offY /= 1.025;
+		}
+	}
+	,__class__: jigsawxKha_game_JigsawGame
+};
+var jigsawxKha_game_OutLineEdge = function(main_) {
+	this.main = main_;
+};
+$hxClasses["jigsawxKha.game.OutLineEdge"] = jigsawxKha_game_OutLineEdge;
+jigsawxKha_game_OutLineEdge.__name__ = true;
+jigsawxKha_game_OutLineEdge.prototype = {
+	main: null
+	,getItem: function(col,row) {
+		var id = row * this.main.cols + col;
+		var jig = this.main.jigs[id];
+		var color = -1;
+		var depth = jig.depth;
+		var redHighLight = kha__$Color_Color_$Impl_$._new(-74275);
+		var x = jig.x;
+		var y = jig.y;
+		var dx = x + this.main.wid;
+		var dy = y + this.main.hi;
+		var rotation = jig.rotation;
+		var transform = new kha_math_FastMatrix3(1,0,0,0,1,0,0,0,1);
+		if(rotation != 0) {
+			var _this__22;
+			var _this__21;
+			var _this__20;
+			var _this__12;
+			var _this__11;
+			var _this__10;
+			var _this__02;
+			var _this__01;
+			var _this__00;
+			var _this__221;
+			var _this__211;
+			var _this__201;
+			var _this__121;
+			var _this__111;
+			var _this__101;
+			var _this__021;
+			var _this__011;
+			var _this__001 = 1;
+			_this__101 = 0;
+			_this__201 = dx;
+			_this__011 = 0;
+			_this__111 = 1;
+			_this__211 = dy;
+			_this__021 = 0;
+			_this__121 = 0;
+			_this__221 = 1;
+			var m__22;
+			var m__21;
+			var m__20;
+			var m__12;
+			var m__11;
+			var m__10;
+			var m__02;
+			var m__01;
+			var m__00 = Math.cos(rotation);
+			m__10 = -Math.sin(rotation);
+			m__20 = 0;
+			m__01 = Math.sin(rotation);
+			m__11 = Math.cos(rotation);
+			m__21 = 0;
+			m__02 = 0;
+			m__12 = 0;
+			m__22 = 1;
+			_this__00 = _this__001 * m__00 + _this__101 * m__01 + _this__201 * m__02;
+			_this__10 = _this__001 * m__10 + _this__101 * m__11 + _this__201 * m__12;
+			_this__20 = _this__001 * m__20 + _this__101 * m__21 + _this__201 * m__22;
+			_this__01 = _this__011 * m__00 + _this__111 * m__01 + _this__211 * m__02;
+			_this__11 = _this__011 * m__10 + _this__111 * m__11 + _this__211 * m__12;
+			_this__21 = _this__011 * m__20 + _this__111 * m__21 + _this__211 * m__22;
+			_this__02 = _this__021 * m__00 + _this__121 * m__01 + _this__221 * m__02;
+			_this__12 = _this__021 * m__10 + _this__121 * m__11 + _this__221 * m__12;
+			_this__22 = _this__021 * m__20 + _this__121 * m__21 + _this__221 * m__22;
+			var m__221;
+			var m__211;
+			var m__201;
+			var m__121;
+			var m__111;
+			var m__101;
+			var m__021;
+			var m__011;
+			var m__001 = 1;
+			m__101 = 0;
+			m__201 = -dx;
+			m__011 = 0;
+			m__111 = 1;
+			m__211 = -dy;
+			m__021 = 0;
+			m__121 = 0;
+			m__221 = 1;
+			transform = new kha_math_FastMatrix3(_this__00 * m__001 + _this__10 * m__011 + _this__20 * m__021,_this__00 * m__101 + _this__10 * m__111 + _this__20 * m__121,_this__00 * m__201 + _this__10 * m__211 + _this__20 * m__221,_this__01 * m__001 + _this__11 * m__011 + _this__21 * m__021,_this__01 * m__101 + _this__11 * m__111 + _this__21 * m__121,_this__01 * m__201 + _this__11 * m__211 + _this__21 * m__221,_this__02 * m__001 + _this__12 * m__011 + _this__22 * m__021,_this__02 * m__101 + _this__12 * m__111 + _this__22 * m__121,_this__02 * m__201 + _this__12 * m__211 + _this__22 * m__221);
+		}
+		if(jig == this.main.selected) {
+			color = redHighLight;
+			depth = this.main.topDepth++;
+			jig.depth = this.main.topDepth;
+		}
+		var alpha = 0.8;
+		if(jig.enabled == false) {
+			alpha = 1.;
+			color = kha__$Color_Color_$Impl_$._new(16777215);
+		}
+		return { x : x, y : y, color : color, alpha : alpha, transform : transform, depth : depth};
+	}
+	,__class__: jigsawxKha_game_OutLineEdge
+};
+var jigsawxKha_geom_Rotation = function() { };
+$hxClasses["jigsawxKha.geom.Rotation"] = jigsawxKha_geom_Rotation;
+jigsawxKha_geom_Rotation.__name__ = true;
+jigsawxKha_geom_Rotation.offsetRotation = function(angle,centreX,centreY) {
+	var _this__22;
+	var _this__21;
+	var _this__20;
+	var _this__12;
+	var _this__11;
+	var _this__10;
+	var _this__02;
+	var _this__01;
+	var _this__00;
+	var _this__221;
+	var _this__211;
+	var _this__201;
+	var _this__121;
+	var _this__111;
+	var _this__101;
+	var _this__021;
+	var _this__011;
+	var _this__001 = 1;
+	_this__101 = 0;
+	_this__201 = centreX;
+	_this__011 = 0;
+	_this__111 = 1;
+	_this__211 = centreY;
+	_this__021 = 0;
+	_this__121 = 0;
+	_this__221 = 1;
+	var m__22;
+	var m__21;
+	var m__20;
+	var m__12;
+	var m__11;
+	var m__10;
+	var m__02;
+	var m__01;
+	var m__00 = Math.cos(angle);
+	m__10 = -Math.sin(angle);
+	m__20 = 0;
+	m__01 = Math.sin(angle);
+	m__11 = Math.cos(angle);
+	m__21 = 0;
+	m__02 = 0;
+	m__12 = 0;
+	m__22 = 1;
+	_this__00 = _this__001 * m__00 + _this__101 * m__01 + _this__201 * m__02;
+	_this__10 = _this__001 * m__10 + _this__101 * m__11 + _this__201 * m__12;
+	_this__20 = _this__001 * m__20 + _this__101 * m__21 + _this__201 * m__22;
+	_this__01 = _this__011 * m__00 + _this__111 * m__01 + _this__211 * m__02;
+	_this__11 = _this__011 * m__10 + _this__111 * m__11 + _this__211 * m__12;
+	_this__21 = _this__011 * m__20 + _this__111 * m__21 + _this__211 * m__22;
+	_this__02 = _this__021 * m__00 + _this__121 * m__01 + _this__221 * m__02;
+	_this__12 = _this__021 * m__10 + _this__121 * m__11 + _this__221 * m__12;
+	_this__22 = _this__021 * m__20 + _this__121 * m__21 + _this__221 * m__22;
+	var m__221;
+	var m__211;
+	var m__201;
+	var m__121;
+	var m__111;
+	var m__101;
+	var m__021;
+	var m__011;
+	var m__001 = 1;
+	m__101 = 0;
+	m__201 = -centreX;
+	m__011 = 0;
+	m__111 = 1;
+	m__211 = -centreY;
+	m__021 = 0;
+	m__121 = 0;
+	m__221 = 1;
+	return new kha_math_FastMatrix3(_this__00 * m__001 + _this__10 * m__011 + _this__20 * m__021,_this__00 * m__101 + _this__10 * m__111 + _this__20 * m__121,_this__00 * m__201 + _this__10 * m__211 + _this__20 * m__221,_this__01 * m__001 + _this__11 * m__011 + _this__21 * m__021,_this__01 * m__101 + _this__11 * m__111 + _this__21 * m__121,_this__01 * m__201 + _this__11 * m__211 + _this__21 * m__221,_this__02 * m__001 + _this__12 * m__011 + _this__22 * m__021,_this__02 * m__101 + _this__12 * m__111 + _this__22 * m__121,_this__02 * m__201 + _this__12 * m__211 + _this__22 * m__221);
+};
+var jigsawxKha_tileImage_FillSheet = function() {
+	this.scaleImg = 1;
+	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(1024,768);
+	this.imageDrawing = new trilateralXtra_kDrawing_ImageDrawing(this.fillDraw);
+};
+$hxClasses["jigsawxKha.tileImage.FillSheet"] = jigsawxKha_tileImage_FillSheet;
+jigsawxKha_tileImage_FillSheet.__name__ = true;
+jigsawxKha_tileImage_FillSheet.prototype = {
+	scaleImg: null
+	,imageDrawing: null
+	,fillDraw: null
+	,render: function(imageIn,jigsawShapes) {
+		var poly = this.imageDrawing.polyPainter;
+		var jigsawShape;
+		var scale = 1.;
+		var x = 0.;
+		var y = 0.;
+		this.imageDrawing.startImage();
+		var _g1 = 0;
+		var _g = jigsawShapes.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jigsawShape = jigsawShapes[i];
+			this.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * this.scaleImg;
+			var dy = jigsawShape.y * this.scaleImg;
+			this.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
+		}
+		this.imageDrawing.end();
+		return this.imageDrawing.image;
+	}
+	,__class__: jigsawxKha_tileImage_FillSheet
+};
+var jigsawxKha_tileImage_ImageTiles = function() {
+	this.outlineBuilder = new jigsawxKha_tileImage_OutlineBuilder();
+	this.shapeBuilder = new jigsawxKha_tileImage_ShapeBuilder();
+	this.jigsawShapeArrayOutline = [];
+	this.jigsawShapeArray = [];
+	trilateralXtra_kDrawing_PolyPainter.bufferSize = 6145334;
+};
+$hxClasses["jigsawxKha.tileImage.ImageTiles"] = jigsawxKha_tileImage_ImageTiles;
+jigsawxKha_tileImage_ImageTiles.__name__ = true;
+jigsawxKha_tileImage_ImageTiles.prototype = {
+	fillImage: null
+	,outlineImage: null
+	,jigsawShapeArray: null
+	,jigsawShapeArrayOutline: null
+	,shapeBuilder: null
+	,outlineBuilder: null
+	,draw: function(jigs,picture) {
+		var _this = this.shapeBuilder;
+		var path = _this.base;
+		var jigs1 = jigs;
+		var jig = jigs1[0];
 		var ox;
 		var oy;
 		var count = 0;
+		var shapeArray = [];
 		var _g1 = 0;
-		var _g = this.jigs.length;
+		var _g = jigs1.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			jig = this.jigs[i];
+			jig = jigs1[i];
+			path.reset();
+			ox = jig.xy.x;
+			oy = jig.xy.y;
+			var first = jig.getFirst();
+			path.moveTo(first.x + ox,first.y + oy);
+			var p = jig.getPoints();
+			var _g2 = 0;
+			while(_g2 < p.length) {
+				var v = p[_g2];
+				++_g2;
+				var x_ = v.x + ox;
+				var y_ = v.y + oy;
+				var repeat = path.x == x_ && path.y == y_;
+				if(!repeat) {
+					if(path.widthFunction != null) {
+						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
+					}
+					path.line(x_,y_);
+					var l = path.points.length;
+					var p1 = path.points[l - 1];
+					var l2 = p1.length;
+					p1[l2] = x_;
+					p1[l2 + 1] = y_;
+					var d = path.dim[path.dim.length - 1];
+					if(x_ < d.minX) {
+						d.minX = x_;
+					}
+					if(x_ > d.maxX) {
+						d.maxX = x_;
+					}
+					if(y_ < d.minY) {
+						d.minY = y_;
+					}
+					if(y_ > d.maxY) {
+						d.maxY = y_;
+					}
+					path.x = x_;
+					path.y = y_;
+				}
+			}
+			_this.fillDraw.triangles = [];
+			_this.fillDraw.fill(path.points,0);
+			shapeArray[count] = new jigsawxKha_tileImage_JigsawShape(jig,_this.fillDraw.triangles,ox,oy);
+			++count;
+		}
+		this.jigsawShapeArray = shapeArray;
+		var path1 = this.outlineBuilder.base;
+		path1.width = 2;
+		var jigs2 = jigs;
+		var jig1 = jigs2[0];
+		var ox1;
+		var oy1;
+		var count1 = 0;
+		var shapeArray1 = [];
+		var _g11 = 0;
+		var _g3 = jigs2.length;
+		while(_g11 < _g3) {
+			var i1 = _g11++;
+			jig1 = jigs2[i1];
+			path1.reset();
+			ox1 = jig1.xy.x;
+			oy1 = jig1.xy.y;
+			var first1 = jig1.getFirst();
+			path1.moveTo(first1.x + ox1,first1.y + oy1);
+			var p2 = jig1.getPoints();
+			var _g21 = 0;
+			while(_g21 < p2.length) {
+				var v1 = p2[_g21];
+				++_g21;
+				var x_1 = v1.x + ox1;
+				var y_1 = v1.y + oy1;
+				var repeat1 = path1.x == x_1 && path1.y == y_1;
+				if(!repeat1) {
+					if(path1.widthFunction != null) {
+						path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_1,y_1);
+					}
+					path1.line(x_1,y_1);
+					var l1 = path1.points.length;
+					var p3 = path1.points[l1 - 1];
+					var l21 = p3.length;
+					p3[l21] = x_1;
+					p3[l21 + 1] = y_1;
+					var d1 = path1.dim[path1.dim.length - 1];
+					if(x_1 < d1.minX) {
+						d1.minX = x_1;
+					}
+					if(x_1 > d1.maxX) {
+						d1.maxX = x_1;
+					}
+					if(y_1 < d1.minY) {
+						d1.minY = y_1;
+					}
+					if(y_1 > d1.maxY) {
+						d1.maxY = y_1;
+					}
+					path1.x = x_1;
+					path1.y = y_1;
+				}
+			}
+			var x_2 = first1.x + ox1;
+			var y_2 = first1.y + oy1;
+			var repeat2 = path1.x == x_2 && path1.y == y_2;
+			if(!repeat2) {
+				if(path1.widthFunction != null) {
+					path1.width = path1.widthFunction(path1.width,path1.x,path1.x,x_2,y_2);
+				}
+				path1.line(x_2,y_2);
+				var l3 = path1.points.length;
+				var p4 = path1.points[l3 - 1];
+				var l22 = p4.length;
+				p4[l22] = x_2;
+				p4[l22 + 1] = y_2;
+				var d2 = path1.dim[path1.dim.length - 1];
+				if(x_2 < d2.minX) {
+					d2.minX = x_2;
+				}
+				if(x_2 > d2.maxX) {
+					d2.maxX = x_2;
+				}
+				if(y_2 < d2.minY) {
+					d2.minY = y_2;
+				}
+				if(y_2 > d2.maxY) {
+					d2.maxY = y_2;
+				}
+				path1.x = x_2;
+				path1.y = y_2;
+			}
+			var this1 = trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new([]);
+			var triangles = this1;
+			var triArr = path1.trilateralArray;
+			var tri;
+			var _g4 = 0;
+			while(_g4 < triArr.length) {
+				var t = triArr[_g4];
+				++_g4;
+				if(t != null) {
+					var t1 = Type.createEmptyInstance(trilateral_tri_Triangle);
+					t1.id = count1;
+					t1.ax = t.ax;
+					t1.ay = t.ay;
+					t1.bx = t.bx;
+					t1.by = t.by;
+					t1.cx = t.cx;
+					t1.cy = t.cy;
+					t1.mark = t.mark;
+					t1.depth = 0;
+					t1.alpha = 1.;
+					t1.colorID = 1;
+					t1.colorA = 1;
+					t1.colorB = 1;
+					t1.colorC = 1;
+					t1.windingAdjusted = t.windingAdjusted;
+					tri = t1;
+					triangles[triangles.length] = tri;
+				}
+			}
+			shapeArray1[i1] = new jigsawxKha_tileImage_JigsawShape(jig1,triangles,ox1,oy1);
+			++count1;
+		}
+		this.jigsawShapeArrayOutline = shapeArray1;
+		var fillSheet = new jigsawxKha_tileImage_FillSheet();
+		var outlineSheet = new jigsawxKha_tileImage_OutlineSheet();
+		var jigsawShapes = this.jigsawShapeArray;
+		var poly = fillSheet.imageDrawing.polyPainter;
+		var jigsawShape;
+		var scale = 1.;
+		var x = 0.;
+		var y = 0.;
+		fillSheet.imageDrawing.startImage();
+		var _g12 = 0;
+		var _g5 = jigsawShapes.length;
+		while(_g12 < _g5) {
+			var i2 = _g12++;
+			jigsawShape = jigsawShapes[i2];
+			fillSheet.fillDraw.triangles = jigsawShape.triangles;
+			var dx = jigsawShape.x * fillSheet.scaleImg;
+			var dy = jigsawShape.y * fillSheet.scaleImg;
+			fillSheet.imageDrawing.renderImageTrianglesOffset(picture,scale,dx,dy,-dx,-dy);
+		}
+		fillSheet.imageDrawing.end();
+		this.fillImage = fillSheet.imageDrawing.image;
+		var jigsawShapes1 = this.jigsawShapeArrayOutline;
+		var poly1 = outlineSheet.polyPainter;
+		var jigsawShape1;
+		var scale1 = 1.;
+		var x1 = 0.;
+		var y1 = 0.;
+		poly1.set_canvas(outlineSheet.img);
+		poly1.begin(0,true,null);
+		var dx1;
+		var dy1;
+		var _g13 = 0;
+		var _g6 = jigsawShapes1.length;
+		while(_g13 < _g6) {
+			var i3 = _g13++;
+			jigsawShape1 = jigsawShapes1[i3];
+			var triangles1 = jigsawShape1.triangles;
+			dx1 = jigsawShape1.x + 1;
+			dy1 = jigsawShape1.y + 1;
+			var tri1;
+			var _g31 = 0;
+			var _g22 = triangles1.length;
+			while(_g31 < _g22) {
+				var i4 = _g31++;
+				tri1 = triangles1[i4];
+				poly1.drawFillTriangle(tri1.ax + dx1,tri1.ay + dy1,tri1.bx + dx1,tri1.by + dy1,tri1.cx + dx1,tri1.cy + dy1,-1);
+			}
+		}
+		poly1.end();
+		this.outlineImage = outlineSheet.img;
+	}
+	,__class__: jigsawxKha_tileImage_ImageTiles
+};
+var jigsawxKha_tileImage_JigsawShape = function(jig_,triangles_,x_,y_) {
+	this.jig = jig_;
+	this.triangles = triangles_;
+	this.x = x_;
+	this.y = y_;
+};
+$hxClasses["jigsawxKha.tileImage.JigsawShape"] = jigsawxKha_tileImage_JigsawShape;
+jigsawxKha_tileImage_JigsawShape.__name__ = true;
+jigsawxKha_tileImage_JigsawShape.prototype = {
+	x: null
+	,y: null
+	,triangles: null
+	,jig: null
+	,__class__: jigsawxKha_tileImage_JigsawShape
+};
+var jigsawxKha_tileImage_OutlineBuilder = function() {
+	this.base = new trilateral_path_MediumOverlap(null,null,3);
+};
+$hxClasses["jigsawxKha.tileImage.OutlineBuilder"] = jigsawxKha_tileImage_OutlineBuilder;
+jigsawxKha_tileImage_OutlineBuilder.__name__ = true;
+jigsawxKha_tileImage_OutlineBuilder.prototype = {
+	base: null
+	,draw: function(jigsawPieces) {
+		var path = this.base;
+		path.width = 2;
+		var jigs = jigsawPieces;
+		var jig = jigs[0];
+		var ox;
+		var oy;
+		var count = 0;
+		var shapeArray = [];
+		var _g1 = 0;
+		var _g = jigs.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = jigs[i];
 			path.reset();
 			ox = jig.xy.x;
 			oy = jig.xy.y;
@@ -8109,118 +4728,124 @@ jigsawxKha_JigsawImageBuilder.prototype = {
 					triangles[triangles.length] = tri;
 				}
 			}
-			this.jigsawShapeArrayOutline[i] = new jigsawxKha_JigsawShape(jig,triangles,ox,oy);
+			shapeArray[i] = new jigsawxKha_tileImage_JigsawShape(jig,triangles,ox,oy);
 			++count;
 		}
+		return shapeArray;
 	}
-	,hitTest: function(x,y) {
-		var hits = [];
-		var hitCount = 0;
-		var jigsawShape;
-		var ox;
-		var oy;
-		var xy;
-		var _g1 = 0;
-		var _g = this.jigsawShapeArray.length;
-		while(_g1 < _g) {
-			var s = _g1++;
-			jigsawShape = this.jigsawShapeArray[s];
-			ox = jigsawShape.x;
-			oy = jigsawShape.y;
-			xy = this.jigs[s].xy;
-			var t = HxOverrides.iter(jigsawShape.triangles);
-			while(t.hasNext()) {
-				var t1 = t.next();
-				if(t1.fullHit(x + -xy.x + ox,y + -xy.y + oy)) {
-					hits[hitCount] = s;
-					++hitCount;
-					break;
-				}
-			}
-		}
-		return hits;
-	}
-	,isInPlace: function(id,jig) {
-		var shape = this.jigsawShapeArray[id];
-		var xy = jig.xy;
-		var dist = Math.pow(shape.x - xy.x,2) + Math.pow(shape.y - xy.y,2);
-		return dist < 40;
-	}
-	,getShapeXY: function(id) {
-		var shape = this.jigsawShapeArray[id];
-		return { x : shape.x, y : shape.y};
-	}
-	,distP: function(px,py,x,y) {
-		return Math.pow(x - px,2) + Math.pow(y - py,2);
-	}
-	,renderJigsaw: function(imageIn) {
-		var poly = this.imageDrawing.polyPainter;
-		var jigsawShape;
-		var scale = 1.;
-		var x = 0.;
-		var y = 0.;
-		this.imageDrawing.startImage();
-		if(this.showBackground) {
-			poly.drawImage(imageIn,0,0,imageIn.get_width(),imageIn.get_height(),this.backgroundAlpha);
-		}
-		var _g1 = 0;
-		var _g = this.jigsawShapeArray.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			jigsawShape = this.jigsawShapeArray[i];
-			this.fillDraw.triangles = jigsawShape.triangles;
-			var dx = jigsawShape.x * this.scaleImg;
-			var dy = jigsawShape.y * this.scaleImg;
-			this.imageDrawing.renderImageTrianglesOffset(imageIn,scale,dx,dy,-dx,-dy);
-		}
-		this.imageDrawing.end();
-		return this.imageDrawing.image;
-	}
-	,renderJigsawOutline: function() {
+	,__class__: jigsawxKha_tileImage_OutlineBuilder
+};
+var jigsawxKha_tileImage_OutlineSheet = function() {
+	this.polyPainter = new trilateralXtra_kDrawing_PolyPainter();
+	this.img = kha_Image.createRenderTarget(1024,768,null,0,4);
+};
+$hxClasses["jigsawxKha.tileImage.OutlineSheet"] = jigsawxKha_tileImage_OutlineSheet;
+jigsawxKha_tileImage_OutlineSheet.__name__ = true;
+jigsawxKha_tileImage_OutlineSheet.prototype = {
+	polyPainter: null
+	,img: null
+	,render: function(jigsawShapes) {
 		var poly = this.polyPainter;
 		var jigsawShape;
 		var scale = 1.;
 		var x = 0.;
 		var y = 0.;
-		var img = kha_Image.createRenderTarget(1024,768,null,0,4);
-		poly.set_canvas(img);
+		poly.set_canvas(this.img);
 		poly.begin(0,true,null);
+		var dx;
+		var dy;
 		var _g1 = 0;
-		var _g = this.jigsawShapeArrayOutline.length;
+		var _g = jigsawShapes.length;
 		while(_g1 < _g) {
 			var i = _g1++;
-			jigsawShape = this.jigsawShapeArrayOutline[i];
+			jigsawShape = jigsawShapes[i];
 			var triangles = jigsawShape.triangles;
-			var dx = jigsawShape.x;
-			var dy = jigsawShape.y;
+			dx = jigsawShape.x + 1;
+			dy = jigsawShape.y + 1;
 			var tri;
 			var _g3 = 0;
 			var _g2 = triangles.length;
 			while(_g3 < _g2) {
 				var i1 = _g3++;
 				tri = triangles[i1];
-				poly.drawFillTriangle(tri.ax + dx + 1,tri.ay + dy + 1,tri.bx + dx + 1,tri.by + dy + 1,tri.cx + dx + 1,tri.cy + dy + 1,-1);
+				poly.drawFillTriangle(tri.ax + dx,tri.ay + dy,tri.bx + dx,tri.by + dy,tri.cx + dx,tri.cy + dy,-1);
 			}
 		}
 		poly.end();
-		return img;
+		return this.img;
 	}
-	,__class__: jigsawxKha_JigsawImageBuilder
+	,__class__: jigsawxKha_tileImage_OutlineSheet
 };
-var jigsawxKha_JigsawShape = function(jig_,triangles_,x_,y_) {
-	this.jig = jig_;
-	this.triangles = triangles_;
-	this.x = x_;
-	this.y = y_;
+var jigsawxKha_tileImage_ShapeBuilder = function() {
+	this.fillDraw = new trilateralXtra_parsing_FillDrawPolyK(1024,768);
+	this.base = new trilateral_path_FillOnly();
 };
-$hxClasses["jigsawxKha.JigsawShape"] = jigsawxKha_JigsawShape;
-jigsawxKha_JigsawShape.__name__ = ["jigsawxKha","JigsawShape"];
-jigsawxKha_JigsawShape.prototype = {
-	x: null
-	,y: null
-	,triangles: null
-	,jig: null
-	,__class__: jigsawxKha_JigsawShape
+$hxClasses["jigsawxKha.tileImage.ShapeBuilder"] = jigsawxKha_tileImage_ShapeBuilder;
+jigsawxKha_tileImage_ShapeBuilder.__name__ = true;
+jigsawxKha_tileImage_ShapeBuilder.prototype = {
+	base: null
+	,fillDraw: null
+	,draw: function(jigsawPieces) {
+		var path = this.base;
+		var jigs = jigsawPieces;
+		var jig = jigs[0];
+		var ox;
+		var oy;
+		var count = 0;
+		var shapeArray = [];
+		var _g1 = 0;
+		var _g = jigs.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			jig = jigs[i];
+			path.reset();
+			ox = jig.xy.x;
+			oy = jig.xy.y;
+			var first = jig.getFirst();
+			path.moveTo(first.x + ox,first.y + oy);
+			var p = jig.getPoints();
+			var _g2 = 0;
+			while(_g2 < p.length) {
+				var v = p[_g2];
+				++_g2;
+				var x_ = v.x + ox;
+				var y_ = v.y + oy;
+				var repeat = path.x == x_ && path.y == y_;
+				if(!repeat) {
+					if(path.widthFunction != null) {
+						path.width = path.widthFunction(path.width,path.x,path.x,x_,y_);
+					}
+					path.line(x_,y_);
+					var l = path.points.length;
+					var p1 = path.points[l - 1];
+					var l2 = p1.length;
+					p1[l2] = x_;
+					p1[l2 + 1] = y_;
+					var d = path.dim[path.dim.length - 1];
+					if(x_ < d.minX) {
+						d.minX = x_;
+					}
+					if(x_ > d.maxX) {
+						d.maxX = x_;
+					}
+					if(y_ < d.minY) {
+						d.minY = y_;
+					}
+					if(y_ > d.maxY) {
+						d.maxY = y_;
+					}
+					path.x = x_;
+					path.y = y_;
+				}
+			}
+			this.fillDraw.triangles = [];
+			this.fillDraw.fill(path.points,0);
+			shapeArray[count] = new jigsawxKha_tileImage_JigsawShape(jig,this.fillDraw.triangles,ox,oy);
+			++count;
+		}
+		return shapeArray;
+	}
+	,__class__: jigsawxKha_tileImage_ShapeBuilder
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -8231,7 +4856,7 @@ var js__$Boot_HaxeError = function(val) {
 	}
 };
 $hxClasses["js._Boot.HaxeError"] = js__$Boot_HaxeError;
-js__$Boot_HaxeError.__name__ = ["js","_Boot","HaxeError"];
+js__$Boot_HaxeError.__name__ = true;
 js__$Boot_HaxeError.wrap = function(val) {
 	if((val instanceof Error)) {
 		return val;
@@ -8246,7 +4871,7 @@ js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
 });
 var js_Boot = function() { };
 $hxClasses["js.Boot"] = js_Boot;
-js_Boot.__name__ = ["js","Boot"];
+js_Boot.__name__ = true;
 js_Boot.__unhtml = function(s) {
 	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
 };
@@ -8275,18 +4900,6 @@ js_Boot.__trace = function(v,i) {
 	} else if(typeof console != "undefined" && console.log != null) {
 		console.log(msg);
 	}
-};
-js_Boot.__clear_trace = function() {
-	var d = document.getElementById("haxe:trace");
-	if(d != null) {
-		d.innerHTML = "";
-	}
-};
-js_Boot.isClass = function(o) {
-	return o.__name__;
-};
-js_Boot.isEnum = function(e) {
-	return e.__ename__;
 };
 js_Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) {
@@ -8481,90 +5094,6 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return $global[name];
 };
-var js_Browser = function() { };
-$hxClasses["js.Browser"] = js_Browser;
-js_Browser.__name__ = ["js","Browser"];
-js_Browser.__properties__ = {get_supported:"get_supported",get_console:"get_console",get_navigator:"get_navigator",get_location:"get_location",get_document:"get_document",get_window:"get_window"};
-js_Browser.get_window = function() {
-	return window;
-};
-js_Browser.get_document = function() {
-	return window.document;
-};
-js_Browser.get_location = function() {
-	return window.location;
-};
-js_Browser.get_navigator = function() {
-	return window.navigator;
-};
-js_Browser.get_console = function() {
-	return window.console;
-};
-js_Browser.get_supported = function() {
-	return typeof(window) != "undefined";
-};
-js_Browser.getLocalStorage = function() {
-	try {
-		var s = window.localStorage;
-		s.getItem("");
-		return s;
-	} catch( e ) {
-		return null;
-	}
-};
-js_Browser.getSessionStorage = function() {
-	try {
-		var s = window.sessionStorage;
-		s.getItem("");
-		return s;
-	} catch( e ) {
-		return null;
-	}
-};
-js_Browser.createXMLHttpRequest = function() {
-	if(typeof XMLHttpRequest != "undefined") {
-		return new XMLHttpRequest();
-	}
-	if(typeof ActiveXObject != "undefined") {
-		return new ActiveXObject("Microsoft.XMLHTTP");
-	}
-	throw new js__$Boot_HaxeError("Unable to create XMLHttpRequest object.");
-};
-js_Browser.alert = function(v) {
-	window.alert(js_Boot.__string_rec(v,""));
-};
-var js_Lib = function() { };
-$hxClasses["js.Lib"] = js_Lib;
-js_Lib.__name__ = ["js","Lib"];
-js_Lib.__properties__ = {get_undefined:"get_undefined"};
-js_Lib.debug = function() {
-	debugger;
-};
-js_Lib.alert = function(v) {
-	alert(js_Boot.__string_rec(v,""));
-};
-js_Lib["eval"] = function(code) {
-	return eval(code);
-};
-js_Lib.get_undefined = function() {
-	return undefined;
-};
-var js_html__$CanvasElement_CanvasUtil = function() { };
-$hxClasses["js.html._CanvasElement.CanvasUtil"] = js_html__$CanvasElement_CanvasUtil;
-js_html__$CanvasElement_CanvasUtil.__name__ = ["js","html","_CanvasElement","CanvasUtil"];
-js_html__$CanvasElement_CanvasUtil.getContextWebGL = function(canvas,attribs) {
-	var _g = 0;
-	var _g1 = ["webgl","experimental-webgl"];
-	while(_g < _g1.length) {
-		var name = _g1[_g];
-		++_g;
-		var ctx = canvas.getContext(name,attribs);
-		if(ctx != null) {
-			return ctx;
-		}
-	}
-	return null;
-};
 var js_html_compat_ArrayBuffer = function(a) {
 	if((a instanceof Array) && a.__enum__ == null) {
 		this.a = a;
@@ -8582,7 +5111,7 @@ var js_html_compat_ArrayBuffer = function(a) {
 	}
 };
 $hxClasses["js.html.compat.ArrayBuffer"] = js_html_compat_ArrayBuffer;
-js_html_compat_ArrayBuffer.__name__ = ["js","html","compat","ArrayBuffer"];
+js_html_compat_ArrayBuffer.__name__ = true;
 js_html_compat_ArrayBuffer.sliceImpl = function(begin,end) {
 	var u = new Uint8Array(this,begin,end == null ? null : end - begin);
 	var result = new ArrayBuffer(u.byteLength);
@@ -8610,7 +5139,7 @@ var js_html_compat_DataView = function(buffer,byteOffset,byteLength) {
 	this.buffer = this.buf;
 };
 $hxClasses["js.html.compat.DataView"] = js_html_compat_DataView;
-js_html_compat_DataView.__name__ = ["js","html","compat","DataView"];
+js_html_compat_DataView.__name__ = true;
 js_html_compat_DataView.prototype = {
 	buf: null
 	,offset: null
@@ -8725,7 +5254,7 @@ js_html_compat_DataView.prototype = {
 };
 var js_html_compat_Float32Array = function() { };
 $hxClasses["js.html.compat.Float32Array"] = js_html_compat_Float32Array;
-js_html_compat_Float32Array.__name__ = ["js","html","compat","Float32Array"];
+js_html_compat_Float32Array.__name__ = true;
 js_html_compat_Float32Array._new = function(arg1,offset,length) {
 	var arr;
 	if(typeof(arg1) == "number") {
@@ -8822,7 +5351,7 @@ js_html_compat_Float32Array._subarray = function(start,end) {
 };
 var js_html_compat_Uint8Array = function() { };
 $hxClasses["js.html.compat.Uint8Array"] = js_html_compat_Uint8Array;
-js_html_compat_Uint8Array.__name__ = ["js","html","compat","Uint8Array"];
+js_html_compat_Uint8Array.__name__ = true;
 js_html_compat_Uint8Array._new = function(arg1,offset,length) {
 	var arr;
 	if(typeof(arg1) == "number") {
@@ -8903,7 +5432,7 @@ var kha__$Assets_ImageList = function() {
 	this.tablecloth = null;
 };
 $hxClasses["kha._Assets.ImageList"] = kha__$Assets_ImageList;
-kha__$Assets_ImageList.__name__ = ["kha","_Assets","ImageList"];
+kha__$Assets_ImageList.__name__ = true;
 kha__$Assets_ImageList.prototype = {
 	tablecloth: null
 	,tableclothName: null
@@ -8924,7 +5453,7 @@ var kha__$Assets_SoundList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.SoundList"] = kha__$Assets_SoundList;
-kha__$Assets_SoundList.__name__ = ["kha","_Assets","SoundList"];
+kha__$Assets_SoundList.__name__ = true;
 kha__$Assets_SoundList.prototype = {
 	names: null
 	,__class__: kha__$Assets_SoundList
@@ -8933,7 +5462,7 @@ var kha__$Assets_BlobList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.BlobList"] = kha__$Assets_BlobList;
-kha__$Assets_BlobList.__name__ = ["kha","_Assets","BlobList"];
+kha__$Assets_BlobList.__name__ = true;
 kha__$Assets_BlobList.prototype = {
 	names: null
 	,__class__: kha__$Assets_BlobList
@@ -8942,7 +5471,7 @@ var kha__$Assets_FontList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.FontList"] = kha__$Assets_FontList;
-kha__$Assets_FontList.__name__ = ["kha","_Assets","FontList"];
+kha__$Assets_FontList.__name__ = true;
 kha__$Assets_FontList.prototype = {
 	names: null
 	,__class__: kha__$Assets_FontList
@@ -8951,16 +5480,14 @@ var kha__$Assets_VideoList = function() {
 	this.names = [];
 };
 $hxClasses["kha._Assets.VideoList"] = kha__$Assets_VideoList;
-kha__$Assets_VideoList.__name__ = ["kha","_Assets","VideoList"];
+kha__$Assets_VideoList.__name__ = true;
 kha__$Assets_VideoList.prototype = {
 	names: null
 	,__class__: kha__$Assets_VideoList
 };
 var kha_Assets = function() { };
 $hxClasses["kha.Assets"] = kha_Assets;
-kha_Assets.__name__ = ["kha","Assets"];
-kha_Assets.__properties__ = {get_videoFormats:"get_videoFormats",get_fontFormats:"get_fontFormats",get_soundFormats:"get_soundFormats",get_imageFormats:"get_imageFormats"};
-kha_Assets.progress = null;
+kha_Assets.__name__ = true;
 kha_Assets.loadEverything = function(callback,filter,uncompressSoundsFilter) {
 	var fileCount = 0;
 	var _g = 0;
@@ -9165,7 +5692,6 @@ kha_Assets.loadImageFromPath = function(path,readable,done) {
 	var description = { files : [path], readable : readable};
 	kha_LoaderImpl.loadImageFromDescription(description,done);
 };
-kha_Assets.imageFormats = null;
 kha_Assets.get_imageFormats = function() {
 	return kha_LoaderImpl.getImageFormats();
 };
@@ -9193,7 +5719,6 @@ kha_Assets.loadSoundFromPath = function(path,done) {
 	kha_LoaderImpl.loadSoundFromDescription(description,done);
 	return;
 };
-kha_Assets.soundFormats = null;
 kha_Assets.get_soundFormats = function() {
 	return kha_LoaderImpl.getSoundFormats();
 };
@@ -9210,7 +5735,6 @@ kha_Assets.loadFontFromPath = function(path,done) {
 	kha_LoaderImpl.loadFontFromDescription(description,done);
 	return;
 };
-kha_Assets.fontFormats = null;
 kha_Assets.get_fontFormats = function() {
 	return ["ttf"];
 };
@@ -9227,13 +5751,12 @@ kha_Assets.loadVideoFromPath = function(path,done) {
 	kha_LoaderImpl.loadVideoFromDescription(description,done);
 	return;
 };
-kha_Assets.videoFormats = null;
 kha_Assets.get_videoFormats = function() {
 	return kha_LoaderImpl.getVideoFormats();
 };
 var kha_Canvas = function() { };
 $hxClasses["kha.Canvas"] = kha_Canvas;
-kha_Canvas.__name__ = ["kha","Canvas"];
+kha_Canvas.__name__ = true;
 kha_Canvas.prototype = {
 	get_width: null
 	,get_height: null
@@ -9246,20 +5769,18 @@ kha_Canvas.prototype = {
 	,g2: null
 	,g4: null
 	,__class__: kha_Canvas
-	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_height:"get_height",get_width:"get_width"}
 };
 var kha_Resource = function() { };
 $hxClasses["kha.Resource"] = kha_Resource;
-kha_Resource.__name__ = ["kha","Resource"];
+kha_Resource.__name__ = true;
 kha_Resource.prototype = {
 	unload: null
 	,__class__: kha_Resource
 };
 var kha_Image = function() { };
 $hxClasses["kha.Image"] = kha_Image;
-kha_Image.__name__ = ["kha","Image"];
+kha_Image.__name__ = true;
 kha_Image.__interfaces__ = [kha_Resource,kha_Canvas];
-kha_Image.__properties__ = {get_nonPow2Supported:"get_nonPow2Supported",get_maxSize:"get_maxSize"};
 kha_Image.create = function(width,height,format,usage) {
 	if(format == null) {
 		format = kha_graphics4_TextureFormat.RGBA32;
@@ -9354,7 +5875,6 @@ kha_Image.fromVideo = function(video) {
 		return img1;
 	}
 };
-kha_Image.maxSize = null;
 kha_Image.get_maxSize = function() {
 	if(kha_SystemImpl.gl == null) {
 		return 8192;
@@ -9362,7 +5882,6 @@ kha_Image.get_maxSize = function() {
 		return kha_SystemImpl.gl.getParameter(3379);
 	}
 };
-kha_Image.nonPow2Supported = null;
 kha_Image.get_nonPow2Supported = function() {
 	return kha_SystemImpl.gl != null;
 };
@@ -9427,7 +5946,6 @@ kha_Image.prototype = {
 		return null;
 	}
 	,__class__: kha_Image
-	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_realHeight:"get_realHeight",get_realWidth:"get_realWidth",get_depth:"get_depth",get_height:"get_height",get_width:"get_width"}
 };
 var kha_CanvasImage = function(width,height,format,renderTarget) {
 	this.g2canvas = null;
@@ -9442,8 +5960,7 @@ var kha_CanvasImage = function(width,height,format,renderTarget) {
 	}
 };
 $hxClasses["kha.CanvasImage"] = kha_CanvasImage;
-kha_CanvasImage.__name__ = ["kha","CanvasImage"];
-kha_CanvasImage.context = null;
+kha_CanvasImage.__name__ = true;
 kha_CanvasImage.init = function() {
 	var canvas = window.document.createElement("canvas");
 	if(canvas != null) {
@@ -9619,8 +6136,7 @@ kha_CanvasImage.prototype = $extend(kha_Image.prototype,{
 });
 var kha__$Color_Color_$Impl_$ = $hx_exports["kha"]["_Color"]["Color_Impl_"] = {};
 $hxClasses["kha._Color.Color_Impl_"] = kha__$Color_Color_$Impl_$;
-kha__$Color_Color_$Impl_$.__name__ = ["kha","_Color","Color_Impl_"];
-kha__$Color_Color_$Impl_$.__properties__ = {set_value:"set_value",get_value:"get_value",set_A:"set_A",get_A:"get_A",set_B:"set_B",get_B:"get_B",set_G:"set_G",get_G:"get_G",set_R:"set_R",get_R:"get_R",set_Ab:"set_Ab",get_Ab:"get_Ab",set_Bb:"set_Bb",get_Bb:"get_Bb",set_Gb:"set_Gb",get_Gb:"get_Gb",set_Rb:"set_Rb",get_Rb:"get_Rb"};
+kha__$Color_Color_$Impl_$.__name__ = true;
 kha__$Color_Color_$Impl_$.fromValue = function(value) {
 	return kha__$Color_Color_$Impl_$._new(value);
 };
@@ -9716,12 +6232,11 @@ kha__$Color_Color_$Impl_$.set_A = function(this1,f) {
 };
 var kha_CompilerDefines = function() { };
 $hxClasses["kha.CompilerDefines"] = kha_CompilerDefines;
-kha_CompilerDefines.__name__ = ["kha","CompilerDefines"];
+kha_CompilerDefines.__name__ = true;
 var kha_EnvironmentVariables = function() {
 };
 $hxClasses["kha.EnvironmentVariables"] = kha_EnvironmentVariables;
-kha_EnvironmentVariables.__name__ = ["kha","EnvironmentVariables"];
-kha_EnvironmentVariables.instance = null;
+kha_EnvironmentVariables.__name__ = true;
 kha_EnvironmentVariables.prototype = {
 	getVariable: function(name) {
 		return "";
@@ -9734,7 +6249,7 @@ var kha_FontStyle = function(bold,italic,underlined) {
 	this.underlined = underlined;
 };
 $hxClasses["kha.FontStyle"] = kha_FontStyle;
-kha_FontStyle.__name__ = ["kha","FontStyle"];
+kha_FontStyle.__name__ = true;
 kha_FontStyle.prototype = {
 	bold: null
 	,italic: null
@@ -9757,7 +6272,7 @@ var kha_Framebuffer = function(windowId,g1,g2,g4) {
 	this.graphics4 = g4;
 };
 $hxClasses["kha.Framebuffer"] = kha_Framebuffer;
-kha_Framebuffer.__name__ = ["kha","Framebuffer"];
+kha_Framebuffer.__name__ = true;
 kha_Framebuffer.__interfaces__ = [kha_Canvas];
 kha_Framebuffer.prototype = {
 	windowId: null
@@ -9790,12 +6305,11 @@ kha_Framebuffer.prototype = {
 		return kha_System.windowHeight(this.windowId);
 	}
 	,__class__: kha_Framebuffer
-	,__properties__: {get_height:"get_height",get_width:"get_width",get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1"}
 };
 var kha_AlignedQuad = function() {
 };
 $hxClasses["kha.AlignedQuad"] = kha_AlignedQuad;
-kha_AlignedQuad.__name__ = ["kha","AlignedQuad"];
+kha_AlignedQuad.__name__ = true;
 kha_AlignedQuad.prototype = {
 	x0: null
 	,y0: null
@@ -9839,7 +6353,7 @@ var kha_KravurImage = function(size,ascent,descent,lineGap,width,height,chars,pi
 	this.texture.unlock();
 };
 $hxClasses["kha.KravurImage"] = kha_KravurImage;
-kha_KravurImage.__name__ = ["kha","KravurImage"];
+kha_KravurImage.__name__ = true;
 kha_KravurImage.prototype = {
 	mySize: null
 	,chars: null
@@ -9931,9 +6445,8 @@ var kha_Kravur = function(blob) {
 	this.blob = blob;
 };
 $hxClasses["kha.Kravur"] = kha_Kravur;
-kha_Kravur.__name__ = ["kha","Kravur"];
+kha_Kravur.__name__ = true;
 kha_Kravur.__interfaces__ = [kha_Resource];
-kha_Kravur.gaps = null;
 kha_Kravur.fromBytes = function(bytes) {
 	return new kha_Kravur(kha_internal_BytesBlob.fromBytes(bytes));
 };
@@ -10020,7 +6533,7 @@ kha_Kravur.prototype = {
 };
 var kha_LoaderImpl = function() { };
 $hxClasses["kha.LoaderImpl"] = kha_LoaderImpl;
-kha_LoaderImpl.__name__ = ["kha","LoaderImpl"];
+kha_LoaderImpl.__name__ = true;
 kha_LoaderImpl.getImageFormats = function() {
 	return ["png","jpg","hdr"];
 };
@@ -10157,7 +6670,7 @@ var kha_Rotation = function(center,angle) {
 	this.angle = angle;
 };
 $hxClasses["kha.Rotation"] = kha_Rotation;
-kha_Rotation.__name__ = ["kha","Rotation"];
+kha_Rotation.__name__ = true;
 kha_Rotation.prototype = {
 	center: null
 	,angle: null
@@ -10166,7 +6679,7 @@ kha_Rotation.prototype = {
 var kha_TimeTask = function() {
 };
 $hxClasses["kha.TimeTask"] = kha_TimeTask;
-kha_TimeTask.__name__ = ["kha","TimeTask"];
+kha_TimeTask.__name__ = true;
 kha_TimeTask.prototype = {
 	task: null
 	,start: null
@@ -10187,7 +6700,7 @@ var kha_FrameTask = function(task,priority,id) {
 	this.paused = false;
 };
 $hxClasses["kha.FrameTask"] = kha_FrameTask;
-kha_FrameTask.__name__ = ["kha","FrameTask"];
+kha_FrameTask.__name__ = true;
 kha_FrameTask.prototype = {
 	task: null
 	,priority: null
@@ -10198,23 +6711,7 @@ kha_FrameTask.prototype = {
 };
 var kha_Scheduler = function() { };
 $hxClasses["kha.Scheduler"] = kha_Scheduler;
-kha_Scheduler.__name__ = ["kha","Scheduler"];
-kha_Scheduler.timeTasks = null;
-kha_Scheduler.pausedTimeTasks = null;
-kha_Scheduler.outdatedTimeTasks = null;
-kha_Scheduler.timeTasksScratchpad = null;
-kha_Scheduler.frameTasks = null;
-kha_Scheduler.toDeleteFrame = null;
-kha_Scheduler.current = null;
-kha_Scheduler.lastTime = null;
-kha_Scheduler.frame_tasks_sorted = null;
-kha_Scheduler.stopped = null;
-kha_Scheduler.vsync = null;
-kha_Scheduler.onedifhz = null;
-kha_Scheduler.currentFrameTaskId = null;
-kha_Scheduler.currentTimeTaskId = null;
-kha_Scheduler.currentGroupId = null;
-kha_Scheduler.deltas = null;
+kha_Scheduler.__name__ = true;
 kha_Scheduler.init = function() {
 	kha_Scheduler.deltas = [];
 	var _g1 = 0;
@@ -10698,7 +7195,7 @@ kha_Scheduler.sortFrameTasks = function() {
 	});
 	kha_Scheduler.frame_tasks_sorted = true;
 };
-var kha_ScreenRotation = $hxClasses["kha.ScreenRotation"] = { __ename__ : ["kha","ScreenRotation"], __constructs__ : ["RotationNone","Rotation90","Rotation180","Rotation270"] };
+var kha_ScreenRotation = $hxClasses["kha.ScreenRotation"] = { __ename__ : true, __constructs__ : ["RotationNone","Rotation90","Rotation180","Rotation270"] };
 kha_ScreenRotation.RotationNone = ["RotationNone",0];
 kha_ScreenRotation.RotationNone.toString = $estr;
 kha_ScreenRotation.RotationNone.__enum__ = kha_ScreenRotation;
@@ -10711,10 +7208,9 @@ kha_ScreenRotation.Rotation180.__enum__ = kha_ScreenRotation;
 kha_ScreenRotation.Rotation270 = ["Rotation270",3];
 kha_ScreenRotation.Rotation270.toString = $estr;
 kha_ScreenRotation.Rotation270.__enum__ = kha_ScreenRotation;
-kha_ScreenRotation.__empty_constructs__ = [kha_ScreenRotation.RotationNone,kha_ScreenRotation.Rotation90,kha_ScreenRotation.Rotation180,kha_ScreenRotation.Rotation270];
 var kha_Shaders = function() { };
 $hxClasses["kha.Shaders"] = kha_Shaders;
-kha_Shaders.__name__ = ["kha","Shaders"];
+kha_Shaders.__name__ = true;
 kha_Shaders.init = function() {
 	var blobs = [];
 	var _g = 0;
@@ -10729,20 +7225,20 @@ kha_Shaders.init = function() {
 	var _g1 = 0;
 	while(_g1 < 3) {
 		var i1 = _g1++;
-		var data1 = Reflect.field(kha_Shaders,"painter_image_fragData" + i1);
+		var data1 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i1);
 		var bytes1 = haxe_Unserializer.run(data1);
 		blobs1.push(kha_internal_BytesBlob.fromBytes(bytes1));
 	}
-	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs1,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
+	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs1,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
 	var blobs2 = [];
 	var _g2 = 0;
 	while(_g2 < 3) {
 		var i2 = _g2++;
-		var data2 = Reflect.field(kha_Shaders,"painter_colored_vertData" + i2);
+		var data2 = Reflect.field(kha_Shaders,"painter_image_fragData" + i2);
 		var bytes2 = haxe_Unserializer.run(data2);
 		blobs2.push(kha_internal_BytesBlob.fromBytes(bytes2));
 	}
-	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs2,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
+	kha_Shaders.painter_image_frag = new kha_graphics4_FragmentShader(blobs2,["painter-image.frag.essl","painter-image-relaxed.frag.essl","painter-image-webgl2.frag.essl"]);
 	var blobs3 = [];
 	var _g3 = 0;
 	while(_g3 < 3) {
@@ -10792,7 +7288,7 @@ kha_Shaders.init = function() {
 var kha_Sound = function() {
 };
 $hxClasses["kha.Sound"] = kha_Sound;
-kha_Sound.__name__ = ["kha","Sound"];
+kha_Sound.__name__ = true;
 kha_Sound.__interfaces__ = [kha_Resource];
 kha_Sound.prototype = {
 	compressedData: null
@@ -10833,9 +7329,7 @@ kha_Sound.prototype = {
 };
 var kha_System = function() { };
 $hxClasses["kha.System"] = kha_System;
-kha_System.__name__ = ["kha","System"];
-kha_System.__properties__ = {get_systemId:"get_systemId",get_refreshRate:"get_refreshRate",get_vsync:"get_vsync",get_screenRotation:"get_screenRotation",get_time:"get_time",get_title:"get_title"};
-kha_System.theTitle = null;
+kha_System.__name__ = true;
 kha_System.init = function(options,callback) {
 	if(options.title == null) {
 		options.title = "Kha";
@@ -10871,7 +7365,6 @@ kha_System.initEx = function(title,options,windowCallback,callback) {
 	kha_System.theTitle = title;
 	kha_SystemImpl.initEx(title,options,windowCallback,callback);
 };
-kha_System.title = null;
 kha_System.get_title = function() {
 	return kha_System.theTitle;
 };
@@ -10979,7 +7472,6 @@ kha_System.dropFiles = function(filePath) {
 		listener(filePath);
 	}
 };
-kha_System.time = null;
 kha_System.get_time = function() {
 	return kha_SystemImpl.getTime();
 };
@@ -10998,19 +7490,15 @@ kha_System.windowHeight = function(windowId) {
 kha_System.screenDpi = function() {
 	return kha_SystemImpl.screenDpi();
 };
-kha_System.screenRotation = null;
 kha_System.get_screenRotation = function() {
 	return kha_SystemImpl.getScreenRotation();
 };
-kha_System.vsync = null;
 kha_System.get_vsync = function() {
 	return kha_SystemImpl.getVsync();
 };
-kha_System.refreshRate = null;
 kha_System.get_refreshRate = function() {
 	return kha_SystemImpl.getRefreshRate();
 };
-kha_System.systemId = null;
 kha_System.get_systemId = function() {
 	return kha_SystemImpl.getSystemId();
 };
@@ -11028,7 +7516,7 @@ var kha_GamepadStates = function() {
 	this.buttons = [];
 };
 $hxClasses["kha.GamepadStates"] = kha_GamepadStates;
-kha_GamepadStates.__name__ = ["kha","GamepadStates"];
+kha_GamepadStates.__name__ = true;
 kha_GamepadStates.prototype = {
 	axes: null
 	,buttons: null
@@ -11036,17 +7524,7 @@ kha_GamepadStates.prototype = {
 };
 var kha_SystemImpl = function() { };
 $hxClasses["kha.SystemImpl"] = kha_SystemImpl;
-kha_SystemImpl.__name__ = ["kha","SystemImpl"];
-kha_SystemImpl.gl = null;
-kha_SystemImpl.gl2 = null;
-kha_SystemImpl.halfFloat = null;
-kha_SystemImpl.anisotropicFilter = null;
-kha_SystemImpl.depthTexture = null;
-kha_SystemImpl.drawBuffers = null;
-kha_SystemImpl.elementIndexUint = null;
-kha_SystemImpl._hasWebAudio = null;
-kha_SystemImpl.khanvas = null;
-kha_SystemImpl.options = null;
+kha_SystemImpl.__name__ = true;
 kha_SystemImpl.errorHandler = function(message,source,lineno,colno,error) {
 	window.console.error(error.stack);
 	return true;
@@ -11152,16 +7630,6 @@ kha_SystemImpl.getSystemId = function() {
 kha_SystemImpl.requestShutdown = function() {
 	window.close();
 };
-kha_SystemImpl.frame = null;
-kha_SystemImpl.pressedKeys = null;
-kha_SystemImpl.mouse = null;
-kha_SystemImpl.surface = null;
-kha_SystemImpl.gamepads = null;
-kha_SystemImpl.gamepadStates = null;
-kha_SystemImpl.mouseX = null;
-kha_SystemImpl.mouseY = null;
-kha_SystemImpl.touchX = null;
-kha_SystemImpl.touchY = null;
 kha_SystemImpl.init2 = function(backbufferFormat) {
 	haxe_Log.trace = js_Boot.__trace;
 	kha_SystemImpl.keyboard = new kha_input_Keyboard();
@@ -11990,7 +8458,7 @@ kha_SystemImpl.getGamepads = function() {
 var kha_Video = function() {
 };
 $hxClasses["kha.Video"] = kha_Video;
-kha_Video.__name__ = ["kha","Video"];
+kha_Video.__name__ = true;
 kha_Video.__interfaces__ = [kha_Resource];
 kha_Video.prototype = {
 	width: function() {
@@ -12031,7 +8499,6 @@ kha_Video.prototype = {
 	,unload: function() {
 	}
 	,__class__: kha_Video
-	,__properties__: {set_position:"set_position",get_position:"get_position"}
 };
 var kha_WebGLImage = function(width,height,format,renderTarget,depthStencilFormat) {
 	this.pixels = null;
@@ -12052,9 +8519,7 @@ var kha_WebGLImage = function(width,height,format,renderTarget,depthStencilForma
 	}
 };
 $hxClasses["kha.WebGLImage"] = kha_WebGLImage;
-kha_WebGLImage.__name__ = ["kha","WebGLImage"];
-kha_WebGLImage.context = null;
-kha_WebGLImage.canvas = null;
+kha_WebGLImage.__name__ = true;
 kha_WebGLImage.init = function() {
 	if(kha_WebGLImage.context == null) {
 		kha_WebGLImage.canvas = window.document.createElement("canvas");
@@ -12468,7 +8933,7 @@ kha_WebGLImage.prototype = $extend(kha_Image.prototype,{
 	}
 	,__class__: kha_WebGLImage
 });
-var kha_WindowMode = $hxClasses["kha.WindowMode"] = { __ename__ : ["kha","WindowMode"], __constructs__ : ["Window","BorderlessWindow","Fullscreen"] };
+var kha_WindowMode = $hxClasses["kha.WindowMode"] = { __ename__ : true, __constructs__ : ["Window","BorderlessWindow","Fullscreen"] };
 kha_WindowMode.Window = ["Window",0];
 kha_WindowMode.Window.toString = $estr;
 kha_WindowMode.Window.__enum__ = kha_WindowMode;
@@ -12478,26 +8943,23 @@ kha_WindowMode.BorderlessWindow.__enum__ = kha_WindowMode;
 kha_WindowMode.Fullscreen = ["Fullscreen",2];
 kha_WindowMode.Fullscreen.toString = $estr;
 kha_WindowMode.Fullscreen.__enum__ = kha_WindowMode;
-kha_WindowMode.__empty_constructs__ = [kha_WindowMode.Window,kha_WindowMode.BorderlessWindow,kha_WindowMode.Fullscreen];
-var kha_Position = $hxClasses["kha.Position"] = { __ename__ : ["kha","Position"], __constructs__ : ["Center","Fixed"] };
+var kha_Position = $hxClasses["kha.Position"] = { __ename__ : true, __constructs__ : ["Center","Fixed"] };
 kha_Position.Center = ["Center",0];
 kha_Position.Center.toString = $estr;
 kha_Position.Center.__enum__ = kha_Position;
 kha_Position.Fixed = function(v) { var $x = ["Fixed",1,v]; $x.__enum__ = kha_Position; $x.toString = $estr; return $x; };
-kha_Position.__empty_constructs__ = [kha_Position.Center];
-var kha_TargetDisplay = $hxClasses["kha.TargetDisplay"] = { __ename__ : ["kha","TargetDisplay"], __constructs__ : ["Primary","ById"] };
+var kha_TargetDisplay = $hxClasses["kha.TargetDisplay"] = { __ename__ : true, __constructs__ : ["Primary","ById"] };
 kha_TargetDisplay.Primary = ["Primary",0];
 kha_TargetDisplay.Primary.toString = $estr;
 kha_TargetDisplay.Primary.__enum__ = kha_TargetDisplay;
 kha_TargetDisplay.ById = function(id) { var $x = ["ById",1,id]; $x.__enum__ = kha_TargetDisplay; $x.toString = $estr; return $x; };
-kha_TargetDisplay.__empty_constructs__ = [kha_TargetDisplay.Primary];
 var kha_RendererOptions = function(textureFormat,depthStencilFormat,samplesPerPixel) {
 	this.textureFormat = textureFormat;
 	this.depthStencilFormat = depthStencilFormat;
 	this.samplesPerPixel = samplesPerPixel;
 };
 $hxClasses["kha.RendererOptions"] = kha_RendererOptions;
-kha_RendererOptions.__name__ = ["kha","RendererOptions"];
+kha_RendererOptions.__name__ = true;
 kha_RendererOptions.prototype = {
 	textureFormat: null
 	,depthStencilFormat: null
@@ -12510,7 +8972,7 @@ var kha_WindowedModeOptions = function(minimizable,maximizable,resizable) {
 	this.resizable = resizable;
 };
 $hxClasses["kha.WindowedModeOptions"] = kha_WindowedModeOptions;
-kha_WindowedModeOptions.__name__ = ["kha","WindowedModeOptions"];
+kha_WindowedModeOptions.__name__ = true;
 kha_WindowedModeOptions.prototype = {
 	minimizable: null
 	,maximizable: null
@@ -12529,7 +8991,7 @@ var kha_WindowOptions = function(width,height,mode,title,x,y,targetDisplay,rende
 	this.windowedModeOptions = windowedModeOptions;
 };
 $hxClasses["kha.WindowOptions"] = kha_WindowOptions;
-kha_WindowOptions.__name__ = ["kha","WindowOptions"];
+kha_WindowOptions.__name__ = true;
 kha_WindowOptions.prototype = {
 	width: null
 	,height: null
@@ -12544,8 +9006,7 @@ kha_WindowOptions.prototype = {
 };
 var kha_arrays__$Float32Array_Float32Array_$Impl_$ = {};
 $hxClasses["kha.arrays._Float32Array.Float32Array_Impl_"] = kha_arrays__$Float32Array_Float32Array_$Impl_$;
-kha_arrays__$Float32Array_Float32Array_$Impl_$.__name__ = ["kha","arrays","_Float32Array","Float32Array_Impl_"];
-kha_arrays__$Float32Array_Float32Array_$Impl_$.__properties__ = {get_length:"get_length"};
+kha_arrays__$Float32Array_Float32Array_$Impl_$.__name__ = true;
 kha_arrays__$Float32Array_Float32Array_$Impl_$._new = function(elements) {
 	var this1 = new Float32Array(elements);
 	return this1;
@@ -12573,8 +9034,7 @@ kha_arrays__$Float32Array_Float32Array_$Impl_$.subarray = function(this1,start,e
 };
 var kha_arrays__$Uint32Array_Uint32Array_$Impl_$ = {};
 $hxClasses["kha.arrays._Uint32Array.Uint32Array_Impl_"] = kha_arrays__$Uint32Array_Uint32Array_$Impl_$;
-kha_arrays__$Uint32Array_Uint32Array_$Impl_$.__name__ = ["kha","arrays","_Uint32Array","Uint32Array_Impl_"];
-kha_arrays__$Uint32Array_Uint32Array_$Impl_$.__properties__ = {get_length:"get_length"};
+kha_arrays__$Uint32Array_Uint32Array_$Impl_$.__name__ = true;
 kha_arrays__$Uint32Array_Uint32Array_$Impl_$._new = function(elements) {
 	var this1 = new Uint32Array(elements);
 	return this1;
@@ -12602,7 +9062,7 @@ kha_arrays__$Uint32Array_Uint32Array_$Impl_$.subarray = function(this1,start,end
 };
 var kha_audio1_AudioChannel = function() { };
 $hxClasses["kha.audio1.AudioChannel"] = kha_audio1_AudioChannel;
-kha_audio1_AudioChannel.__name__ = ["kha","audio1","AudioChannel"];
+kha_audio1_AudioChannel.__name__ = true;
 kha_audio1_AudioChannel.prototype = {
 	play: null
 	,pause: null
@@ -12616,14 +9076,10 @@ kha_audio1_AudioChannel.prototype = {
 	,finished: null
 	,get_finished: null
 	,__class__: kha_audio1_AudioChannel
-	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_Audio = function() { };
 $hxClasses["kha.audio2.Audio"] = kha_audio2_Audio;
-kha_audio2_Audio.__name__ = ["kha","audio2","Audio"];
-kha_audio2_Audio.buffer = null;
-kha_audio2_Audio._context = null;
-kha_audio2_Audio.processingNode = null;
+kha_audio2_Audio.__name__ = true;
 kha_audio2_Audio.initContext = function() {
 	try {
 		kha_audio2_Audio._context = new AudioContext();
@@ -12674,7 +9130,6 @@ kha_audio2_Audio._init = function() {
 	kha_audio2_Audio.processingNode.connect(kha_audio2_Audio._context.destination);
 	return true;
 };
-kha_audio2_Audio.audioCallback = null;
 kha_audio2_Audio.stream = function(sound,loop) {
 	if(loop == null) {
 		loop = false;
@@ -12689,13 +9144,7 @@ kha_audio2_Audio.stream = function(sound,loop) {
 };
 var kha_audio2_Audio1 = function() { };
 $hxClasses["kha.audio2.Audio1"] = kha_audio2_Audio1;
-kha_audio2_Audio1.__name__ = ["kha","audio2","Audio1"];
-kha_audio2_Audio1.soundChannels = null;
-kha_audio2_Audio1.streamChannels = null;
-kha_audio2_Audio1.internalSoundChannels = null;
-kha_audio2_Audio1.internalStreamChannels = null;
-kha_audio2_Audio1.sampleCache1 = null;
-kha_audio2_Audio1.sampleCache2 = null;
+kha_audio2_Audio1.__name__ = true;
 kha_audio2_Audio1._init = function() {
 	var this1 = new Array(16);
 	kha_audio2_Audio1.soundChannels = this1;
@@ -12853,7 +9302,7 @@ var kha_audio2_AudioChannel = function(looping) {
 	this.myPosition = 0;
 };
 $hxClasses["kha.audio2.AudioChannel"] = kha_audio2_AudioChannel;
-kha_audio2_AudioChannel.__name__ = ["kha","audio2","AudioChannel"];
+kha_audio2_AudioChannel.__name__ = true;
 kha_audio2_AudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_audio2_AudioChannel.prototype = {
 	data: null
@@ -12928,7 +9377,6 @@ kha_audio2_AudioChannel.prototype = {
 		return this.myPosition >= this.data.length;
 	}
 	,__class__: kha_audio2_AudioChannel
-	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_Buffer = function(size,channels,samplesPerSecond) {
 	this.size = size;
@@ -12940,7 +9388,7 @@ var kha_audio2_Buffer = function(size,channels,samplesPerSecond) {
 	this.writeLocation = 0;
 };
 $hxClasses["kha.audio2.Buffer"] = kha_audio2_Buffer;
-kha_audio2_Buffer.__name__ = ["kha","audio2","Buffer"];
+kha_audio2_Buffer.__name__ = true;
 kha_audio2_Buffer.prototype = {
 	channels: null
 	,samplesPerSecond: null
@@ -12958,7 +9406,7 @@ var kha_audio2_StreamChannel = function(data,loop) {
 	this.reader = kha_audio2_ogg_vorbis_Reader.openFromBytes(data);
 };
 $hxClasses["kha.audio2.StreamChannel"] = kha_audio2_StreamChannel;
-kha_audio2_StreamChannel.__name__ = ["kha","audio2","StreamChannel"];
+kha_audio2_StreamChannel.__name__ = true;
 kha_audio2_StreamChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_audio2_StreamChannel.prototype = {
 	reader: null
@@ -13019,12 +9467,10 @@ kha_audio2_StreamChannel.prototype = {
 		return this.atend;
 	}
 	,__class__: kha_audio2_StreamChannel
-	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",get_position:"get_position",get_length:"get_length"}
 };
 var kha_audio2_ogg_tools_Crc32 = function() { };
 $hxClasses["kha.audio2.ogg.tools.Crc32"] = kha_audio2_ogg_tools_Crc32;
-kha_audio2_ogg_tools_Crc32.__name__ = ["kha","audio2","ogg","tools","Crc32"];
-kha_audio2_ogg_tools_Crc32.table = null;
+kha_audio2_ogg_tools_Crc32.__name__ = true;
 kha_audio2_ogg_tools_Crc32.init = function() {
 	if(kha_audio2_ogg_tools_Crc32.table != null) {
 		return;
@@ -13048,7 +9494,7 @@ kha_audio2_ogg_tools_Crc32.update = function(crc,$byte) {
 };
 var kha_audio2_ogg_tools_MathTools = function() { };
 $hxClasses["kha.audio2.ogg.tools.MathTools"] = kha_audio2_ogg_tools_MathTools;
-kha_audio2_ogg_tools_MathTools.__name__ = ["kha","audio2","ogg","tools","MathTools"];
+kha_audio2_ogg_tools_MathTools.__name__ = true;
 kha_audio2_ogg_tools_MathTools.ilog = function(n) {
 	var log2_4 = [0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4];
 	if(n < 16384) {
@@ -13075,7 +9521,7 @@ kha_audio2_ogg_tools_MathTools.ilog = function(n) {
 };
 var kha_audio2_ogg_tools_Mdct = function() { };
 $hxClasses["kha.audio2.ogg.tools.Mdct"] = kha_audio2_ogg_tools_Mdct;
-kha_audio2_ogg_tools_Mdct.__name__ = ["kha","audio2","ogg","tools","Mdct"];
+kha_audio2_ogg_tools_Mdct.__name__ = true;
 kha_audio2_ogg_tools_Mdct.inverseTransform = function(buffer,n,a,b,c,bitReverse) {
 	var n2 = n >> 1;
 	var n4 = n >> 2;
@@ -14018,7 +10464,7 @@ var kha_audio2_ogg_vorbis_Reader = function(input,seekFunc,inputLength) {
 	this.loopLength = this.get_header().comment.get_loopLength();
 };
 $hxClasses["kha.audio2.ogg.vorbis.Reader"] = kha_audio2_ogg_vorbis_Reader;
-kha_audio2_ogg_vorbis_Reader.__name__ = ["kha","audio2","ogg","vorbis","Reader"];
+kha_audio2_ogg_vorbis_Reader.__name__ = true;
 kha_audio2_ogg_vorbis_Reader.openFromBytes = function(bytes) {
 	var input = new haxe_io_BytesInput(bytes);
 	var a1 = input;
@@ -14130,7 +10576,6 @@ kha_audio2_ogg_vorbis_Reader.prototype = {
 		return Math.floor(_$UInt_UInt_$Impl_$.toFloat(_g1) * _g);
 	}
 	,__class__: kha_audio2_ogg_vorbis_Reader
-	,__properties__: {set_currentMillisecond:"set_currentMillisecond",get_currentMillisecond:"get_currentMillisecond",set_currentSample:"set_currentSample",get_currentSample:"get_currentSample",get_totalMillisecond:"get_totalMillisecond",get_totalSample:"get_totalSample",get_header:"get_header"}
 };
 var kha_audio2_ogg_vorbis_VorbisDecodeState = function(input) {
 	this.nextSeg = 0;
@@ -14143,7 +10588,7 @@ var kha_audio2_ogg_vorbis_VorbisDecodeState = function(input) {
 	kha_audio2_ogg_tools_Crc32.init();
 };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisDecodeState"] = kha_audio2_ogg_vorbis_VorbisDecodeState;
-kha_audio2_ogg_vorbis_VorbisDecodeState.__name__ = ["kha","audio2","ogg","vorbis","VorbisDecodeState"];
+kha_audio2_ogg_vorbis_VorbisDecodeState.__name__ = true;
 kha_audio2_ogg_vorbis_VorbisDecodeState.prototype = {
 	page: null
 	,eof: null
@@ -14943,12 +11388,11 @@ kha_audio2_ogg_vorbis_VorbisDecodeState.prototype = {
 	}
 	,__class__: kha_audio2_ogg_vorbis_VorbisDecodeState
 };
-var kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult = $hxClasses["kha.audio2.ogg.vorbis._VorbisDecodeState.FindPageResult"] = { __ename__ : ["kha","audio2","ogg","vorbis","_VorbisDecodeState","FindPageResult"], __constructs__ : ["Found","NotFound"] };
+var kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult = $hxClasses["kha.audio2.ogg.vorbis._VorbisDecodeState.FindPageResult"] = { __ename__ : true, __constructs__ : ["Found","NotFound"] };
 kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.Found = function(end,last) { var $x = ["Found",0,end,last]; $x.__enum__ = kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult; $x.toString = $estr; return $x; };
 kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.NotFound = ["NotFound",1];
 kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.NotFound.toString = $estr;
 kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.NotFound.__enum__ = kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult;
-kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.__empty_constructs__ = [kha_audio2_ogg_vorbis__$VorbisDecodeState_FindPageResult.NotFound];
 var kha_audio2_ogg_vorbis_VorbisDecoder = function(header,decodeState) {
 	this.header = header;
 	this.decodeState = decodeState;
@@ -14994,7 +11438,7 @@ var kha_audio2_ogg_vorbis_VorbisDecoder = function(header,decodeState) {
 	this.initBlocksize(1,header.blocksize1);
 };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisDecoder"] = kha_audio2_ogg_vorbis_VorbisDecoder;
-kha_audio2_ogg_vorbis_VorbisDecoder.__name__ = ["kha","audio2","ogg","vorbis","VorbisDecoder"];
+kha_audio2_ogg_vorbis_VorbisDecoder.__name__ = true;
 kha_audio2_ogg_vorbis_VorbisDecoder.start = function(input) {
 	var decodeState = new kha_audio2_ogg_vorbis_VorbisDecodeState(input);
 	var header = kha_audio2_ogg_vorbis_data_Header.read(decodeState);
@@ -16632,8 +13076,7 @@ kha_audio2_ogg_vorbis_VorbisDecoder.prototype = {
 };
 var kha_audio2_ogg_vorbis_VorbisTools = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.VorbisTools"] = kha_audio2_ogg_vorbis_VorbisTools;
-kha_audio2_ogg_vorbis_VorbisTools.__name__ = ["kha","audio2","ogg","vorbis","VorbisTools"];
-kha_audio2_ogg_vorbis_VorbisTools.integerDivideTable = null;
+kha_audio2_ogg_vorbis_VorbisTools.__name__ = true;
 kha_audio2_ogg_vorbis_VorbisTools.assert = function(b,p) {
 };
 kha_audio2_ogg_vorbis_VorbisTools.neighbors = function(x,n) {
@@ -16844,7 +13287,7 @@ kha_audio2_ogg_vorbis_VorbisTools.copyVector = function(source) {
 var kha_audio2_ogg_vorbis_data_Codebook = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Codebook"] = kha_audio2_ogg_vorbis_data_Codebook;
-kha_audio2_ogg_vorbis_data_Codebook.__name__ = ["kha","audio2","ogg","vorbis","data","Codebook"];
+kha_audio2_ogg_vorbis_data_Codebook.__name__ = true;
 kha_audio2_ogg_vorbis_data_Codebook.read = function(decodeState) {
 	var c = new kha_audio2_ogg_vorbis_data_Codebook();
 	var tmp;
@@ -18200,7 +14643,7 @@ var kha_audio2_ogg_vorbis_data_Comment = function() {
 	this.data = new haxe_ds_StringMap();
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Comment"] = kha_audio2_ogg_vorbis_data_Comment;
-kha_audio2_ogg_vorbis_data_Comment.__name__ = ["kha","audio2","ogg","vorbis","data","Comment"];
+kha_audio2_ogg_vorbis_data_Comment.__name__ = true;
 kha_audio2_ogg_vorbis_data_Comment.prototype = {
 	data: null
 	,get_title: function() {
@@ -18298,12 +14741,11 @@ kha_audio2_ogg_vorbis_data_Comment.prototype = {
 		}
 	}
 	,__class__: kha_audio2_ogg_vorbis_data_Comment
-	,__properties__: {get_artists:"get_artists",get_isrc:"get_isrc",get_contact:"get_contact",get_location:"get_location",get_date:"get_date",get_genre:"get_genre",get_description:"get_description",get_artist:"get_artist",get_license:"get_license",get_copyright:"get_copyright",get_performer:"get_performer",get_tracknumber:"get_tracknumber",get_organization:"get_organization",get_album:"get_album",get_version:"get_version",get_loopLength:"get_loopLength",get_loopStart:"get_loopStart",get_title:"get_title"}
 };
 var kha_audio2_ogg_vorbis_data_Floor = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor"] = kha_audio2_ogg_vorbis_data_Floor;
-kha_audio2_ogg_vorbis_data_Floor.__name__ = ["kha","audio2","ogg","vorbis","data","Floor"];
+kha_audio2_ogg_vorbis_data_Floor.__name__ = true;
 kha_audio2_ogg_vorbis_data_Floor.read = function(decodeState,codebooks) {
 	var floor = new kha_audio2_ogg_vorbis_data_Floor();
 	var tmp;
@@ -19070,7 +15512,7 @@ kha_audio2_ogg_vorbis_data_Floor.prototype = {
 var kha_audio2_ogg_vorbis_data_Floor0 = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor0"] = kha_audio2_ogg_vorbis_data_Floor0;
-kha_audio2_ogg_vorbis_data_Floor0.__name__ = ["kha","audio2","ogg","vorbis","data","Floor0"];
+kha_audio2_ogg_vorbis_data_Floor0.__name__ = true;
 kha_audio2_ogg_vorbis_data_Floor0.prototype = {
 	order: null
 	,rate: null
@@ -19084,7 +15526,7 @@ kha_audio2_ogg_vorbis_data_Floor0.prototype = {
 var kha_audio2_ogg_vorbis_data_Floor1 = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Floor1"] = kha_audio2_ogg_vorbis_data_Floor1;
-kha_audio2_ogg_vorbis_data_Floor1.__name__ = ["kha","audio2","ogg","vorbis","data","Floor1"];
+kha_audio2_ogg_vorbis_data_Floor1.__name__ = true;
 kha_audio2_ogg_vorbis_data_Floor1.prototype = {
 	partitions: null
 	,partitionClassList: null
@@ -19103,7 +15545,7 @@ kha_audio2_ogg_vorbis_data_Floor1.prototype = {
 var kha_audio2_ogg_vorbis_data_Header = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Header"] = kha_audio2_ogg_vorbis_data_Header;
-kha_audio2_ogg_vorbis_data_Header.__name__ = ["kha","audio2","ogg","vorbis","data","Header"];
+kha_audio2_ogg_vorbis_data_Header.__name__ = true;
 kha_audio2_ogg_vorbis_data_Header.read = function(decodeState) {
 	var page = decodeState.page;
 	page.start(decodeState);
@@ -19591,7 +16033,7 @@ kha_audio2_ogg_vorbis_data_Header.prototype = {
 var kha_audio2_ogg_vorbis_data_IntPoint = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.IntPoint"] = kha_audio2_ogg_vorbis_data_IntPoint;
-kha_audio2_ogg_vorbis_data_IntPoint.__name__ = ["kha","audio2","ogg","vorbis","data","IntPoint"];
+kha_audio2_ogg_vorbis_data_IntPoint.__name__ = true;
 kha_audio2_ogg_vorbis_data_IntPoint.prototype = {
 	x: null
 	,y: null
@@ -19600,7 +16042,7 @@ kha_audio2_ogg_vorbis_data_IntPoint.prototype = {
 var kha_audio2_ogg_vorbis_data_Mapping = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Mapping"] = kha_audio2_ogg_vorbis_data_Mapping;
-kha_audio2_ogg_vorbis_data_Mapping.__name__ = ["kha","audio2","ogg","vorbis","data","Mapping"];
+kha_audio2_ogg_vorbis_data_Mapping.__name__ = true;
 kha_audio2_ogg_vorbis_data_Mapping.read = function(decodeState,channels) {
 	var m = new kha_audio2_ogg_vorbis_data_Mapping();
 	var mappingType;
@@ -20157,7 +16599,7 @@ kha_audio2_ogg_vorbis_data_Mapping.prototype = {
 var kha_audio2_ogg_vorbis_data_MappingChannel = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.MappingChannel"] = kha_audio2_ogg_vorbis_data_MappingChannel;
-kha_audio2_ogg_vorbis_data_MappingChannel.__name__ = ["kha","audio2","ogg","vorbis","data","MappingChannel"];
+kha_audio2_ogg_vorbis_data_MappingChannel.__name__ = true;
 kha_audio2_ogg_vorbis_data_MappingChannel.prototype = {
 	magnitude: null
 	,angle: null
@@ -20167,7 +16609,7 @@ kha_audio2_ogg_vorbis_data_MappingChannel.prototype = {
 var kha_audio2_ogg_vorbis_data_Mode = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Mode"] = kha_audio2_ogg_vorbis_data_Mode;
-kha_audio2_ogg_vorbis_data_Mode.__name__ = ["kha","audio2","ogg","vorbis","data","Mode"];
+kha_audio2_ogg_vorbis_data_Mode.__name__ = true;
 kha_audio2_ogg_vorbis_data_Mode.read = function(decodeState) {
 	var m = new kha_audio2_ogg_vorbis_data_Mode();
 	var tmp;
@@ -20332,7 +16774,7 @@ kha_audio2_ogg_vorbis_data_Mode.prototype = {
 var kha_audio2_ogg_vorbis_data_Page = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Page"] = kha_audio2_ogg_vorbis_data_Page;
-kha_audio2_ogg_vorbis_data_Page.__name__ = ["kha","audio2","ogg","vorbis","data","Page"];
+kha_audio2_ogg_vorbis_data_Page.__name__ = true;
 kha_audio2_ogg_vorbis_data_Page.prototype = {
 	flag: null
 	,clone: function() {
@@ -20392,11 +16834,11 @@ kha_audio2_ogg_vorbis_data_Page.prototype = {
 };
 var kha_audio2_ogg_vorbis_data_PageFlag = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.data.PageFlag"] = kha_audio2_ogg_vorbis_data_PageFlag;
-kha_audio2_ogg_vorbis_data_PageFlag.__name__ = ["kha","audio2","ogg","vorbis","data","PageFlag"];
+kha_audio2_ogg_vorbis_data_PageFlag.__name__ = true;
 var kha_audio2_ogg_vorbis_data_ProbedPage = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.ProbedPage"] = kha_audio2_ogg_vorbis_data_ProbedPage;
-kha_audio2_ogg_vorbis_data_ProbedPage.__name__ = ["kha","audio2","ogg","vorbis","data","ProbedPage"];
+kha_audio2_ogg_vorbis_data_ProbedPage.__name__ = true;
 kha_audio2_ogg_vorbis_data_ProbedPage.prototype = {
 	pageStart: null
 	,pageEnd: null
@@ -20414,14 +16856,14 @@ var kha_audio2_ogg_vorbis_data_ReaderError = function(type,message,posInfos) {
 	this.posInfos = posInfos;
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.ReaderError"] = kha_audio2_ogg_vorbis_data_ReaderError;
-kha_audio2_ogg_vorbis_data_ReaderError.__name__ = ["kha","audio2","ogg","vorbis","data","ReaderError"];
+kha_audio2_ogg_vorbis_data_ReaderError.__name__ = true;
 kha_audio2_ogg_vorbis_data_ReaderError.prototype = {
 	type: null
 	,message: null
 	,posInfos: null
 	,__class__: kha_audio2_ogg_vorbis_data_ReaderError
 };
-var kha_audio2_ogg_vorbis_data_ReaderErrorType = $hxClasses["kha.audio2.ogg.vorbis.data.ReaderErrorType"] = { __ename__ : ["kha","audio2","ogg","vorbis","data","ReaderErrorType"], __constructs__ : ["NEED_MORE_DATA","INVALID_API_MIXING","OUTOFMEM","FEATURE_NOT_SUPPORTED","TOO_MANY_CHANNELS","FILE_OPEN_FAILURE","SEEK_WITHOUT_LENGTH","UNEXPECTED_EOF","SEEK_INVALID","INVALID_SETUP","INVALID_STREAM","MISSING_CAPTURE_PATTERN","INVALID_STREAM_STRUCTURE_VERSION","CONTINUED_PACKET_FLAG_INVALID","INCORRECT_STREAM_SERIAL_NUMBER","INVALID_FIRST_PAGE","BAD_PACKET_TYPE","CANT_FIND_LAST_PAGE","SEEK_FAILED","OTHER"] };
+var kha_audio2_ogg_vorbis_data_ReaderErrorType = $hxClasses["kha.audio2.ogg.vorbis.data.ReaderErrorType"] = { __ename__ : true, __constructs__ : ["NEED_MORE_DATA","INVALID_API_MIXING","OUTOFMEM","FEATURE_NOT_SUPPORTED","TOO_MANY_CHANNELS","FILE_OPEN_FAILURE","SEEK_WITHOUT_LENGTH","UNEXPECTED_EOF","SEEK_INVALID","INVALID_SETUP","INVALID_STREAM","MISSING_CAPTURE_PATTERN","INVALID_STREAM_STRUCTURE_VERSION","CONTINUED_PACKET_FLAG_INVALID","INCORRECT_STREAM_SERIAL_NUMBER","INVALID_FIRST_PAGE","BAD_PACKET_TYPE","CANT_FIND_LAST_PAGE","SEEK_FAILED","OTHER"] };
 kha_audio2_ogg_vorbis_data_ReaderErrorType.NEED_MORE_DATA = ["NEED_MORE_DATA",0];
 kha_audio2_ogg_vorbis_data_ReaderErrorType.NEED_MORE_DATA.toString = $estr;
 kha_audio2_ogg_vorbis_data_ReaderErrorType.NEED_MORE_DATA.__enum__ = kha_audio2_ogg_vorbis_data_ReaderErrorType;
@@ -20482,11 +16924,10 @@ kha_audio2_ogg_vorbis_data_ReaderErrorType.SEEK_FAILED.__enum__ = kha_audio2_ogg
 kha_audio2_ogg_vorbis_data_ReaderErrorType.OTHER = ["OTHER",19];
 kha_audio2_ogg_vorbis_data_ReaderErrorType.OTHER.toString = $estr;
 kha_audio2_ogg_vorbis_data_ReaderErrorType.OTHER.__enum__ = kha_audio2_ogg_vorbis_data_ReaderErrorType;
-kha_audio2_ogg_vorbis_data_ReaderErrorType.__empty_constructs__ = [kha_audio2_ogg_vorbis_data_ReaderErrorType.NEED_MORE_DATA,kha_audio2_ogg_vorbis_data_ReaderErrorType.INVALID_API_MIXING,kha_audio2_ogg_vorbis_data_ReaderErrorType.OUTOFMEM,kha_audio2_ogg_vorbis_data_ReaderErrorType.FEATURE_NOT_SUPPORTED,kha_audio2_ogg_vorbis_data_ReaderErrorType.TOO_MANY_CHANNELS,kha_audio2_ogg_vorbis_data_ReaderErrorType.FILE_OPEN_FAILURE,kha_audio2_ogg_vorbis_data_ReaderErrorType.SEEK_WITHOUT_LENGTH,kha_audio2_ogg_vorbis_data_ReaderErrorType.UNEXPECTED_EOF,kha_audio2_ogg_vorbis_data_ReaderErrorType.SEEK_INVALID,kha_audio2_ogg_vorbis_data_ReaderErrorType.INVALID_SETUP,kha_audio2_ogg_vorbis_data_ReaderErrorType.INVALID_STREAM,kha_audio2_ogg_vorbis_data_ReaderErrorType.MISSING_CAPTURE_PATTERN,kha_audio2_ogg_vorbis_data_ReaderErrorType.INVALID_STREAM_STRUCTURE_VERSION,kha_audio2_ogg_vorbis_data_ReaderErrorType.CONTINUED_PACKET_FLAG_INVALID,kha_audio2_ogg_vorbis_data_ReaderErrorType.INCORRECT_STREAM_SERIAL_NUMBER,kha_audio2_ogg_vorbis_data_ReaderErrorType.INVALID_FIRST_PAGE,kha_audio2_ogg_vorbis_data_ReaderErrorType.BAD_PACKET_TYPE,kha_audio2_ogg_vorbis_data_ReaderErrorType.CANT_FIND_LAST_PAGE,kha_audio2_ogg_vorbis_data_ReaderErrorType.SEEK_FAILED,kha_audio2_ogg_vorbis_data_ReaderErrorType.OTHER];
 var kha_audio2_ogg_vorbis_data_Residue = function() {
 };
 $hxClasses["kha.audio2.ogg.vorbis.data.Residue"] = kha_audio2_ogg_vorbis_data_Residue;
-kha_audio2_ogg_vorbis_data_Residue.__name__ = ["kha","audio2","ogg","vorbis","data","Residue"];
+kha_audio2_ogg_vorbis_data_Residue.__name__ = true;
 kha_audio2_ogg_vorbis_data_Residue.read = function(decodeState,codebooks) {
 	var r = new kha_audio2_ogg_vorbis_data_Residue();
 	var tmp;
@@ -21227,10 +17668,10 @@ kha_audio2_ogg_vorbis_data_Residue.prototype = {
 };
 var kha_audio2_ogg_vorbis_data_Setting = function() { };
 $hxClasses["kha.audio2.ogg.vorbis.data.Setting"] = kha_audio2_ogg_vorbis_data_Setting;
-kha_audio2_ogg_vorbis_data_Setting.__name__ = ["kha","audio2","ogg","vorbis","data","Setting"];
+kha_audio2_ogg_vorbis_data_Setting.__name__ = true;
 var kha_graphics1_Graphics = function() { };
 $hxClasses["kha.graphics1.Graphics"] = kha_graphics1_Graphics;
-kha_graphics1_Graphics.__name__ = ["kha","graphics1","Graphics"];
+kha_graphics1_Graphics.__name__ = true;
 kha_graphics1_Graphics.prototype = {
 	begin: null
 	,end: null
@@ -21246,7 +17687,7 @@ var kha_graphics2_Graphics = function() {
 	this.pipe = null;
 };
 $hxClasses["kha.graphics2.Graphics"] = kha_graphics2_Graphics;
-kha_graphics2_Graphics.__name__ = ["kha","graphics2","Graphics"];
+kha_graphics2_Graphics.__name__ = true;
 kha_graphics2_Graphics.prototype = {
 	begin: function(clear,clearColor) {
 		if(clear == null) {
@@ -21773,13 +18214,12 @@ kha_graphics2_Graphics.prototype = {
 	,setPipeline: function(pipeline) {
 	}
 	,__class__: kha_graphics2_Graphics
-	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline",set_opacity:"set_opacity",get_opacity:"get_opacity",set_transformation:"set_transformation",get_transformation:"get_transformation",set_fontGlyphs:"set_fontGlyphs",get_fontGlyphs:"get_fontGlyphs",set_fontSize:"set_fontSize",get_fontSize:"get_fontSize",set_font:"set_font",get_font:"get_font",set_color:"set_color",get_color:"get_color",set_mipmapScaleQuality:"set_mipmapScaleQuality",get_mipmapScaleQuality:"get_mipmapScaleQuality",set_imageScaleQuality:"set_imageScaleQuality",get_imageScaleQuality:"get_imageScaleQuality"}
 };
 var kha_graphics2_Graphics1 = function(canvas) {
 	this.canvas = canvas;
 };
 $hxClasses["kha.graphics2.Graphics1"] = kha_graphics2_Graphics1;
-kha_graphics2_Graphics1.__name__ = ["kha","graphics2","Graphics1"];
+kha_graphics2_Graphics1.__name__ = true;
 kha_graphics2_Graphics1.__interfaces__ = [kha_graphics1_Graphics];
 kha_graphics2_Graphics1.prototype = {
 	canvas: null
@@ -21802,18 +18242,17 @@ kha_graphics2_Graphics1.prototype = {
 	}
 	,__class__: kha_graphics2_Graphics1
 };
-var kha_graphics2_ImageScaleQuality = $hxClasses["kha.graphics2.ImageScaleQuality"] = { __ename__ : ["kha","graphics2","ImageScaleQuality"], __constructs__ : ["Low","High"] };
+var kha_graphics2_ImageScaleQuality = $hxClasses["kha.graphics2.ImageScaleQuality"] = { __ename__ : true, __constructs__ : ["Low","High"] };
 kha_graphics2_ImageScaleQuality.Low = ["Low",0];
 kha_graphics2_ImageScaleQuality.Low.toString = $estr;
 kha_graphics2_ImageScaleQuality.Low.__enum__ = kha_graphics2_ImageScaleQuality;
 kha_graphics2_ImageScaleQuality.High = ["High",1];
 kha_graphics2_ImageScaleQuality.High.toString = $estr;
 kha_graphics2_ImageScaleQuality.High.__enum__ = kha_graphics2_ImageScaleQuality;
-kha_graphics2_ImageScaleQuality.__empty_constructs__ = [kha_graphics2_ImageScaleQuality.Low,kha_graphics2_ImageScaleQuality.High];
 var kha_graphics2_truetype_VectorOfIntPointer = function() {
 };
 $hxClasses["kha.graphics2.truetype.VectorOfIntPointer"] = kha_graphics2_truetype_VectorOfIntPointer;
-kha_graphics2_truetype_VectorOfIntPointer.__name__ = ["kha","graphics2","truetype","VectorOfIntPointer"];
+kha_graphics2_truetype_VectorOfIntPointer.__name__ = true;
 kha_graphics2_truetype_VectorOfIntPointer.prototype = {
 	value: null
 	,__class__: kha_graphics2_truetype_VectorOfIntPointer
@@ -21821,7 +18260,7 @@ kha_graphics2_truetype_VectorOfIntPointer.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$rect = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_rect"] = kha_graphics2_truetype_Stbtt_$temp_$rect;
-kha_graphics2_truetype_Stbtt_$temp_$rect.__name__ = ["kha","graphics2","truetype","Stbtt_temp_rect"];
+kha_graphics2_truetype_Stbtt_$temp_$rect.__name__ = true;
 kha_graphics2_truetype_Stbtt_$temp_$rect.prototype = {
 	x0: null
 	,y0: null
@@ -21832,7 +18271,7 @@ kha_graphics2_truetype_Stbtt_$temp_$rect.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_glyph_h_metrics"] = kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics;
-kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.__name__ = ["kha","graphics2","truetype","Stbtt_temp_glyph_h_metrics"];
+kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.__name__ = true;
 kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.prototype = {
 	advanceWidth: null
 	,leftSideBearing: null
@@ -21841,7 +18280,7 @@ kha_graphics2_truetype_Stbtt_$temp_$glyph_$h_$metrics.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_font_v_metrics"] = kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics;
-kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.__name__ = ["kha","graphics2","truetype","Stbtt_temp_font_v_metrics"];
+kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.__name__ = true;
 kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.prototype = {
 	ascent: null
 	,descent: null
@@ -21851,7 +18290,7 @@ kha_graphics2_truetype_Stbtt_$temp_$font_$v_$metrics.prototype = {
 var kha_graphics2_truetype_Stbtt_$temp_$region = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_temp_region"] = kha_graphics2_truetype_Stbtt_$temp_$region;
-kha_graphics2_truetype_Stbtt_$temp_$region.__name__ = ["kha","graphics2","truetype","Stbtt_temp_region"];
+kha_graphics2_truetype_Stbtt_$temp_$region.__name__ = true;
 kha_graphics2_truetype_Stbtt_$temp_$region.prototype = {
 	width: null
 	,height: null
@@ -21862,7 +18301,7 @@ kha_graphics2_truetype_Stbtt_$temp_$region.prototype = {
 var kha_graphics2_truetype_Stbtt_$bakedchar = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_bakedchar"] = kha_graphics2_truetype_Stbtt_$bakedchar;
-kha_graphics2_truetype_Stbtt_$bakedchar.__name__ = ["kha","graphics2","truetype","Stbtt_bakedchar"];
+kha_graphics2_truetype_Stbtt_$bakedchar.__name__ = true;
 kha_graphics2_truetype_Stbtt_$bakedchar.prototype = {
 	x0: null
 	,y0: null
@@ -21875,7 +18314,7 @@ kha_graphics2_truetype_Stbtt_$bakedchar.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$aligned_$quad = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_aligned_quad"] = kha_graphics2_truetype_Stbtt_$aligned_$quad;
-kha_graphics2_truetype_Stbtt_$aligned_$quad.__name__ = ["kha","graphics2","truetype","Stbtt_aligned_quad"];
+kha_graphics2_truetype_Stbtt_$aligned_$quad.__name__ = true;
 kha_graphics2_truetype_Stbtt_$aligned_$quad.prototype = {
 	x0: null
 	,y0: null
@@ -21889,7 +18328,7 @@ kha_graphics2_truetype_Stbtt_$aligned_$quad.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$packedchar = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_packedchar"] = kha_graphics2_truetype_Stbtt_$packedchar;
-kha_graphics2_truetype_Stbtt_$packedchar.__name__ = ["kha","graphics2","truetype","Stbtt_packedchar"];
+kha_graphics2_truetype_Stbtt_$packedchar.__name__ = true;
 kha_graphics2_truetype_Stbtt_$packedchar.prototype = {
 	x0: null
 	,y0: null
@@ -21904,7 +18343,7 @@ kha_graphics2_truetype_Stbtt_$packedchar.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$pack_$range = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_pack_range"] = kha_graphics2_truetype_Stbtt_$pack_$range;
-kha_graphics2_truetype_Stbtt_$pack_$range.__name__ = ["kha","graphics2","truetype","Stbtt_pack_range"];
+kha_graphics2_truetype_Stbtt_$pack_$range.__name__ = true;
 kha_graphics2_truetype_Stbtt_$pack_$range.prototype = {
 	font_size: null
 	,first_unicode_codepoint_in_range: null
@@ -21917,7 +18356,7 @@ kha_graphics2_truetype_Stbtt_$pack_$range.prototype = {
 };
 var kha_graphics2_truetype_Stbtt_$pack_$context = function() { };
 $hxClasses["kha.graphics2.truetype.Stbtt_pack_context"] = kha_graphics2_truetype_Stbtt_$pack_$context;
-kha_graphics2_truetype_Stbtt_$pack_$context.__name__ = ["kha","graphics2","truetype","Stbtt_pack_context"];
+kha_graphics2_truetype_Stbtt_$pack_$context.__name__ = true;
 kha_graphics2_truetype_Stbtt_$pack_$context.prototype = {
 	width: null
 	,height: null
@@ -21931,7 +18370,7 @@ kha_graphics2_truetype_Stbtt_$pack_$context.prototype = {
 var kha_graphics2_truetype_Stbtt_$fontinfo = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_fontinfo"] = kha_graphics2_truetype_Stbtt_$fontinfo;
-kha_graphics2_truetype_Stbtt_$fontinfo.__name__ = ["kha","graphics2","truetype","Stbtt_fontinfo"];
+kha_graphics2_truetype_Stbtt_$fontinfo.__name__ = true;
 kha_graphics2_truetype_Stbtt_$fontinfo.prototype = {
 	data: null
 	,fontstart: null
@@ -21949,7 +18388,7 @@ kha_graphics2_truetype_Stbtt_$fontinfo.prototype = {
 var kha_graphics2_truetype_Stbtt_$vertex = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt_vertex"] = kha_graphics2_truetype_Stbtt_$vertex;
-kha_graphics2_truetype_Stbtt_$vertex.__name__ = ["kha","graphics2","truetype","Stbtt_vertex"];
+kha_graphics2_truetype_Stbtt_$vertex.__name__ = true;
 kha_graphics2_truetype_Stbtt_$vertex.prototype = {
 	x: null
 	,y: null
@@ -21962,7 +18401,7 @@ kha_graphics2_truetype_Stbtt_$vertex.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$bitmap = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__bitmap"] = kha_graphics2_truetype_Stbtt_$_$bitmap;
-kha_graphics2_truetype_Stbtt_$_$bitmap.__name__ = ["kha","graphics2","truetype","Stbtt__bitmap"];
+kha_graphics2_truetype_Stbtt_$_$bitmap.__name__ = true;
 kha_graphics2_truetype_Stbtt_$_$bitmap.prototype = {
 	w: null
 	,h: null
@@ -21974,7 +18413,7 @@ kha_graphics2_truetype_Stbtt_$_$bitmap.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$edge = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__edge"] = kha_graphics2_truetype_Stbtt_$_$edge;
-kha_graphics2_truetype_Stbtt_$_$edge.__name__ = ["kha","graphics2","truetype","Stbtt__edge"];
+kha_graphics2_truetype_Stbtt_$_$edge.__name__ = true;
 kha_graphics2_truetype_Stbtt_$_$edge.prototype = {
 	x0: null
 	,y0: null
@@ -21986,7 +18425,7 @@ kha_graphics2_truetype_Stbtt_$_$edge.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$active_$edge = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__active_edge"] = kha_graphics2_truetype_Stbtt_$_$active_$edge;
-kha_graphics2_truetype_Stbtt_$_$active_$edge.__name__ = ["kha","graphics2","truetype","Stbtt__active_edge"];
+kha_graphics2_truetype_Stbtt_$_$active_$edge.__name__ = true;
 kha_graphics2_truetype_Stbtt_$_$active_$edge.prototype = {
 	next: null
 	,fx: null
@@ -22000,7 +18439,7 @@ kha_graphics2_truetype_Stbtt_$_$active_$edge.prototype = {
 var kha_graphics2_truetype_Stbtt_$_$point = function() {
 };
 $hxClasses["kha.graphics2.truetype.Stbtt__point"] = kha_graphics2_truetype_Stbtt_$_$point;
-kha_graphics2_truetype_Stbtt_$_$point.__name__ = ["kha","graphics2","truetype","Stbtt__point"];
+kha_graphics2_truetype_Stbtt_$_$point.__name__ = true;
 kha_graphics2_truetype_Stbtt_$_$point.prototype = {
 	x: null
 	,y: null
@@ -22008,7 +18447,7 @@ kha_graphics2_truetype_Stbtt_$_$point.prototype = {
 };
 var kha_graphics2_truetype_StbTruetype = function() { };
 $hxClasses["kha.graphics2.truetype.StbTruetype"] = kha_graphics2_truetype_StbTruetype;
-kha_graphics2_truetype_StbTruetype.__name__ = ["kha","graphics2","truetype","StbTruetype"];
+kha_graphics2_truetype_StbTruetype.__name__ = true;
 kha_graphics2_truetype_StbTruetype.STBTT_assert = function(value) {
 	if(!value) {
 		throw new js__$Boot_HaxeError("Error");
@@ -23867,7 +20306,7 @@ kha_graphics2_truetype_StbTruetype.stbtt_GetBakedQuad = function(chardata,pw,ph,
 	q.t1 = b.y1 * iph;
 	xpos.value += b.xadvance;
 };
-var kha_graphics4_BlendingFactor = $hxClasses["kha.graphics4.BlendingFactor"] = { __ename__ : ["kha","graphics4","BlendingFactor"], __constructs__ : ["Undefined","BlendOne","BlendZero","SourceAlpha","DestinationAlpha","InverseSourceAlpha","InverseDestinationAlpha","SourceColor","DestinationColor","InverseSourceColor","InverseDestinationColor"] };
+var kha_graphics4_BlendingFactor = $hxClasses["kha.graphics4.BlendingFactor"] = { __ename__ : true, __constructs__ : ["Undefined","BlendOne","BlendZero","SourceAlpha","DestinationAlpha","InverseSourceAlpha","InverseDestinationAlpha","SourceColor","DestinationColor","InverseSourceColor","InverseDestinationColor"] };
 kha_graphics4_BlendingFactor.Undefined = ["Undefined",0];
 kha_graphics4_BlendingFactor.Undefined.toString = $estr;
 kha_graphics4_BlendingFactor.Undefined.__enum__ = kha_graphics4_BlendingFactor;
@@ -23901,8 +20340,7 @@ kha_graphics4_BlendingFactor.InverseSourceColor.__enum__ = kha_graphics4_Blendin
 kha_graphics4_BlendingFactor.InverseDestinationColor = ["InverseDestinationColor",10];
 kha_graphics4_BlendingFactor.InverseDestinationColor.toString = $estr;
 kha_graphics4_BlendingFactor.InverseDestinationColor.__enum__ = kha_graphics4_BlendingFactor;
-kha_graphics4_BlendingFactor.__empty_constructs__ = [kha_graphics4_BlendingFactor.Undefined,kha_graphics4_BlendingFactor.BlendOne,kha_graphics4_BlendingFactor.BlendZero,kha_graphics4_BlendingFactor.SourceAlpha,kha_graphics4_BlendingFactor.DestinationAlpha,kha_graphics4_BlendingFactor.InverseSourceAlpha,kha_graphics4_BlendingFactor.InverseDestinationAlpha,kha_graphics4_BlendingFactor.SourceColor,kha_graphics4_BlendingFactor.DestinationColor,kha_graphics4_BlendingFactor.InverseSourceColor,kha_graphics4_BlendingFactor.InverseDestinationColor];
-var kha_graphics4_BlendingOperation = $hxClasses["kha.graphics4.BlendingOperation"] = { __ename__ : ["kha","graphics4","BlendingOperation"], __constructs__ : ["Add","Subtract","ReverseSubtract","Min","Max"] };
+var kha_graphics4_BlendingOperation = $hxClasses["kha.graphics4.BlendingOperation"] = { __ename__ : true, __constructs__ : ["Add","Subtract","ReverseSubtract","Min","Max"] };
 kha_graphics4_BlendingOperation.Add = ["Add",0];
 kha_graphics4_BlendingOperation.Add.toString = $estr;
 kha_graphics4_BlendingOperation.Add.__enum__ = kha_graphics4_BlendingOperation;
@@ -23918,8 +20356,7 @@ kha_graphics4_BlendingOperation.Min.__enum__ = kha_graphics4_BlendingOperation;
 kha_graphics4_BlendingOperation.Max = ["Max",4];
 kha_graphics4_BlendingOperation.Max.toString = $estr;
 kha_graphics4_BlendingOperation.Max.__enum__ = kha_graphics4_BlendingOperation;
-kha_graphics4_BlendingOperation.__empty_constructs__ = [kha_graphics4_BlendingOperation.Add,kha_graphics4_BlendingOperation.Subtract,kha_graphics4_BlendingOperation.ReverseSubtract,kha_graphics4_BlendingOperation.Min,kha_graphics4_BlendingOperation.Max];
-var kha_graphics4_CompareMode = $hxClasses["kha.graphics4.CompareMode"] = { __ename__ : ["kha","graphics4","CompareMode"], __constructs__ : ["Always","Never","Equal","NotEqual","Less","LessEqual","Greater","GreaterEqual"] };
+var kha_graphics4_CompareMode = $hxClasses["kha.graphics4.CompareMode"] = { __ename__ : true, __constructs__ : ["Always","Never","Equal","NotEqual","Less","LessEqual","Greater","GreaterEqual"] };
 kha_graphics4_CompareMode.Always = ["Always",0];
 kha_graphics4_CompareMode.Always.toString = $estr;
 kha_graphics4_CompareMode.Always.__enum__ = kha_graphics4_CompareMode;
@@ -23944,10 +20381,9 @@ kha_graphics4_CompareMode.Greater.__enum__ = kha_graphics4_CompareMode;
 kha_graphics4_CompareMode.GreaterEqual = ["GreaterEqual",7];
 kha_graphics4_CompareMode.GreaterEqual.toString = $estr;
 kha_graphics4_CompareMode.GreaterEqual.__enum__ = kha_graphics4_CompareMode;
-kha_graphics4_CompareMode.__empty_constructs__ = [kha_graphics4_CompareMode.Always,kha_graphics4_CompareMode.Never,kha_graphics4_CompareMode.Equal,kha_graphics4_CompareMode.NotEqual,kha_graphics4_CompareMode.Less,kha_graphics4_CompareMode.LessEqual,kha_graphics4_CompareMode.Greater,kha_graphics4_CompareMode.GreaterEqual];
 var kha_graphics4_ConstantLocation = function() { };
 $hxClasses["kha.graphics4.ConstantLocation"] = kha_graphics4_ConstantLocation;
-kha_graphics4_ConstantLocation.__name__ = ["kha","graphics4","ConstantLocation"];
+kha_graphics4_ConstantLocation.__name__ = true;
 var kha_graphics4_CubeMap = function(size,format,renderTarget,depthStencilFormat) {
 	this.isDepthAttachment = false;
 	this.depthTexture = null;
@@ -23963,7 +20399,7 @@ var kha_graphics4_CubeMap = function(size,format,renderTarget,depthStencilFormat
 	}
 };
 $hxClasses["kha.graphics4.CubeMap"] = kha_graphics4_CubeMap;
-kha_graphics4_CubeMap.__name__ = ["kha","graphics4","CubeMap"];
+kha_graphics4_CubeMap.__name__ = true;
 kha_graphics4_CubeMap.__interfaces__ = [kha_Resource,kha_Canvas];
 kha_graphics4_CubeMap.createRenderTarget = function(size,format,depthStencil,contextId) {
 	if(contextId == null) {
@@ -24147,9 +20583,8 @@ kha_graphics4_CubeMap.prototype = {
 		return this.graphics4;
 	}
 	,__class__: kha_graphics4_CubeMap
-	,__properties__: {get_g4:"get_g4",get_g2:"get_g2",get_g1:"get_g1",get_height:"get_height",get_width:"get_width"}
 };
-var kha_graphics4_CullMode = $hxClasses["kha.graphics4.CullMode"] = { __ename__ : ["kha","graphics4","CullMode"], __constructs__ : ["Clockwise","CounterClockwise","None"] };
+var kha_graphics4_CullMode = $hxClasses["kha.graphics4.CullMode"] = { __ename__ : true, __constructs__ : ["Clockwise","CounterClockwise","None"] };
 kha_graphics4_CullMode.Clockwise = ["Clockwise",0];
 kha_graphics4_CullMode.Clockwise.toString = $estr;
 kha_graphics4_CullMode.Clockwise.__enum__ = kha_graphics4_CullMode;
@@ -24159,7 +20594,6 @@ kha_graphics4_CullMode.CounterClockwise.__enum__ = kha_graphics4_CullMode;
 kha_graphics4_CullMode.None = ["None",2];
 kha_graphics4_CullMode.None.toString = $estr;
 kha_graphics4_CullMode.None.__enum__ = kha_graphics4_CullMode;
-kha_graphics4_CullMode.__empty_constructs__ = [kha_graphics4_CullMode.Clockwise,kha_graphics4_CullMode.CounterClockwise,kha_graphics4_CullMode.None];
 var kha_graphics4_FragmentShader = function(sources,files) {
 	this.sources = [];
 	var _g = 0;
@@ -24173,7 +20607,7 @@ var kha_graphics4_FragmentShader = function(sources,files) {
 	this.files = files;
 };
 $hxClasses["kha.graphics4.FragmentShader"] = kha_graphics4_FragmentShader;
-kha_graphics4_FragmentShader.__name__ = ["kha","graphics4","FragmentShader"];
+kha_graphics4_FragmentShader.__name__ = true;
 kha_graphics4_FragmentShader.fromSource = function(source) {
 	var shader = new kha_graphics4_FragmentShader([],["runtime-string"]);
 	shader.sources.push(source);
@@ -24194,7 +20628,7 @@ kha_graphics4_FragmentShader.prototype = {
 var kha_graphics4_GeometryShader = function(source) {
 };
 $hxClasses["kha.graphics4.GeometryShader"] = kha_graphics4_GeometryShader;
-kha_graphics4_GeometryShader.__name__ = ["kha","graphics4","GeometryShader"];
+kha_graphics4_GeometryShader.__name__ = true;
 kha_graphics4_GeometryShader.prototype = {
 	'delete': function() {
 	}
@@ -24202,7 +20636,7 @@ kha_graphics4_GeometryShader.prototype = {
 };
 var kha_graphics4_Graphics = function() { };
 $hxClasses["kha.graphics4.Graphics"] = kha_graphics4_Graphics;
-kha_graphics4_Graphics.__name__ = ["kha","graphics4","Graphics"];
+kha_graphics4_Graphics.__name__ = true;
 kha_graphics4_Graphics.prototype = {
 	begin: null
 	,beginFace: null
@@ -24260,7 +20694,7 @@ var kha_graphics4_ImageShaderPainter = function(g4) {
 	this.textureLocation = kha_graphics4_ImageShaderPainter.shaderPipeline.getTextureUnit("tex");
 };
 $hxClasses["kha.graphics4.ImageShaderPainter"] = kha_graphics4_ImageShaderPainter;
-kha_graphics4_ImageShaderPainter.__name__ = ["kha","graphics4","ImageShaderPainter"];
+kha_graphics4_ImageShaderPainter.__name__ = true;
 kha_graphics4_ImageShaderPainter.initShaders = function() {
 	if(kha_graphics4_ImageShaderPainter.shaderPipeline == null) {
 		kha_graphics4_ImageShaderPainter.structure = kha_graphics4_Graphics2.createImageVertexStructure();
@@ -24552,7 +20986,6 @@ kha_graphics4_ImageShaderPainter.prototype = {
 		this.lastTexture = null;
 	}
 	,__class__: kha_graphics4_ImageShaderPainter
-	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_ColoredShaderPainter = function(g4) {
 	this.destinationBlend = kha_graphics4_BlendingFactor.Undefined;
@@ -24566,7 +20999,7 @@ var kha_graphics4_ColoredShaderPainter = function(g4) {
 	this.projectionLocation = kha_graphics4_ColoredShaderPainter.shaderPipeline.getConstantLocation("projectionMatrix");
 };
 $hxClasses["kha.graphics4.ColoredShaderPainter"] = kha_graphics4_ColoredShaderPainter;
-kha_graphics4_ColoredShaderPainter.__name__ = ["kha","graphics4","ColoredShaderPainter"];
+kha_graphics4_ColoredShaderPainter.__name__ = true;
 kha_graphics4_ColoredShaderPainter.initShaders = function() {
 	if(kha_graphics4_ColoredShaderPainter.shaderPipeline == null) {
 		kha_graphics4_ColoredShaderPainter.structure = kha_graphics4_Graphics2.createColoredVertexStructure();
@@ -24768,7 +21201,6 @@ kha_graphics4_ColoredShaderPainter.prototype = {
 		}
 	}
 	,__class__: kha_graphics4_ColoredShaderPainter
-	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_TextShaderPainter = function(g4) {
 	this.destinationBlend = kha_graphics4_BlendingFactor.Undefined;
@@ -24783,7 +21215,7 @@ var kha_graphics4_TextShaderPainter = function(g4) {
 	this.textureLocation = kha_graphics4_TextShaderPainter.shaderPipeline.getTextureUnit("tex");
 };
 $hxClasses["kha.graphics4.TextShaderPainter"] = kha_graphics4_TextShaderPainter;
-kha_graphics4_TextShaderPainter.__name__ = ["kha","graphics4","TextShaderPainter"];
+kha_graphics4_TextShaderPainter.__name__ = true;
 kha_graphics4_TextShaderPainter.initShaders = function() {
 	if(kha_graphics4_TextShaderPainter.shaderPipeline == null) {
 		kha_graphics4_TextShaderPainter.structure = kha_graphics4_Graphics2.createTextVertexStructure();
@@ -25072,7 +21504,6 @@ kha_graphics4_TextShaderPainter.prototype = {
 		this.lastTexture = null;
 	}
 	,__class__: kha_graphics4_TextShaderPainter
-	,__properties__: {set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var kha_graphics4_Graphics2 = function(canvas) {
 	this.myMipmapScaleQuality = kha_graphics2_ImageScaleQuality.High;
@@ -25094,8 +21525,7 @@ var kha_graphics4_Graphics2 = function(canvas) {
 	}
 };
 $hxClasses["kha.graphics4.Graphics2"] = kha_graphics4_Graphics2;
-kha_graphics4_Graphics2.__name__ = ["kha","graphics4","Graphics2"];
-kha_graphics4_Graphics2.videoPipeline = null;
+kha_graphics4_Graphics2.__name__ = true;
 kha_graphics4_Graphics2.upperPowerOfTwo = function(v) {
 	--v;
 	v |= v >>> 1;
@@ -25779,7 +22209,7 @@ var kha_graphics4_IndexBuffer = function(indexCount,usage,canRead) {
 	this._data = this1;
 };
 $hxClasses["kha.graphics4.IndexBuffer"] = kha_graphics4_IndexBuffer;
-kha_graphics4_IndexBuffer.__name__ = ["kha","graphics4","IndexBuffer"];
+kha_graphics4_IndexBuffer.__name__ = true;
 kha_graphics4_IndexBuffer.prototype = {
 	buffer: null
 	,_data: null
@@ -25811,7 +22241,7 @@ kha_graphics4_IndexBuffer.prototype = {
 	}
 	,__class__: kha_graphics4_IndexBuffer
 };
-var kha_graphics4_MipMapFilter = $hxClasses["kha.graphics4.MipMapFilter"] = { __ename__ : ["kha","graphics4","MipMapFilter"], __constructs__ : ["NoMipFilter","PointMipFilter","LinearMipFilter"] };
+var kha_graphics4_MipMapFilter = $hxClasses["kha.graphics4.MipMapFilter"] = { __ename__ : true, __constructs__ : ["NoMipFilter","PointMipFilter","LinearMipFilter"] };
 kha_graphics4_MipMapFilter.NoMipFilter = ["NoMipFilter",0];
 kha_graphics4_MipMapFilter.NoMipFilter.toString = $estr;
 kha_graphics4_MipMapFilter.NoMipFilter.__enum__ = kha_graphics4_MipMapFilter;
@@ -25821,7 +22251,6 @@ kha_graphics4_MipMapFilter.PointMipFilter.__enum__ = kha_graphics4_MipMapFilter;
 kha_graphics4_MipMapFilter.LinearMipFilter = ["LinearMipFilter",2];
 kha_graphics4_MipMapFilter.LinearMipFilter.toString = $estr;
 kha_graphics4_MipMapFilter.LinearMipFilter.__enum__ = kha_graphics4_MipMapFilter;
-kha_graphics4_MipMapFilter.__empty_constructs__ = [kha_graphics4_MipMapFilter.NoMipFilter,kha_graphics4_MipMapFilter.PointMipFilter,kha_graphics4_MipMapFilter.LinearMipFilter];
 var kha_graphics4_PipelineStateBase = function() {
 	this.inputLayout = null;
 	this.vertexShader = null;
@@ -25849,7 +22278,7 @@ var kha_graphics4_PipelineStateBase = function() {
 	this.conservativeRasterization = false;
 };
 $hxClasses["kha.graphics4.PipelineStateBase"] = kha_graphics4_PipelineStateBase;
-kha_graphics4_PipelineStateBase.__name__ = ["kha","graphics4","PipelineStateBase"];
+kha_graphics4_PipelineStateBase.__name__ = true;
 kha_graphics4_PipelineStateBase.prototype = {
 	inputLayout: null
 	,vertexShader: null
@@ -25882,7 +22311,6 @@ kha_graphics4_PipelineStateBase.prototype = {
 	}
 	,conservativeRasterization: null
 	,__class__: kha_graphics4_PipelineStateBase
-	,__properties__: {set_colorWriteMask:"set_colorWriteMask"}
 };
 var kha_graphics4_PipelineState = function() {
 	this.program = null;
@@ -25891,7 +22319,7 @@ var kha_graphics4_PipelineState = function() {
 	this.textureValues = [];
 };
 $hxClasses["kha.graphics4.PipelineState"] = kha_graphics4_PipelineState;
-kha_graphics4_PipelineState.__name__ = ["kha","graphics4","PipelineState"];
+kha_graphics4_PipelineState.__name__ = true;
 kha_graphics4_PipelineState.__super__ = kha_graphics4_PipelineStateBase;
 kha_graphics4_PipelineState.prototype = $extend(kha_graphics4_PipelineStateBase.prototype,{
 	program: null
@@ -26018,7 +22446,7 @@ kha_graphics4_PipelineState.prototype = $extend(kha_graphics4_PipelineStateBase.
 	}
 	,__class__: kha_graphics4_PipelineState
 });
-var kha_graphics4_StencilAction = $hxClasses["kha.graphics4.StencilAction"] = { __ename__ : ["kha","graphics4","StencilAction"], __constructs__ : ["Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert"] };
+var kha_graphics4_StencilAction = $hxClasses["kha.graphics4.StencilAction"] = { __ename__ : true, __constructs__ : ["Keep","Zero","Replace","Increment","IncrementWrap","Decrement","DecrementWrap","Invert"] };
 kha_graphics4_StencilAction.Keep = ["Keep",0];
 kha_graphics4_StencilAction.Keep.toString = $estr;
 kha_graphics4_StencilAction.Keep.__enum__ = kha_graphics4_StencilAction;
@@ -26043,11 +22471,10 @@ kha_graphics4_StencilAction.DecrementWrap.__enum__ = kha_graphics4_StencilAction
 kha_graphics4_StencilAction.Invert = ["Invert",7];
 kha_graphics4_StencilAction.Invert.toString = $estr;
 kha_graphics4_StencilAction.Invert.__enum__ = kha_graphics4_StencilAction;
-kha_graphics4_StencilAction.__empty_constructs__ = [kha_graphics4_StencilAction.Keep,kha_graphics4_StencilAction.Zero,kha_graphics4_StencilAction.Replace,kha_graphics4_StencilAction.Increment,kha_graphics4_StencilAction.IncrementWrap,kha_graphics4_StencilAction.Decrement,kha_graphics4_StencilAction.DecrementWrap,kha_graphics4_StencilAction.Invert];
 var kha_graphics4_TessellationControlShader = function(source,file) {
 };
 $hxClasses["kha.graphics4.TessellationControlShader"] = kha_graphics4_TessellationControlShader;
-kha_graphics4_TessellationControlShader.__name__ = ["kha","graphics4","TessellationControlShader"];
+kha_graphics4_TessellationControlShader.__name__ = true;
 kha_graphics4_TessellationControlShader.prototype = {
 	'delete': function() {
 	}
@@ -26056,21 +22483,20 @@ kha_graphics4_TessellationControlShader.prototype = {
 var kha_graphics4_TessellationEvaluationShader = function(source,file) {
 };
 $hxClasses["kha.graphics4.TessellationEvaluationShader"] = kha_graphics4_TessellationEvaluationShader;
-kha_graphics4_TessellationEvaluationShader.__name__ = ["kha","graphics4","TessellationEvaluationShader"];
+kha_graphics4_TessellationEvaluationShader.__name__ = true;
 kha_graphics4_TessellationEvaluationShader.prototype = {
 	'delete': function() {
 	}
 	,__class__: kha_graphics4_TessellationEvaluationShader
 };
-var kha_graphics4_TexDir = $hxClasses["kha.graphics4.TexDir"] = { __ename__ : ["kha","graphics4","TexDir"], __constructs__ : ["U","V"] };
+var kha_graphics4_TexDir = $hxClasses["kha.graphics4.TexDir"] = { __ename__ : true, __constructs__ : ["U","V"] };
 kha_graphics4_TexDir.U = ["U",0];
 kha_graphics4_TexDir.U.toString = $estr;
 kha_graphics4_TexDir.U.__enum__ = kha_graphics4_TexDir;
 kha_graphics4_TexDir.V = ["V",1];
 kha_graphics4_TexDir.V.toString = $estr;
 kha_graphics4_TexDir.V.__enum__ = kha_graphics4_TexDir;
-kha_graphics4_TexDir.__empty_constructs__ = [kha_graphics4_TexDir.U,kha_graphics4_TexDir.V];
-var kha_graphics4_TextureAddressing = $hxClasses["kha.graphics4.TextureAddressing"] = { __ename__ : ["kha","graphics4","TextureAddressing"], __constructs__ : ["Repeat","Mirror","Clamp"] };
+var kha_graphics4_TextureAddressing = $hxClasses["kha.graphics4.TextureAddressing"] = { __ename__ : true, __constructs__ : ["Repeat","Mirror","Clamp"] };
 kha_graphics4_TextureAddressing.Repeat = ["Repeat",0];
 kha_graphics4_TextureAddressing.Repeat.toString = $estr;
 kha_graphics4_TextureAddressing.Repeat.__enum__ = kha_graphics4_TextureAddressing;
@@ -26080,8 +22506,7 @@ kha_graphics4_TextureAddressing.Mirror.__enum__ = kha_graphics4_TextureAddressin
 kha_graphics4_TextureAddressing.Clamp = ["Clamp",2];
 kha_graphics4_TextureAddressing.Clamp.toString = $estr;
 kha_graphics4_TextureAddressing.Clamp.__enum__ = kha_graphics4_TextureAddressing;
-kha_graphics4_TextureAddressing.__empty_constructs__ = [kha_graphics4_TextureAddressing.Repeat,kha_graphics4_TextureAddressing.Mirror,kha_graphics4_TextureAddressing.Clamp];
-var kha_graphics4_TextureFilter = $hxClasses["kha.graphics4.TextureFilter"] = { __ename__ : ["kha","graphics4","TextureFilter"], __constructs__ : ["PointFilter","LinearFilter","AnisotropicFilter"] };
+var kha_graphics4_TextureFilter = $hxClasses["kha.graphics4.TextureFilter"] = { __ename__ : true, __constructs__ : ["PointFilter","LinearFilter","AnisotropicFilter"] };
 kha_graphics4_TextureFilter.PointFilter = ["PointFilter",0];
 kha_graphics4_TextureFilter.PointFilter.toString = $estr;
 kha_graphics4_TextureFilter.PointFilter.__enum__ = kha_graphics4_TextureFilter;
@@ -26091,8 +22516,7 @@ kha_graphics4_TextureFilter.LinearFilter.__enum__ = kha_graphics4_TextureFilter;
 kha_graphics4_TextureFilter.AnisotropicFilter = ["AnisotropicFilter",2];
 kha_graphics4_TextureFilter.AnisotropicFilter.toString = $estr;
 kha_graphics4_TextureFilter.AnisotropicFilter.__enum__ = kha_graphics4_TextureFilter;
-kha_graphics4_TextureFilter.__empty_constructs__ = [kha_graphics4_TextureFilter.PointFilter,kha_graphics4_TextureFilter.LinearFilter,kha_graphics4_TextureFilter.AnisotropicFilter];
-var kha_graphics4_TextureFormat = $hxClasses["kha.graphics4.TextureFormat"] = { __ename__ : ["kha","graphics4","TextureFormat"], __constructs__ : ["RGBA32","L8","RGBA128","DEPTH16","RGBA64","A32","A16"] };
+var kha_graphics4_TextureFormat = $hxClasses["kha.graphics4.TextureFormat"] = { __ename__ : true, __constructs__ : ["RGBA32","L8","RGBA128","DEPTH16","RGBA64","A32","A16"] };
 kha_graphics4_TextureFormat.RGBA32 = ["RGBA32",0];
 kha_graphics4_TextureFormat.RGBA32.toString = $estr;
 kha_graphics4_TextureFormat.RGBA32.__enum__ = kha_graphics4_TextureFormat;
@@ -26114,11 +22538,10 @@ kha_graphics4_TextureFormat.A32.__enum__ = kha_graphics4_TextureFormat;
 kha_graphics4_TextureFormat.A16 = ["A16",6];
 kha_graphics4_TextureFormat.A16.toString = $estr;
 kha_graphics4_TextureFormat.A16.__enum__ = kha_graphics4_TextureFormat;
-kha_graphics4_TextureFormat.__empty_constructs__ = [kha_graphics4_TextureFormat.RGBA32,kha_graphics4_TextureFormat.L8,kha_graphics4_TextureFormat.RGBA128,kha_graphics4_TextureFormat.DEPTH16,kha_graphics4_TextureFormat.RGBA64,kha_graphics4_TextureFormat.A32,kha_graphics4_TextureFormat.A16];
 var kha_graphics4_TextureUnit = function() { };
 $hxClasses["kha.graphics4.TextureUnit"] = kha_graphics4_TextureUnit;
-kha_graphics4_TextureUnit.__name__ = ["kha","graphics4","TextureUnit"];
-var kha_graphics4_Usage = $hxClasses["kha.graphics4.Usage"] = { __ename__ : ["kha","graphics4","Usage"], __constructs__ : ["StaticUsage","DynamicUsage","ReadableUsage"] };
+kha_graphics4_TextureUnit.__name__ = true;
+var kha_graphics4_Usage = $hxClasses["kha.graphics4.Usage"] = { __ename__ : true, __constructs__ : ["StaticUsage","DynamicUsage","ReadableUsage"] };
 kha_graphics4_Usage.StaticUsage = ["StaticUsage",0];
 kha_graphics4_Usage.StaticUsage.toString = $estr;
 kha_graphics4_Usage.StaticUsage.__enum__ = kha_graphics4_Usage;
@@ -26128,7 +22551,6 @@ kha_graphics4_Usage.DynamicUsage.__enum__ = kha_graphics4_Usage;
 kha_graphics4_Usage.ReadableUsage = ["ReadableUsage",2];
 kha_graphics4_Usage.ReadableUsage.toString = $estr;
 kha_graphics4_Usage.ReadableUsage.__enum__ = kha_graphics4_Usage;
-kha_graphics4_Usage.__empty_constructs__ = [kha_graphics4_Usage.StaticUsage,kha_graphics4_Usage.DynamicUsage,kha_graphics4_Usage.ReadableUsage];
 var kha_graphics4_VertexBuffer = function(vertexCount,structure,usage,instanceDataStepRate,canRead) {
 	if(canRead == null) {
 		canRead = false;
@@ -26221,7 +22643,7 @@ var kha_graphics4_VertexBuffer = function(vertexCount,structure,usage,instanceDa
 	}
 };
 $hxClasses["kha.graphics4.VertexBuffer"] = kha_graphics4_VertexBuffer;
-kha_graphics4_VertexBuffer.__name__ = ["kha","graphics4","VertexBuffer"];
+kha_graphics4_VertexBuffer.__name__ = true;
 kha_graphics4_VertexBuffer.prototype = {
 	buffer: null
 	,_data: null
@@ -26296,7 +22718,7 @@ kha_graphics4_VertexBuffer.prototype = {
 	}
 	,__class__: kha_graphics4_VertexBuffer
 };
-var kha_graphics4_VertexData = $hxClasses["kha.graphics4.VertexData"] = { __ename__ : ["kha","graphics4","VertexData"], __constructs__ : ["Float1","Float2","Float3","Float4","Float4x4"] };
+var kha_graphics4_VertexData = $hxClasses["kha.graphics4.VertexData"] = { __ename__ : true, __constructs__ : ["Float1","Float2","Float3","Float4","Float4x4"] };
 kha_graphics4_VertexData.Float1 = ["Float1",0];
 kha_graphics4_VertexData.Float1.toString = $estr;
 kha_graphics4_VertexData.Float1.__enum__ = kha_graphics4_VertexData;
@@ -26312,13 +22734,12 @@ kha_graphics4_VertexData.Float4.__enum__ = kha_graphics4_VertexData;
 kha_graphics4_VertexData.Float4x4 = ["Float4x4",4];
 kha_graphics4_VertexData.Float4x4.toString = $estr;
 kha_graphics4_VertexData.Float4x4.__enum__ = kha_graphics4_VertexData;
-kha_graphics4_VertexData.__empty_constructs__ = [kha_graphics4_VertexData.Float1,kha_graphics4_VertexData.Float2,kha_graphics4_VertexData.Float3,kha_graphics4_VertexData.Float4,kha_graphics4_VertexData.Float4x4];
 var kha_graphics4_VertexElement = function(name,data) {
 	this.name = name;
 	this.data = data;
 };
 $hxClasses["kha.graphics4.VertexElement"] = kha_graphics4_VertexElement;
-kha_graphics4_VertexElement.__name__ = ["kha","graphics4","VertexElement"];
+kha_graphics4_VertexElement.__name__ = true;
 kha_graphics4_VertexElement.prototype = {
 	name: null
 	,data: null
@@ -26337,7 +22758,7 @@ var kha_graphics4_VertexShader = function(sources,files) {
 	this.files = files;
 };
 $hxClasses["kha.graphics4.VertexShader"] = kha_graphics4_VertexShader;
-kha_graphics4_VertexShader.__name__ = ["kha","graphics4","VertexShader"];
+kha_graphics4_VertexShader.__name__ = true;
 kha_graphics4_VertexShader.fromSource = function(source) {
 	var shader = new kha_graphics4_VertexShader([],["runtime-string"]);
 	shader.sources.push(source);
@@ -26360,7 +22781,7 @@ var kha_graphics4_VertexStructure = function() {
 	this.instanced = false;
 };
 $hxClasses["kha.graphics4.VertexStructure"] = kha_graphics4_VertexStructure;
-kha_graphics4_VertexStructure.__name__ = ["kha","graphics4","VertexStructure"];
+kha_graphics4_VertexStructure.__name__ = true;
 kha_graphics4_VertexStructure.prototype = {
 	elements: null
 	,instanced: null
@@ -26412,7 +22833,7 @@ var kha_input_Gamepad = $hx_exports["kha"]["input"]["Gamepad"] = function(index,
 	kha_input_Gamepad.instances[index] = this;
 };
 $hxClasses["kha.input.Gamepad"] = kha_input_Gamepad;
-kha_input_Gamepad.__name__ = ["kha","input","Gamepad"];
+kha_input_Gamepad.__name__ = true;
 kha_input_Gamepad.get = function(index) {
 	if(index == null) {
 		index = 0;
@@ -26502,14 +22923,13 @@ kha_input_Gamepad.prototype = {
 		}
 	}
 	,__class__: kha_input_Gamepad
-	,__properties__: {get_id:"get_id"}
 };
 var kha_network_Controller = function() {
 	this.__id = kha_network_ControllerBuilder.nextId++;
 	this._inputBuffer = new haxe_io_Bytes(new ArrayBuffer(1));
 };
 $hxClasses["kha.network.Controller"] = kha_network_Controller;
-kha_network_Controller.__name__ = ["kha","network","Controller"];
+kha_network_Controller.__name__ = true;
 kha_network_Controller.prototype = {
 	__id: null
 	,_inputBufferIndex: null
@@ -26529,14 +22949,13 @@ var kha_input_Keyboard = $hx_exports["kha"]["input"]["Keyboard"] = function() {
 	kha_input_Keyboard.instance = this;
 };
 $hxClasses["kha.input.Keyboard"] = kha_input_Keyboard;
-kha_input_Keyboard.__name__ = ["kha","input","Keyboard"];
+kha_input_Keyboard.__name__ = true;
 kha_input_Keyboard.get = function(num) {
 	if(num == null) {
 		num = 0;
 	}
 	return kha_SystemImpl.getKeyboard(num);
 };
-kha_input_Keyboard.instance = null;
 kha_input_Keyboard.__super__ = kha_network_Controller;
 kha_input_Keyboard.prototype = $extend(kha_network_Controller.prototype,{
 	notify: function(downListener,upListener,pressListener) {
@@ -26637,14 +23056,13 @@ var kha_input_Mouse = $hx_exports["kha"]["input"]["Mouse"] = function() {
 	kha_input_Mouse.instance = this;
 };
 $hxClasses["kha.input.Mouse"] = kha_input_Mouse;
-kha_input_Mouse.__name__ = ["kha","input","Mouse"];
+kha_input_Mouse.__name__ = true;
 kha_input_Mouse.get = function(num) {
 	if(num == null) {
 		num = 0;
 	}
 	return kha_SystemImpl.getMouse(num);
 };
-kha_input_Mouse.instance = null;
 kha_input_Mouse.__super__ = kha_network_Controller;
 kha_input_Mouse.prototype = $extend(kha_network_Controller.prototype,{
 	notify: function(downListener,upListener,moveListener,wheelListener,leaveListener) {
@@ -26911,7 +23329,7 @@ var kha_input_MouseImpl = function() {
 	kha_input_Mouse.call(this);
 };
 $hxClasses["kha.input.MouseImpl"] = kha_input_MouseImpl;
-kha_input_MouseImpl.__name__ = ["kha","input","MouseImpl"];
+kha_input_MouseImpl.__name__ = true;
 kha_input_MouseImpl.__super__ = kha_input_Mouse;
 kha_input_MouseImpl.prototype = $extend(kha_input_Mouse.prototype,{
 	lock: function() {
@@ -26950,7 +23368,7 @@ var kha_input_Surface = $hx_exports["kha"]["input"]["Surface"] = function() {
 	kha_input_Surface.instance = this;
 };
 $hxClasses["kha.input.Surface"] = kha_input_Surface;
-kha_input_Surface.__name__ = ["kha","input","Surface"];
+kha_input_Surface.__name__ = true;
 kha_input_Surface.get = function(num) {
 	if(num == null) {
 		num = 0;
@@ -26960,7 +23378,6 @@ kha_input_Surface.get = function(num) {
 	}
 	return kha_input_Surface.instance;
 };
-kha_input_Surface.instance = null;
 kha_input_Surface.prototype = {
 	notify: function(touchStartListener,touchEndListener,moveListener) {
 		if(touchStartListener != null) {
@@ -27020,7 +23437,7 @@ var kha_internal_BytesBlob = function(bytes) {
 	this.bytes = bytes;
 };
 $hxClasses["kha.internal.BytesBlob"] = kha_internal_BytesBlob;
-kha_internal_BytesBlob.__name__ = ["kha","internal","BytesBlob"];
+kha_internal_BytesBlob.__name__ = true;
 kha_internal_BytesBlob.__interfaces__ = [kha_Resource];
 kha_internal_BytesBlob.fromBytes = function(bytes) {
 	return new kha_internal_BytesBlob(bytes);
@@ -27238,15 +23655,11 @@ kha_internal_BytesBlob.prototype = {
 		this.bytes = null;
 	}
 	,__class__: kha_internal_BytesBlob
-	,__properties__: {get_length:"get_length"}
 };
 var kha_internal_HdrFormat = function() {
 };
 $hxClasses["kha.internal.HdrFormat"] = kha_internal_HdrFormat;
-kha_internal_HdrFormat.__name__ = ["kha","internal","HdrFormat"];
-kha_internal_HdrFormat.buffer = null;
-kha_internal_HdrFormat.bufferLength = null;
-kha_internal_HdrFormat.fileOffset = null;
+kha_internal_HdrFormat.__name__ = true;
 kha_internal_HdrFormat.readBuf = function(buf) {
 	var bytesRead = 0;
 	while(true) {
@@ -27428,7 +23841,7 @@ var kha_js_AEAudioChannel = function(element) {
 	this.element = element;
 };
 $hxClasses["kha.js.AEAudioChannel"] = kha_js_AEAudioChannel;
-kha_js_AEAudioChannel.__name__ = ["kha","js","AEAudioChannel"];
+kha_js_AEAudioChannel.__name__ = true;
 kha_js_AEAudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_js_AEAudioChannel.prototype = {
 	element: null
@@ -27493,11 +23906,10 @@ kha_js_AEAudioChannel.prototype = {
 		}
 	}
 	,__class__: kha_js_AEAudioChannel
-	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",get_position:"get_position",get_length:"get_length"}
 };
 var kha_js_AudioElementAudio = function() { };
 $hxClasses["kha.js.AudioElementAudio"] = kha_js_AudioElementAudio;
-kha_js_AudioElementAudio.__name__ = ["kha","js","AudioElementAudio"];
+kha_js_AudioElementAudio.__name__ = true;
 kha_js_AudioElementAudio._compile = function() {
 };
 kha_js_AudioElementAudio.play = function(sound,loop) {
@@ -27523,8 +23935,7 @@ var kha_js_CanvasGraphics = function(canvas) {
 	canvas.save();
 };
 $hxClasses["kha.js.CanvasGraphics"] = kha_js_CanvasGraphics;
-kha_js_CanvasGraphics.__name__ = ["kha","js","CanvasGraphics"];
-kha_js_CanvasGraphics.instance = null;
+kha_js_CanvasGraphics.__name__ = true;
 kha_js_CanvasGraphics.stringWidth = function(font,text) {
 	if(kha_js_CanvasGraphics.instance == null) {
 		return 5 * text.length;
@@ -27761,7 +24172,7 @@ var kha_js_URLParser = function(url) {
 	}
 };
 $hxClasses["kha.js.URLParser"] = kha_js_URLParser;
-kha_js_URLParser.__name__ = ["kha","js","URLParser"];
+kha_js_URLParser.__name__ = true;
 kha_js_URLParser.parse = function(url) {
 	return new kha_js_URLParser(url);
 };
@@ -27798,7 +24209,7 @@ var kha_js_EnvironmentVariables = function() {
 	kha_EnvironmentVariables.call(this);
 };
 $hxClasses["kha.js.EnvironmentVariables"] = kha_js_EnvironmentVariables;
-kha_js_EnvironmentVariables.__name__ = ["kha","js","EnvironmentVariables"];
+kha_js_EnvironmentVariables.__name__ = true;
 kha_js_EnvironmentVariables.__super__ = kha_EnvironmentVariables;
 kha_js_EnvironmentVariables.prototype = $extend(kha_EnvironmentVariables.prototype,{
 	getVariable: function(name) {
@@ -27824,7 +24235,7 @@ var kha_js_Font = function(blob) {
 	this.kravur = new kha_Kravur(blob);
 };
 $hxClasses["kha.js.Font"] = kha_js_Font;
-kha_js_Font.__name__ = ["kha","js","Font"];
+kha_js_Font.__name__ = true;
 kha_js_Font.__interfaces__ = [kha_Resource];
 kha_js_Font.fromBytes = function(bytes) {
 	return new kha_js_Font(kha_internal_BytesBlob.fromBytes(bytes));
@@ -27886,8 +24297,7 @@ kha_js_Font.prototype = {
 };
 var kha_js_MobileWebAudio = function() { };
 $hxClasses["kha.js.MobileWebAudio"] = kha_js_MobileWebAudio;
-kha_js_MobileWebAudio.__name__ = ["kha","js","MobileWebAudio"];
-kha_js_MobileWebAudio._context = null;
+kha_js_MobileWebAudio.__name__ = true;
 kha_js_MobileWebAudio._init = function() {
 	try {
 		kha_js_MobileWebAudio._context = new AudioContext();
@@ -27922,7 +24332,7 @@ var kha_js_MobileWebAudioChannel = function(sound,loop) {
 	this.createSource();
 };
 $hxClasses["kha.js.MobileWebAudioChannel"] = kha_js_MobileWebAudioChannel;
-kha_js_MobileWebAudioChannel.__name__ = ["kha","js","MobileWebAudioChannel"];
+kha_js_MobileWebAudioChannel.__name__ = true;
 kha_js_MobileWebAudioChannel.__interfaces__ = [kha_audio1_AudioChannel];
 kha_js_MobileWebAudioChannel.prototype = {
 	buffer: null
@@ -27995,7 +24405,6 @@ kha_js_MobileWebAudioChannel.prototype = {
 		return this.stopped;
 	}
 	,__class__: kha_js_MobileWebAudioChannel
-	,__properties__: {get_finished:"get_finished",set_volume:"set_volume",get_volume:"get_volume",get_position:"get_position",get_length:"get_length"}
 };
 var kha_js_MobileWebAudioSound = function(filename,done) {
 	var _gthis = this;
@@ -28019,7 +24428,7 @@ var kha_js_MobileWebAudioSound = function(filename,done) {
 	request.send(null);
 };
 $hxClasses["kha.js.MobileWebAudioSound"] = kha_js_MobileWebAudioSound;
-kha_js_MobileWebAudioSound.__name__ = ["kha","js","MobileWebAudioSound"];
+kha_js_MobileWebAudioSound.__name__ = true;
 kha_js_MobileWebAudioSound.__super__ = kha_Sound;
 kha_js_MobileWebAudioSound.prototype = $extend(kha_Sound.prototype,{
 	_buffer: null
@@ -28052,7 +24461,7 @@ var kha_js_Sound = function(filenames,done) {
 	this.element.load();
 };
 $hxClasses["kha.js.Sound"] = kha_js_Sound;
-kha_js_Sound.__name__ = ["kha","js","Sound"];
+kha_js_Sound.__name__ = true;
 kha_js_Sound.__super__ = kha_Sound;
 kha_js_Sound.prototype = $extend(kha_Sound.prototype,{
 	filenames: null
@@ -28092,7 +24501,7 @@ var kha_js_Video = function() {
 	kha_Video.call(this);
 };
 $hxClasses["kha.js.Video"] = kha_js_Video;
-kha_js_Video.__name__ = ["kha","js","Video"];
+kha_js_Video.__name__ = true;
 kha_js_Video.fromElement = function(element) {
 	var video = new kha_js_Video();
 	video.element = element;
@@ -28225,7 +24634,7 @@ var kha_js_WebAudioSound = function(filename,done) {
 	request.send(null);
 };
 $hxClasses["kha.js.WebAudioSound"] = kha_js_WebAudioSound;
-kha_js_WebAudioSound.__name__ = ["kha","js","WebAudioSound"];
+kha_js_WebAudioSound.__name__ = true;
 kha_js_WebAudioSound.__super__ = kha_Sound;
 kha_js_WebAudioSound.prototype = $extend(kha_Sound.prototype,{
 	superUncompress: function(done) {
@@ -28267,7 +24676,7 @@ var kha_js_graphics4_ConstantLocation = function(value,type) {
 	this.type = type;
 };
 $hxClasses["kha.js.graphics4.ConstantLocation"] = kha_js_graphics4_ConstantLocation;
-kha_js_graphics4_ConstantLocation.__name__ = ["kha","js","graphics4","ConstantLocation"];
+kha_js_graphics4_ConstantLocation.__name__ = true;
 kha_js_graphics4_ConstantLocation.__interfaces__ = [kha_graphics4_ConstantLocation];
 kha_js_graphics4_ConstantLocation.prototype = {
 	value: null
@@ -28297,7 +24706,7 @@ var kha_js_graphics4_Graphics = function(renderTarget) {
 	}
 };
 $hxClasses["kha.js.graphics4.Graphics"] = kha_js_graphics4_Graphics;
-kha_js_graphics4_Graphics.__name__ = ["kha","js","graphics4","Graphics"];
+kha_js_graphics4_Graphics.__name__ = true;
 kha_js_graphics4_Graphics.__interfaces__ = [kha_graphics4_Graphics];
 kha_js_graphics4_Graphics.getBlendFunc = function(factor) {
 	switch(factor[1]) {
@@ -28863,7 +25272,7 @@ var kha_js_graphics4_Graphics2 = function(canvas) {
 	kha_graphics4_Graphics2.call(this,canvas);
 };
 $hxClasses["kha.js.graphics4.Graphics2"] = kha_js_graphics4_Graphics2;
-kha_js_graphics4_Graphics2.__name__ = ["kha","js","graphics4","Graphics2"];
+kha_js_graphics4_Graphics2.__name__ = true;
 kha_js_graphics4_Graphics2.__super__ = kha_graphics4_Graphics2;
 kha_js_graphics4_Graphics2.prototype = $extend(kha_graphics4_Graphics2.prototype,{
 	drawVideoInternal: function(video,x,y,width,height) {
@@ -28885,7 +25294,7 @@ var kha_js_graphics4_TextureUnit = function(value) {
 	this.value = value;
 };
 $hxClasses["kha.js.graphics4.TextureUnit"] = kha_js_graphics4_TextureUnit;
-kha_js_graphics4_TextureUnit.__name__ = ["kha","js","graphics4","TextureUnit"];
+kha_js_graphics4_TextureUnit.__name__ = true;
 kha_js_graphics4_TextureUnit.__interfaces__ = [kha_graphics4_TextureUnit];
 kha_js_graphics4_TextureUnit.prototype = {
 	value: null
@@ -28894,8 +25303,7 @@ kha_js_graphics4_TextureUnit.prototype = {
 var kha_vr_VrInterface = function() {
 };
 $hxClasses["kha.vr.VrInterface"] = kha_vr_VrInterface;
-kha_vr_VrInterface.__name__ = ["kha","vr","VrInterface"];
-kha_vr_VrInterface.instance = null;
+kha_vr_VrInterface.__name__ = true;
 kha_vr_VrInterface.prototype = {
 	GetSensorState: function() {
 		return null;
@@ -28957,7 +25365,7 @@ var kha_js_vr_VrInterface = function() {
 	}
 };
 $hxClasses["kha.js.vr.VrInterface"] = kha_js_vr_VrInterface;
-kha_js_vr_VrInterface.__name__ = ["kha","js","vr","VrInterface"];
+kha_js_vr_VrInterface.__name__ = true;
 kha_js_vr_VrInterface.__super__ = kha_vr_VrInterface;
 kha_js_vr_VrInterface.prototype = $extend(kha_vr_VrInterface.prototype,{
 	vrEnabled: null
@@ -29156,7 +25564,7 @@ var kha_math_FastMatrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._22 = _22;
 };
 $hxClasses["kha.math.FastMatrix3"] = kha_math_FastMatrix3;
-kha_math_FastMatrix3.__name__ = ["kha","math","FastMatrix3"];
+kha_math_FastMatrix3.__name__ = true;
 kha_math_FastMatrix3.fromMatrix3 = function(m) {
 	return new kha_math_FastMatrix3(m._00,m._10,m._20,m._01,m._11,m._21,m._02,m._12,m._22);
 };
@@ -29191,7 +25599,7 @@ var kha_math_FastMatrix4 = function(_00,_10,_20,_30,_01,_11,_21,_31,_02,_12,_22,
 	this._33 = _33;
 };
 $hxClasses["kha.math.FastMatrix4"] = kha_math_FastMatrix4;
-kha_math_FastMatrix4.__name__ = ["kha","math","FastMatrix4"];
+kha_math_FastMatrix4.__name__ = true;
 kha_math_FastMatrix4.fromMatrix4 = function(m) {
 	return new kha_math_FastMatrix4(m._00,m._10,m._20,m._30,m._01,m._11,m._21,m._31,m._02,m._12,m._22,m._32,m._03,m._13,m._23,m._33);
 };
@@ -29255,7 +25663,7 @@ var kha_math_FastVector2 = function(x,y) {
 	this.y = y;
 };
 $hxClasses["kha.math.FastVector2"] = kha_math_FastVector2;
-kha_math_FastVector2.__name__ = ["kha","math","FastVector2"];
+kha_math_FastVector2.__name__ = true;
 kha_math_FastVector2.fromVector2 = function(v) {
 	return new kha_math_FastVector2(v.x,v.y);
 };
@@ -29279,7 +25687,6 @@ kha_math_FastVector2.prototype = {
 		return "FastVector2(" + this.x + ", " + this.y + ")";
 	}
 	,__class__: kha_math_FastVector2
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_FastVector3 = function(x,y,z) {
 	if(z == null) {
@@ -29296,7 +25703,7 @@ var kha_math_FastVector3 = function(x,y,z) {
 	this.z = z;
 };
 $hxClasses["kha.math.FastVector3"] = kha_math_FastVector3;
-kha_math_FastVector3.__name__ = ["kha","math","FastVector3"];
+kha_math_FastVector3.__name__ = true;
 kha_math_FastVector3.fromVector3 = function(v) {
 	return new kha_math_FastVector3(v.x,v.y,v.z);
 };
@@ -29322,7 +25729,6 @@ kha_math_FastVector3.prototype = {
 		return "FastVector3(" + this.x + ", " + this.y + ", " + this.z + ")";
 	}
 	,__class__: kha_math_FastVector3
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_FastVector4 = function(x,y,z,w) {
 	if(w == null) {
@@ -29343,7 +25749,7 @@ var kha_math_FastVector4 = function(x,y,z,w) {
 	this.w = w;
 };
 $hxClasses["kha.math.FastVector4"] = kha_math_FastVector4;
-kha_math_FastVector4.__name__ = ["kha","math","FastVector4"];
+kha_math_FastVector4.__name__ = true;
 kha_math_FastVector4.fromVector4 = function(v) {
 	return new kha_math_FastVector4(v.x,v.y,v.z,v.w);
 };
@@ -29371,7 +25777,6 @@ kha_math_FastVector4.prototype = {
 		return "FastVector4(" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ")";
 	}
 	,__class__: kha_math_FastVector4
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Matrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._00 = _00;
@@ -29385,7 +25790,7 @@ var kha_math_Matrix3 = function(_00,_10,_20,_01,_11,_21,_02,_12,_22) {
 	this._22 = _22;
 };
 $hxClasses["kha.math.Matrix3"] = kha_math_Matrix3;
-kha_math_Matrix3.__name__ = ["kha","math","Matrix3"];
+kha_math_Matrix3.__name__ = true;
 kha_math_Matrix3.prototype = {
 	_00: null
 	,_10: null
@@ -29417,7 +25822,7 @@ var kha_math_Matrix4 = function(_00,_10,_20,_30,_01,_11,_21,_31,_02,_12,_22,_32,
 	this._33 = _33;
 };
 $hxClasses["kha.math.Matrix4"] = kha_math_Matrix4;
-kha_math_Matrix4.__name__ = ["kha","math","Matrix4"];
+kha_math_Matrix4.__name__ = true;
 kha_math_Matrix4.orthogonalProjection = function(left,right,bottom,top,zn,zf) {
 	var tx = -(right + left) / (right - left);
 	var ty = -(top + bottom) / (top - bottom);
@@ -29487,7 +25892,7 @@ var kha_math_Quaternion = function(x,y,z,w) {
 	this.values.push(w);
 };
 $hxClasses["kha.math.Quaternion"] = kha_math_Quaternion;
-kha_math_Quaternion.__name__ = ["kha","math","Quaternion"];
+kha_math_Quaternion.__name__ = true;
 kha_math_Quaternion.fromAxisAngle = function(axis,radians) {
 	var q = new kha_math_Quaternion();
 	q.set_w(Math.cos(radians / 2.0));
@@ -29677,7 +26082,6 @@ kha_math_Quaternion.prototype = {
 		return result;
 	}
 	,__class__: kha_math_Quaternion
-	,__properties__: {set_length:"set_length",get_length:"get_length",set_w:"set_w",get_w:"get_w",set_z:"set_z",get_z:"get_z",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"}
 };
 var kha_math_Vector2 = function(x,y) {
 	if(y == null) {
@@ -29690,7 +26094,7 @@ var kha_math_Vector2 = function(x,y) {
 	this.y = y;
 };
 $hxClasses["kha.math.Vector2"] = kha_math_Vector2;
-kha_math_Vector2.__name__ = ["kha","math","Vector2"];
+kha_math_Vector2.__name__ = true;
 kha_math_Vector2.prototype = {
 	x: null
 	,y: null
@@ -29708,7 +26112,6 @@ kha_math_Vector2.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector2
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Vector3 = function(x,y,z) {
 	if(z == null) {
@@ -29725,7 +26128,7 @@ var kha_math_Vector3 = function(x,y,z) {
 	this.z = z;
 };
 $hxClasses["kha.math.Vector3"] = kha_math_Vector3;
-kha_math_Vector3.__name__ = ["kha","math","Vector3"];
+kha_math_Vector3.__name__ = true;
 kha_math_Vector3.prototype = {
 	x: null
 	,y: null
@@ -29745,7 +26148,6 @@ kha_math_Vector3.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector3
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_math_Vector4 = function(x,y,z,w) {
 	if(w == null) {
@@ -29766,7 +26168,7 @@ var kha_math_Vector4 = function(x,y,z,w) {
 	this.w = w;
 };
 $hxClasses["kha.math.Vector4"] = kha_math_Vector4;
-kha_math_Vector4.__name__ = ["kha","math","Vector4"];
+kha_math_Vector4.__name__ = true;
 kha_math_Vector4.prototype = {
 	x: null
 	,y: null
@@ -29788,11 +26190,10 @@ kha_math_Vector4.prototype = {
 		return length;
 	}
 	,__class__: kha_math_Vector4
-	,__properties__: {set_length:"set_length",get_length:"get_length"}
 };
 var kha_network_Client = function() { };
 $hxClasses["kha.network.Client"] = kha_network_Client;
-kha_network_Client.__name__ = ["kha","network","Client"];
+kha_network_Client.__name__ = true;
 kha_network_Client.prototype = {
 	get_id: null
 	,id: null
@@ -29800,14 +26201,13 @@ kha_network_Client.prototype = {
 	,receive: null
 	,onClose: null
 	,__class__: kha_network_Client
-	,__properties__: {get_id:"get_id"}
 };
 var kha_network_ControllerBuilder = function() { };
 $hxClasses["kha.network.ControllerBuilder"] = kha_network_ControllerBuilder;
-kha_network_ControllerBuilder.__name__ = ["kha","network","ControllerBuilder"];
+kha_network_ControllerBuilder.__name__ = true;
 var kha_network_Entity = function() { };
 $hxClasses["kha.network.Entity"] = kha_network_Entity;
-kha_network_Entity.__name__ = ["kha","network","Entity"];
+kha_network_Entity.__name__ = true;
 kha_network_Entity.prototype = {
 	_id: null
 	,_size: null
@@ -29819,7 +26219,7 @@ var kha_network_LocalClient = function(id) {
 	this.myId = id;
 };
 $hxClasses["kha.network.LocalClient"] = kha_network_LocalClient;
-kha_network_LocalClient.__name__ = ["kha","network","LocalClient"];
+kha_network_LocalClient.__name__ = true;
 kha_network_LocalClient.__interfaces__ = [kha_network_Client];
 kha_network_LocalClient.prototype = {
 	myId: null
@@ -29838,7 +26238,6 @@ kha_network_LocalClient.prototype = {
 		return this.myId;
 	}
 	,__class__: kha_network_LocalClient
-	,__properties__: {get_id:"get_id",get_controllers:"get_controllers"}
 };
 var kha_network_Network = function(url,port,errorCallback,closeCallback) {
 	this.open = false;
@@ -29858,7 +26257,7 @@ var kha_network_Network = function(url,port,errorCallback,closeCallback) {
 	};
 };
 $hxClasses["kha.network.Network"] = kha_network_Network;
-kha_network_Network.__name__ = ["kha","network","Network"];
+kha_network_Network.__name__ = true;
 kha_network_Network.webSocketCloseReason = function(code) {
 	switch(code) {
 	case 1000:
@@ -29910,7 +26309,7 @@ var kha_network_State = function(time,data) {
 	this.data = data;
 };
 $hxClasses["kha.network.State"] = kha_network_State;
-kha_network_State.__name__ = ["kha","network","State"];
+kha_network_State.__name__ = true;
 kha_network_State.prototype = {
 	time: null
 	,data: null
@@ -29927,7 +26326,7 @@ var kha_network_Session = function(maxPlayers,address,port) {
 	this.port = port;
 };
 $hxClasses["kha.network.Session"] = kha_network_Session;
-kha_network_Session.__name__ = ["kha","network","Session"];
+kha_network_Session.__name__ = true;
 kha_network_Session.the = function() {
 	return kha_network_Session.instance;
 };
@@ -30143,11 +26542,10 @@ kha_network_Session.prototype = {
 		this.network.send(bytes,false);
 	}
 	,__class__: kha_network_Session
-	,__properties__: {get_me:"get_me"}
 };
 var kha_network_SyncBuilder = function() { };
 $hxClasses["kha.network.SyncBuilder"] = kha_network_SyncBuilder;
-kha_network_SyncBuilder.__name__ = ["kha","network","SyncBuilder"];
+kha_network_SyncBuilder.__name__ = true;
 var kha_simd_Float32x4 = function(_0,_1,_2,_3) {
 	this._0 = _0;
 	this._1 = _1;
@@ -30155,7 +26553,7 @@ var kha_simd_Float32x4 = function(_0,_1,_2,_3) {
 	this._3 = _3;
 };
 $hxClasses["kha.simd.Float32x4"] = kha_simd_Float32x4;
-kha_simd_Float32x4.__name__ = ["kha","simd","Float32x4"];
+kha_simd_Float32x4.__name__ = true;
 kha_simd_Float32x4.create = function() {
 	return new kha_simd_Float32x4(0,0,0,0);
 };
@@ -30238,7 +26636,7 @@ var kha_vr_Pose = function() {
 	this.Position = new kha_math_Vector3();
 };
 $hxClasses["kha.vr.Pose"] = kha_vr_Pose;
-kha_vr_Pose.__name__ = ["kha","vr","Pose"];
+kha_vr_Pose.__name__ = true;
 kha_vr_Pose.prototype = {
 	Orientation: null
 	,Position: null
@@ -30247,7 +26645,7 @@ kha_vr_Pose.prototype = {
 var kha_vr_PoseState = function() {
 };
 $hxClasses["kha.vr.PoseState"] = kha_vr_PoseState;
-kha_vr_PoseState.__name__ = ["kha","vr","PoseState"];
+kha_vr_PoseState.__name__ = true;
 kha_vr_PoseState.prototype = {
 	Pose: null
 	,AngularVelocity: null
@@ -30260,7 +26658,7 @@ kha_vr_PoseState.prototype = {
 var kha_vr_SensorState = function() {
 };
 $hxClasses["kha.vr.SensorState"] = kha_vr_SensorState;
-kha_vr_SensorState.__name__ = ["kha","vr","SensorState"];
+kha_vr_SensorState.__name__ = true;
 kha_vr_SensorState.prototype = {
 	Predicted: null
 	,Recorded: null
@@ -30271,7 +26669,7 @@ kha_vr_SensorState.prototype = {
 var kha_vr_TimeWarpImage = function() {
 };
 $hxClasses["kha.vr.TimeWarpImage"] = kha_vr_TimeWarpImage;
-kha_vr_TimeWarpImage.__name__ = ["kha","vr","TimeWarpImage"];
+kha_vr_TimeWarpImage.__name__ = true;
 kha_vr_TimeWarpImage.prototype = {
 	Image: null
 	,TexCoordsFromTanAngles: null
@@ -30281,7 +26679,7 @@ kha_vr_TimeWarpImage.prototype = {
 var kha_vr_TimeWarpParms = function() {
 };
 $hxClasses["kha.vr.TimeWarpParms"] = kha_vr_TimeWarpParms;
-kha_vr_TimeWarpParms.__name__ = ["kha","vr","TimeWarpParms"];
+kha_vr_TimeWarpParms.__name__ = true;
 kha_vr_TimeWarpParms.prototype = {
 	LeftImage: null
 	,RightImage: null
@@ -30289,7 +26687,7 @@ kha_vr_TimeWarpParms.prototype = {
 	,RightOverlay: null
 	,__class__: kha_vr_TimeWarpParms
 };
-var trilateral_angle_DifferencePreference = $hxClasses["trilateral.angle.DifferencePreference"] = { __ename__ : ["trilateral","angle","DifferencePreference"], __constructs__ : ["CLOCKWISE","ANTICLOCKWISE","SMALL","LARGE"] };
+var trilateral_angle_DifferencePreference = $hxClasses["trilateral.angle.DifferencePreference"] = { __ename__ : true, __constructs__ : ["CLOCKWISE","ANTICLOCKWISE","SMALL","LARGE"] };
 trilateral_angle_DifferencePreference.CLOCKWISE = ["CLOCKWISE",0];
 trilateral_angle_DifferencePreference.CLOCKWISE.toString = $estr;
 trilateral_angle_DifferencePreference.CLOCKWISE.__enum__ = trilateral_angle_DifferencePreference;
@@ -30302,10 +26700,9 @@ trilateral_angle_DifferencePreference.SMALL.__enum__ = trilateral_angle_Differen
 trilateral_angle_DifferencePreference.LARGE = ["LARGE",3];
 trilateral_angle_DifferencePreference.LARGE.toString = $estr;
 trilateral_angle_DifferencePreference.LARGE.__enum__ = trilateral_angle_DifferencePreference;
-trilateral_angle_DifferencePreference.__empty_constructs__ = [trilateral_angle_DifferencePreference.CLOCKWISE,trilateral_angle_DifferencePreference.ANTICLOCKWISE,trilateral_angle_DifferencePreference.SMALL,trilateral_angle_DifferencePreference.LARGE];
 var trilateral_angle_Angles = function() { };
 $hxClasses["trilateral.angle.Angles"] = trilateral_angle_Angles;
-trilateral_angle_Angles.__name__ = ["trilateral","angle","Angles"];
+trilateral_angle_Angles.__name__ = true;
 trilateral_angle_Angles.pi2pi = function(angle) {
 	if(angle <= Math.PI && angle > -Math.PI) {
 		return angle;
@@ -30738,7 +27135,7 @@ trilateral_angle_Angles.differenceSmallLarge = function(a,b) {
 };
 var trilateral_angle__$Fraction_FractionArray_$Impl_$ = {};
 $hxClasses["trilateral.angle._Fraction.FractionArray_Impl_"] = trilateral_angle__$Fraction_FractionArray_$Impl_$;
-trilateral_angle__$Fraction_FractionArray_$Impl_$.__name__ = ["trilateral","angle","_Fraction","FractionArray_Impl_"];
+trilateral_angle__$Fraction_FractionArray_$Impl_$.__name__ = true;
 trilateral_angle__$Fraction_FractionArray_$Impl_$._new = function(val) {
 	var this1 = val == null ? [] : val;
 	return this1;
@@ -30763,7 +27160,7 @@ trilateral_angle__$Fraction_FractionArray_$Impl_$.toString = function(this1) {
 };
 var trilateral_angle__$Fraction_Fraction_$Impl_$ = {};
 $hxClasses["trilateral.angle._Fraction.Fraction_Impl_"] = trilateral_angle__$Fraction_Fraction_$Impl_$;
-trilateral_angle__$Fraction_Fraction_$Impl_$.__name__ = ["trilateral","angle","_Fraction","Fraction_Impl_"];
+trilateral_angle__$Fraction_Fraction_$Impl_$.__name__ = true;
 trilateral_angle__$Fraction_Fraction_$Impl_$._new = function(numerator,denominator,positive,value) {
 	if(positive == null) {
 		positive = true;
@@ -31009,7 +27406,7 @@ trilateral_angle__$Fraction_Fraction_$Impl_$.similarToValue = function(this1) {
 };
 var trilateral_angle_Fracs = function() { };
 $hxClasses["trilateral.angle.Fracs"] = trilateral_angle_Fracs;
-trilateral_angle_Fracs.__name__ = ["trilateral","angle","Fracs"];
+trilateral_angle_Fracs.__name__ = true;
 trilateral_angle_Fracs.grabDecimalInput = function(decimalVal) {
 	var decimal = Math.abs(parseFloat(decimalVal));
 	if(isNaN(decimal)) {
@@ -31204,8 +27601,7 @@ trilateral_angle_Fracs.getMaxNumeratorStr = function(fStr) {
 };
 var trilateral_angle__$Pi2pi_Pi2pi_$Impl_$ = {};
 $hxClasses["trilateral.angle._Pi2pi.Pi2pi_Impl_"] = trilateral_angle__$Pi2pi_Pi2pi_$Impl_$;
-trilateral_angle__$Pi2pi_Pi2pi_$Impl_$.__name__ = ["trilateral","angle","_Pi2pi","Pi2pi_Impl_"];
-trilateral_angle__$Pi2pi_Pi2pi_$Impl_$.__properties__ = {set_degrees:"set_degrees",get_degrees:"get_degrees"};
+trilateral_angle__$Pi2pi_Pi2pi_$Impl_$.__name__ = true;
 trilateral_angle__$Pi2pi_Pi2pi_$Impl_$._new = function(f) {
 	var this1 = f;
 	return this1;
@@ -31572,8 +27968,7 @@ trilateral_angle__$Pi2pi_Pi2pi_$Impl_$.fromString = function(val) {
 };
 var trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$ = {};
 $hxClasses["trilateral.angle._ZeroTo2pi.ZeroTo2pi_Impl_"] = trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$;
-trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$.__name__ = ["trilateral","angle","_ZeroTo2pi","ZeroTo2pi_Impl_"];
-trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$.__properties__ = {set_degrees:"set_degrees",get_degrees:"get_degrees"};
+trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$.__name__ = true;
 trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$._new = function(f) {
 	var this1 = f;
 	return this1;
@@ -31844,7 +28239,7 @@ trilateral_angle__$ZeroTo2pi_ZeroTo2pi_$Impl_$.fromString = function(val) {
 };
 var trilateral_geom_Algebra = function() { };
 $hxClasses["trilateral.geom.Algebra"] = trilateral_geom_Algebra;
-trilateral_geom_Algebra.__name__ = ["trilateral","geom","Algebra"];
+trilateral_geom_Algebra.__name__ = true;
 trilateral_geom_Algebra.theta = function(p0,p1) {
 	var dx = p0.x - p1.x;
 	var dy = p0.y - p1.y;
@@ -32118,7 +28513,7 @@ var trilateral_geom_Contour = function(triArr_,endLine_) {
 	this.endLine = endLine_;
 };
 $hxClasses["trilateral.geom.Contour"] = trilateral_geom_Contour;
-trilateral_geom_Contour.__name__ = ["trilateral","geom","Contour"];
+trilateral_geom_Contour.__name__ = true;
 trilateral_geom_Contour.thetaCompute = function(px,py,qx,qy) {
 	return Math.atan2(py - qy,px - qx);
 };
@@ -34726,7 +31121,7 @@ trilateral_geom_Contour.prototype = {
 };
 var trilateral_justPath_IPathContext = function() { };
 $hxClasses["trilateral.justPath.IPathContext"] = trilateral_justPath_IPathContext;
-trilateral_justPath_IPathContext.__name__ = ["trilateral","justPath","IPathContext"];
+trilateral_justPath_IPathContext.__name__ = true;
 trilateral_justPath_IPathContext.prototype = {
 	moveTo: null
 	,lineTo: null
@@ -34736,7 +31131,7 @@ trilateral_justPath_IPathContext.prototype = {
 };
 var trilateral_pairs_Quad = function() { };
 $hxClasses["trilateral.pairs.Quad"] = trilateral_pairs_Quad;
-trilateral_pairs_Quad.__name__ = ["trilateral","pairs","Quad"];
+trilateral_pairs_Quad.__name__ = true;
 trilateral_pairs_Quad.rectangle = function(x,y,w,h) {
 	var ax = x;
 	var ay = y;
@@ -35047,7 +31442,7 @@ var trilateral_parsing_FillDraw = function(width_,height_) {
 	}
 };
 $hxClasses["trilateral.parsing.FillDraw"] = trilateral_parsing_FillDraw;
-trilateral_parsing_FillDraw.__name__ = ["trilateral","parsing","FillDraw"];
+trilateral_parsing_FillDraw.__name__ = true;
 trilateral_parsing_FillDraw.prototype = {
 	count: null
 	,colors: null
@@ -35095,7 +31490,7 @@ var trilateral_path_Base = function(contour_,trilateralArray_,endLine_) {
 	this.dim = [];
 };
 $hxClasses["trilateral.path.Base"] = trilateral_path_Base;
-trilateral_path_Base.__name__ = ["trilateral","path","Base"];
+trilateral_path_Base.__name__ = true;
 trilateral_path_Base.__interfaces__ = [trilateral_justPath_IPathContext];
 trilateral_path_Base.prototype = {
 	trilateralArray: null
@@ -35965,7 +32360,7 @@ var trilateral_path_Crude = function(contour_,trilateralArray_,endLine_) {
 	trilateral_path_Base.call(this,contour_,trilateralArray_,endLine_);
 };
 $hxClasses["trilateral.path.Crude"] = trilateral_path_Crude;
-trilateral_path_Crude.__name__ = ["trilateral","path","Crude"];
+trilateral_path_Crude.__name__ = true;
 trilateral_path_Crude.__super__ = trilateral_path_Base;
 trilateral_path_Crude.prototype = $extend(trilateral_path_Base.prototype,{
 	line: function(x_,y_) {
@@ -36089,7 +32484,7 @@ var trilateral_path_FillOnly = function(contour_,trilateralArray_,endLine_) {
 	trilateral_path_Base.call(this,contour_,trilateralArray_,endLine_);
 };
 $hxClasses["trilateral.path.FillOnly"] = trilateral_path_FillOnly;
-trilateral_path_FillOnly.__name__ = ["trilateral","path","FillOnly"];
+trilateral_path_FillOnly.__name__ = true;
 trilateral_path_FillOnly.__super__ = trilateral_path_Base;
 trilateral_path_FillOnly.prototype = $extend(trilateral_path_Base.prototype,{
 	line: function(x_,y_) {
@@ -36100,7 +32495,7 @@ var trilateral_path_Fine = function(contour_,trilateralArray_,endLine_) {
 	trilateral_path_Base.call(this,contour_,trilateralArray_,endLine_);
 };
 $hxClasses["trilateral.path.Fine"] = trilateral_path_Fine;
-trilateral_path_Fine.__name__ = ["trilateral","path","Fine"];
+trilateral_path_Fine.__name__ = true;
 trilateral_path_Fine.__super__ = trilateral_path_Base;
 trilateral_path_Fine.prototype = $extend(trilateral_path_Base.prototype,{
 	line: function(x_,y_) {
@@ -36759,7 +33154,7 @@ var trilateral_path_MediumOverlap = function(contour_,trilateralArray_,endLine_)
 	trilateral_path_Base.call(this,contour_,trilateralArray_,endLine_);
 };
 $hxClasses["trilateral.path.MediumOverlap"] = trilateral_path_MediumOverlap;
-trilateral_path_MediumOverlap.__name__ = ["trilateral","path","MediumOverlap"];
+trilateral_path_MediumOverlap.__name__ = true;
 trilateral_path_MediumOverlap.__super__ = trilateral_path_Base;
 trilateral_path_MediumOverlap.prototype = $extend(trilateral_path_Base.prototype,{
 	line: function(x_,y_) {
@@ -37282,7 +33677,7 @@ trilateral_path_MediumOverlap.prototype = $extend(trilateral_path_Base.prototype
 });
 var trilateral_polys_Poly = function() { };
 $hxClasses["trilateral.polys.Poly"] = trilateral_polys_Poly;
-trilateral_polys_Poly.__name__ = ["trilateral","polys","Poly"];
+trilateral_polys_Poly.__name__ = true;
 trilateral_polys_Poly.circle = function(ax,ay,radius,sides,omega) {
 	if(omega == null) {
 		omega = 0.;
@@ -39886,7 +36281,7 @@ var trilateral_tri_Trilateral = function(ax_,ay_,bx_,by_,cx_,cy_,mark_) {
 	this.mark = mark_;
 };
 $hxClasses["trilateral.tri.Trilateral"] = trilateral_tri_Trilateral;
-trilateral_tri_Trilateral.__name__ = ["trilateral","tri","Trilateral"];
+trilateral_tri_Trilateral.__name__ = true;
 trilateral_tri_Trilateral.prototype = {
 	windingAdjusted: null
 	,mark: null
@@ -40015,7 +36410,6 @@ trilateral_tri_Trilateral.prototype = {
 		this.cy += y;
 	}
 	,__class__: trilateral_tri_Trilateral
-	,__properties__: {get_bottom:"get_bottom",get_right:"get_right",set_y:"set_y",get_y:"get_y",set_x:"set_x",get_x:"get_x"}
 };
 var trilateral_tri_Triangle = function(id_,A,B,C,depth_,colorID_) {
 	this.id = id_;
@@ -40028,7 +36422,7 @@ var trilateral_tri_Triangle = function(id_,A,B,C,depth_,colorID_) {
 	this.colorC = colorID_;
 };
 $hxClasses["trilateral.tri.Triangle"] = trilateral_tri_Triangle;
-trilateral_tri_Triangle.__name__ = ["trilateral","tri","Triangle"];
+trilateral_tri_Triangle.__name__ = true;
 trilateral_tri_Triangle.fromTrilateral = function(id_,tri,depth_,colorID_) {
 	var t = Type.createEmptyInstance(trilateral_tri_Triangle);
 	t.id = id_;
@@ -40112,7 +36506,7 @@ trilateral_tri_Triangle.prototype = $extend(trilateral_tri_Trilateral.prototype,
 });
 var trilateral_tri__$TriangleArray_TriangleArray_$Impl_$ = {};
 $hxClasses["trilateral.tri._TriangleArray.TriangleArray_Impl_"] = trilateral_tri__$TriangleArray_TriangleArray_$Impl_$;
-trilateral_tri__$TriangleArray_TriangleArray_$Impl_$.__name__ = ["trilateral","tri","_TriangleArray","TriangleArray_Impl_"];
+trilateral_tri__$TriangleArray_TriangleArray_$Impl_$.__name__ = true;
 trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new = function(t) {
 	var this1 = t == null ? trilateral_tri__$TriangleArray_TriangleArray_$Impl_$._new([]) : t;
 	return this1;
@@ -40276,7 +36670,7 @@ trilateral_tri__$TriangleArray_TriangleArray_$Impl_$.getHitTriangles = function(
 };
 var trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$ = {};
 $hxClasses["trilateral.tri._TrilateralArray.TrilateralArray_Impl_"] = trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$;
-trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$.__name__ = ["trilateral","tri","_TrilateralArray","TrilateralArray_Impl_"];
+trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$.__name__ = true;
 trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$._new = function(t) {
 	var this1 = t == null ? trilateral_tri__$TrilateralArray_TrilateralArray_$Impl_$._new([]) : t;
 	return this1;
@@ -40324,7 +36718,7 @@ var trilateralXtra_kDrawing_GridSheet = function(gi) {
 	this.image = gi.image;
 };
 $hxClasses["trilateralXtra.kDrawing.GridSheet"] = trilateralXtra_kDrawing_GridSheet;
-trilateralXtra_kDrawing_GridSheet.__name__ = ["trilateralXtra","kDrawing","GridSheet"];
+trilateralXtra_kDrawing_GridSheet.__name__ = true;
 trilateralXtra_kDrawing_GridSheet.prototype = {
 	dx: null
 	,dy: null
@@ -40571,7 +36965,7 @@ var trilateralXtra_kDrawing_SequenceSprite = function(x_,y_,color_,alpha_,matrix
 	this.depth = depth_;
 };
 $hxClasses["trilateralXtra.kDrawing.SequenceSprite"] = trilateralXtra_kDrawing_SequenceSprite;
-trilateralXtra_kDrawing_SequenceSprite.__name__ = ["trilateralXtra","kDrawing","SequenceSprite"];
+trilateralXtra_kDrawing_SequenceSprite.__name__ = true;
 trilateralXtra_kDrawing_SequenceSprite.prototype = {
 	x: null
 	,y: null
@@ -40594,7 +36988,7 @@ var trilateralXtra_kDrawing_ImageDrawing = function(fillDraw_) {
 	}
 };
 $hxClasses["trilateralXtra.kDrawing.ImageDrawing"] = trilateralXtra_kDrawing_ImageDrawing;
-trilateralXtra_kDrawing_ImageDrawing.__name__ = ["trilateralXtra","kDrawing","ImageDrawing"];
+trilateralXtra_kDrawing_ImageDrawing.__name__ = true;
 trilateralXtra_kDrawing_ImageDrawing.prototype = {
 	image: null
 	,fillDraw: null
@@ -40755,16 +37149,7 @@ var trilateralXtra_kDrawing_PolyPainter = function() {
 	this.textureLocation = trilateralXtra_kDrawing_PolyPainter.imagePipe.getTextureUnit("tex");
 };
 $hxClasses["trilateralXtra.kDrawing.PolyPainter"] = trilateralXtra_kDrawing_PolyPainter;
-trilateralXtra_kDrawing_PolyPainter.__name__ = ["trilateralXtra","kDrawing","PolyPainter"];
-trilateralXtra_kDrawing_PolyPainter.imgBufferIndex = null;
-trilateralXtra_kDrawing_PolyPainter.gradBufferIndex = null;
-trilateralXtra_kDrawing_PolyPainter.vertexBufferImage = null;
-trilateralXtra_kDrawing_PolyPainter.vertexBufferGradient = null;
-trilateralXtra_kDrawing_PolyPainter.verticesImg = null;
-trilateralXtra_kDrawing_PolyPainter.verticesGrad = null;
-trilateralXtra_kDrawing_PolyPainter.indexBufferImg = null;
-trilateralXtra_kDrawing_PolyPainter.indexBufferGrad = null;
-trilateralXtra_kDrawing_PolyPainter.imgLast = null;
+trilateralXtra_kDrawing_PolyPainter.__name__ = true;
 trilateralXtra_kDrawing_PolyPainter.upperPowerOfTwo = function(v) {
 	--v;
 	v |= v >>> 1;
@@ -41176,13 +37561,12 @@ trilateralXtra_kDrawing_PolyPainter.prototype = {
 		}
 	}
 	,__class__: trilateralXtra_kDrawing_PolyPainter
-	,__properties__: {set_canvas:"set_canvas",set_framebuffer:"set_framebuffer",set_pipeline:"set_pipeline",get_pipeline:"get_pipeline"}
 };
 var trilateralXtra_parsing_FillDrawPolyK = function(w,h) {
 	trilateral_parsing_FillDraw.call(this,w,h);
 };
 $hxClasses["trilateralXtra.parsing.FillDrawPolyK"] = trilateralXtra_parsing_FillDrawPolyK;
-trilateralXtra_parsing_FillDrawPolyK.__name__ = ["trilateralXtra","parsing","FillDrawPolyK"];
+trilateralXtra_parsing_FillDrawPolyK.__name__ = true;
 trilateralXtra_parsing_FillDrawPolyK.__super__ = trilateral_parsing_FillDraw;
 trilateralXtra_parsing_FillDrawPolyK.prototype = $extend(trilateral_parsing_FillDraw.prototype,{
 	fill: function(p,colorID) {
@@ -41628,12 +38012,11 @@ trilateralXtra_parsing_FillDrawPolyK.prototype = $extend(trilateral_parsing_Fill
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
-function $arrayPush(x) { this.push(x); }
 $hxClasses["Math"] = Math;
 String.prototype.__class__ = $hxClasses["String"] = String;
-String.__name__ = ["String"];
+String.__name__ = true;
 $hxClasses["Array"] = Array;
-Array.__name__ = ["Array"];
+Array.__name__ = true;
 Date.prototype.__class__ = $hxClasses["Date"] = Date;
 Date.__name__ = ["Date"];
 var Int = $hxClasses["Int"] = { __name__ : ["Int"]};
@@ -41644,7 +38027,6 @@ var Bool = $hxClasses["Bool"] = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = $hxClasses["Class"] = { __name__ : ["Class"]};
 var Enum = { };
-var Void = $hxClasses["Void"] = { __ename__ : ["Void"]};
 var __map_reserved = {};
 var ArrayBuffer = $global.ArrayBuffer || js_html_compat_ArrayBuffer;
 if(ArrayBuffer.prototype.slice == null) {
@@ -41653,13 +38035,8 @@ if(ArrayBuffer.prototype.slice == null) {
 var DataView = $global.DataView || js_html_compat_DataView;
 var Float32Array = $global.Float32Array || js_html_compat_Float32Array._new;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
-StringTools.winMetaCharacters = [32,40,41,37,33,94,34,60,62,38,124,10,13,44,59];
-haxe__$Int32_Int32_$Impl_$._mul = Math.imul != null ? Math.imul : function(a,b) {
-	return a * (b & 65535) + (a * (b >>> 16) << 16 | 0) | 0;
-};
 haxe_Unserializer.DEFAULT_RESOLVER = new haxe__$Unserializer_DefaultResolver();
 haxe_Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
-haxe_Unserializer.CODES = null;
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
 haxe_ds_ObjectMap.count = 0;
@@ -41669,9 +38046,6 @@ haxe_io_FPHelper.i64tmp = (function($this) {
 	$r = this1;
 	return $r;
 }(this));
-haxe_io_FPHelper.LN2 = 0.6931471805599453;
-haxe_io__$Float32Array_Float32Array_$Impl_$.BYTES_PER_ELEMENT = 4;
-haxe_io__$UInt8Array_UInt8Array_$Impl_$.BYTES_PER_ELEMENT = 1;
 hxPolyK_PolyK.small = 0.0000000001;
 jigsawx_JigsawMagicNumbers.dMore = 16.;
 jigsawx_JigsawMagicNumbers.dinout = 6.66666666666666696;
@@ -41730,7 +38104,7 @@ kha_CompilerDefines.kha_html5 = "1";
 kha_CompilerDefines["js-es5"] = "1";
 kha_CompilerDefines.js_es5 = "1";
 kha_CompilerDefines.sys_a2 = "1";
-kha_CompilerDefines.dce = "no";
+kha_CompilerDefines.dce = "std";
 kha_CompilerDefines.sys_g1 = "1";
 kha_CompilerDefines["true"] = "1";
 kha_CompilerDefines.haxe3 = "1";
@@ -41754,39 +38128,30 @@ kha_Scheduler.timeWarpSaveTime = 10.0;
 kha_Scheduler.DIF_COUNT = 3;
 kha_Scheduler.maxframetime = 0.5;
 kha_Scheduler.startTime = 0;
-kha_Scheduler.activeTimeTask = null;
 kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
 kha_Shaders.painter_colored_fragData2 = "s210:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7CgpvdXQgdmVjNCBGcmFnQ29sb3I7CmluIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIEZyYWdDb2xvciA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_frag = null;
-kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
-kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
-kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
-kha_Shaders.painter_image_frag = null;
 kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_vertData2 = "s354:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_vert = null;
+kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
+kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
+kha_Shaders.painter_image_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_image_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
-kha_Shaders.painter_image_vert = null;
 kha_Shaders.painter_text_fragData0 = "s351:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7CnZhcnlpbmcgaGlnaHAgdmVjMiB0ZXhDb29yZDsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gdmVjNChmcmFnbWVudENvbG9yLnh5eiwgdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpLnggKiBmcmFnbWVudENvbG9yLncpOwp9Cgo";
 kha_Shaders.painter_text_fragData1 = "s340:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjNCBmcmFnbWVudENvbG9yOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IHZlYzQoZnJhZ21lbnRDb2xvci54eXosIHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKS54ICogZnJhZ21lbnRDb2xvci53KTsKfQoK";
 kha_Shaders.painter_text_fragData2 = "s348:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCm91dCB2ZWM0IEZyYWdDb2xvcjsKaW4gdmVjNCBmcmFnbWVudENvbG9yOwppbiB2ZWMyIHRleENvb3JkOwoKdm9pZCBtYWluKCkKewogICAgRnJhZ0NvbG9yID0gdmVjNChmcmFnbWVudENvbG9yLnh5eiwgdGV4dHVyZSh0ZXgsIHRleENvb3JkKS54ICogZnJhZ21lbnRDb2xvci53KTsKfQoK";
-kha_Shaders.painter_text_frag = null;
 kha_Shaders.painter_text_vertData0 = "s436:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgdGV4Q29vcmQgPSB0ZXhQb3NpdGlvbjsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_text_vertData1 = "s500:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGZyYWdtZW50Q29sb3I7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgdGV4Q29vcmQgPSB0ZXhQb3NpdGlvbjsKICAgIGZyYWdtZW50Q29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
 kha_Shaders.painter_text_vertData2 = "s466:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKaW4gbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
-kha_Shaders.painter_text_vert = null;
 kha_Shaders.painter_video_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
 kha_Shaders.painter_video_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_video_fragData2 = "s452:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCmluIHZlYzIgdGV4Q29vcmQ7CmluIHZlYzQgY29sb3I7Cm91dCB2ZWM0IEZyYWdDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIHZlYzQgdGV4Y29sb3IgPSB0ZXh0dXJlKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBGcmFnQ29sb3IgPSB0ZXhjb2xvcjsKfQoK";
-kha_Shaders.painter_video_frag = null;
 kha_Shaders.painter_video_vertData0 = "s415:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSB2ZWMyIHRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgY29sb3I7CmF0dHJpYnV0ZSB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_video_vertData1 = "s479:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzIgdGV4Q29vcmQ7CmF0dHJpYnV0ZSBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247CnZhcnlpbmcgbWVkaXVtcCB2ZWM0IGNvbG9yOwphdHRyaWJ1dGUgbWVkaXVtcCB2ZWM0IHZlcnRleENvbG9yOwoKdm9pZCBtYWluKCkKewogICAgZ2xfUG9zaXRpb24gPSBwcm9qZWN0aW9uTWF0cml4ICogdmVjNCh2ZXJ0ZXhQb3NpdGlvbiwgMS4wKTsKICAgIHRleENvb3JkID0gdGV4UG9zaXRpb247CiAgICBjb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_video_vertData2 = "s444:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKaW4gbWVkaXVtcCB2ZWMzIHZlcnRleFBvc2l0aW9uOwpvdXQgbWVkaXVtcCB2ZWMyIHRleENvb3JkOwppbiBtZWRpdW1wIHZlYzIgdGV4UG9zaXRpb247Cm91dCBtZWRpdW1wIHZlYzQgY29sb3I7CmluIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICB0ZXhDb29yZCA9IHRleFBvc2l0aW9uOwogICAgY29sb3IgPSB2ZXJ0ZXhDb2xvcjsKfQoK";
-kha_Shaders.painter_video_vert = null;
 kha_System.renderListeners = [];
 kha_System.foregroundListeners = [];
 kha_System.resumeListeners = [];
@@ -41794,9 +38159,6 @@ kha_System.pauseListeners = [];
 kha_System.backgroundListeners = [];
 kha_System.shutdownListeners = [];
 kha_System.dropFilesListeners = [];
-kha_System.cutListener = null;
-kha_System.copyListener = null;
-kha_System.pasteListener = null;
 kha_SystemImpl.mobile = false;
 kha_SystemImpl.ios = false;
 kha_SystemImpl.mobileAudioPlaying = false;
@@ -41805,7 +38167,6 @@ kha_SystemImpl.firefox = false;
 kha_SystemImpl.insideInputEvent = false;
 kha_SystemImpl.maxGamepads = 4;
 kha_SystemImpl.leftMouseCtrlDown = false;
-kha_SystemImpl.keyboard = null;
 kha_SystemImpl.minimumScroll = 999;
 kha_SystemImpl.lastFirstTouchX = 0;
 kha_SystemImpl.lastFirstTouchY = 0;
@@ -41904,16 +38265,10 @@ kha_graphics4_CubeMap.GL_R32F = 33326;
 kha_graphics4_CubeMap.GL_DEPTH_COMPONENT24 = 33190;
 kha_graphics4_CubeMap.GL_DEPTH24_STENCIL8 = 35056;
 kha_graphics4_CubeMap.GL_DEPTH32F_STENCIL8 = 36013;
-kha_graphics4_ImageShaderPainter.shaderPipeline = null;
-kha_graphics4_ImageShaderPainter.structure = null;
 kha_graphics4_ImageShaderPainter.bufferSize = 1500;
 kha_graphics4_ImageShaderPainter.vertexSize = 9;
-kha_graphics4_ColoredShaderPainter.shaderPipeline = null;
-kha_graphics4_ColoredShaderPainter.structure = null;
 kha_graphics4_ColoredShaderPainter.bufferSize = 100;
 kha_graphics4_ColoredShaderPainter.triangleBufferSize = 100;
-kha_graphics4_TextShaderPainter.shaderPipeline = null;
-kha_graphics4_TextShaderPainter.structure = null;
 kha_graphics4_TextShaderPainter.bufferSize = 100;
 kha_input_Gamepad.__meta__ = { statics : { sendConnectEvent : { input : null}, sendDisconnectEvent : { input : null}}, fields : { sendAxisEvent : { input : null}, sendButtonEvent : { input : null}}};
 kha_input_Gamepad.instances = [];
@@ -41951,7 +38306,6 @@ kha_network_Session.ERROR = 5;
 kha_network_Session.PLAYER_UPDATES = 6;
 kha_network_Session.RPC_SERVER = 0;
 kha_network_Session.RPC_ALL = 1;
-kha_network_Session.instance = null;
 kha_network_SyncBuilder.nextId = 0;
 kha_network_SyncBuilder.objects = [];
 trilateral_geom_Algebra.quadStep = 0.03;
@@ -41959,10 +38313,6 @@ trilateral_geom_Algebra.cubicStep = 0.03;
 trilateralXtra_kDrawing_PolyPainter.bufferSize = 100000;
 trilateralXtra_kDrawing_PolyPainter.vertexSizeImage = 9;
 trilateralXtra_kDrawing_PolyPainter.vertexSizeGradient = 7;
-trilateralXtra_kDrawing_PolyPainter.imagePipe = null;
-trilateralXtra_kDrawing_PolyPainter.gradientPipe = null;
-trilateralXtra_kDrawing_PolyPainter.strucImg = null;
-trilateralXtra_kDrawing_PolyPainter.strucGrad = null;
 trilateralXtra_kDrawing_PolyPainter.vertexPosImage = 0;
 trilateralXtra_kDrawing_PolyPainter.vertexPosGradient = 0;
 Main.main();
