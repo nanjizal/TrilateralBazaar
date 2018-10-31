@@ -11,6 +11,9 @@ import kha.input.KeyCode;
 import kha.input.Keyboard;
 import kha.Scheduler;
 import jigsawxKha.game.JigsawGame;
+import kha.WindowOptions;
+import kha.WindowMode;
+import kha.Window;
 class Main {
     var mouseIsDown:    Bool = false;
     var key: Int;
@@ -23,10 +26,11 @@ class Main {
     var enable          = true;
     public static 
     function main() {
-        System.init( {  title: "JigsawX Trilateral Kha example"
-                     ,  width: 1024, height: 768
-                     ,  samplesPerPixel: 4 }
-                     , function(){
+        System.start( {  title: "JigsawX Trilateral Kha example"
+                     ,  width: 4096, height: 4096
+                     ,  window: { windowFeatures:    FeatureResizable }
+                     , framebuffer: { samplesPerPixel: 4 } }
+                     , function( window: Window ){
                         new Main();
                      } );
     }
@@ -42,7 +46,7 @@ class Main {
     }
     inline
     function startRendering(){
-        System.notifyOnRender( function ( framebuffer ) { render( framebuffer ); } );
+        System.notifyOnFrames( function ( framebuffer ) { render( framebuffer[0] ); } );
         Scheduler.addTimeTask(update, 0, 1 / 60);
     }
     inline
@@ -55,9 +59,9 @@ class Main {
     inline
     function update(): Void {
         if( left ){
-            jigsaw.updateRotations( -theta );
+            jigsaw.updateRotations( theta );
         } else if( right ) {
-            jigsaw.updateRotations( theta );  
+            jigsaw.updateRotations( -theta );  
         }
     }
     function initInputs() {

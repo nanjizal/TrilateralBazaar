@@ -14,19 +14,24 @@ import trilateral.angle.Angles;
 import jigsawxKha.game.Jig;
 import jigsawxKha.tileImage.ImageTiles;
 class JigsawGame {
+    var enable          = true;
     var jigsawx:        Jigsawx;
     public var jigs     = new Array<Jig>();
     var imageTiles:     ImageTiles;
+    var inputScale      = 4.;
+    var outputScale     = 1.;
+    var canvasScale     = 1.;
+    var showBoxes       = false;
     //var grids:          GridSheetRenderer;
     var gridDefFill:    GridSheetDef;
     var gridDefOutline: GridSheetDef;
     var gridFill:       GridSheet;
     var gridOutline:    GridSheet;
     var outLineEdge:    OutLineEdge;
-    var wid             = 45;
-    var hi              = 45;
-    var rows            = 6;
-    var cols            = 8;
+    var wid             = 45;//100;//45;
+    var hi              = 45;//100;//45;
+    var rows            = 6;//3;//6;
+    var cols            = 8;//3;//8;
     var offX:           Float;
     var offY:           Float;
     var selected:       Jig;
@@ -47,16 +52,19 @@ class JigsawGame {
         start( image );
     }
     public function start( image: Image ){
-        imageTiles = new ImageTiles();
-        imageTiles.draw( jigsawx.jigs, image );
+        imageTiles = new ImageTiles( 4096, 4096 );
+        imageTiles.draw( jigsawx.jigs, image, inputScale, canvasScale );
         jigsawShapeArray = imageTiles.jigsawShapeArray;
         outLineEdge = new OutLineEdge( this );
         setupImageGrid();
     }
     inline public
     function render( g: Graphics ){
-        gridOutline.renderGrid( g, cast outLineEdge, false );
-        gridFill.renderGrid( g, cast this, false );
+        var fillImage = imageTiles.fillImage;
+        //g.drawScaledImage( fillImage, 0, 0, fillImage.width, fillImage.height );
+        //g.drawImage( imageTiles.outlineImage , 0, 0 );
+        //gridOutline.renderGrid( g, cast outLineEdge, showBoxes );
+        gridFill.renderGrid( g, cast this, showBoxes );
     }
     inline
     public function createJigs(){
@@ -64,27 +72,33 @@ class JigsawGame {
         var jj = jigsawx.jigs;
         for( i in 0...jj.length ){
             jig = jj[ i ];
-            jigs[ i ] = new Jig( jig.xy.x, jig.xy.y, i );
+            jigs[ i ] = new Jig( jig.xy.x*outputScale, jig.xy.y*outputScale, i );
         }
     }
     inline
     function randomizePieces(){
-        var factor = 4; // 1 in 5 ( as includes 0 ).
         var left   = 320.;
         var top    = 265.;
         var xRange = 370.;
         var yRange = 250.;
-        var randomizeMost: Bool; 
         for( jig in jigs ){
-            randomizeMost = Std.int( Math.random() * factor ) != 0;
-            if( randomizeMost ){
+            if( randomizeMost() ){
                 jig.x = Math.random()*xRange + left;
                 jig.y = Math.random()*yRange + top;
-                jig.rotation = Math.random()*Math.PI*2 - Math.PI;
+                jig.rotation = getRandomRotation();
             } else {
                 jig.enabled = false;
             }
         }
+    }
+    inline
+    function randomizeMost(): Bool {
+        var factor = 4; // 1 in 5 ( as includes 0 ).
+        return Std.int( Math.random() * factor ) != 0;
+    }
+    inline
+    function getRandomRotation(): Float {
+        return Math.random()*Math.PI*2 - Math.PI;
     }
     inline
     function getItem( col: Int, row: Int ): GridItemDef {
@@ -96,8 +110,8 @@ class JigsawGame {
         var transform: FastMatrix3 = FastMatrix3.identity();
         var x = jig.x;
         var y = jig.y;
-        var dx = x + wid;
-        var dy = y + hi;
+        var dx = x + wid*outputScale;
+        var dy = y + hi*outputScale;
         var rotation = jig.rotation;
         if( rotation != 0 ) transform = Rotation.offsetRotation( rotation, dx, dy );
         if( jig == selected ){
@@ -137,7 +151,10 @@ class JigsawGame {
             oy = jigsawShape.y;
             jig = jigs[ s ];
             for( t in jigsawShape.triangles ){
-                if( t.fullHit( x + - jig.x + ox, y + - jig.y + oy ) ){
+                /*if( t.fullHit( ( (x - jig.x - wid/outputScale )/outputScale + ox )
+                             , ( (y - jig.y - hi/outputScale )/outputScale + oy ) ) ){*/
+                if( t.fullHit( ( x - jig.x  + ox )
+                             , ( y - jig.y  + oy ) ) ){
                     hits[ hitCount ] = s;
                     hitCount++;
                     break;
@@ -161,13 +178,15 @@ class JigsawGame {
         //grids = new GridSheetRenderer( wid, hi, cols, rows, imageTiles.fillImage, imageTiles.outlineImage );
         // piece size is 45 ( or 90? )
         gridDefFill = { gridX:          wid*2,  gridY:     hi*2
-                      , totalRows:       rows,  totalCols: cols
-                      , scaleX:            1.,  scaleY:      1.
-                      , image:             imageTiles.fillImage  
+                      , totalRows:      rows,  totalCols: cols
+                      , scaleX:         outputScale,  scaleY: outputScale
+                      , inputScale:     inputScale
+                      , image:          imageTiles.fillImage  
                       }; // sets image
         gridDefOutline = { gridX:          wid*2,  gridY:     hi*2
                          , totalRows:       rows,  totalCols: cols
-                         , scaleX:            1.,  scaleY:      1.
+                         , scaleX:            1.,  scaleY:     1.
+                         , inputScale:        1.
                          , image:             imageTiles.outlineImage
                          }; // sets image     
         gridFill = new GridSheet( gridDefFill );
@@ -213,8 +232,8 @@ class JigsawGame {
     }
     inline public
     function storeMouseOffset( x: Float, y: Float ){
-        offX = ( x - wid ) - selected.x;
-        offY = ( y - hi  ) - selected.y; 
+        offX = ( x - wid*outputScale ) - selected.x;
+        offY = ( y - hi*outputScale  ) - selected.y; 
     }
     inline public
     function deselect(){
@@ -240,8 +259,8 @@ class JigsawGame {
     inline public
     function moveSelected( x: Int, y: Int ){
         if( selected != null ){
-            selected.x = x - wid - offX;
-            selected.y = y - hi - offY;
+            selected.x = x - wid*outputScale - offX;
+            selected.y = y - hi*outputScale - offY;
             offX = offX/1.025;// ease to hold piece in centre
             offY = offY/1.025;
         }
