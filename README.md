@@ -33,4 +33,4 @@ Demos:
 
 [mask image fill test with polyK](http://nanjizal.github.io/TrilateralBazaar/imageFill/build/html5/index.html)
 
-[wip towards jigsaw example](http://nanjizal.github.io/TrilateralBazaar/jigsawX/build/html5/index.html)
+[wip towards jigsaw example](http://nanjizal.github.io/TrilateralBazaar/jigsawX/bin/index.html)
