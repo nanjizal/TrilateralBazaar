@@ -9,8 +9,8 @@ import jigsawxKha.geom.Rotation;
 import jigsawx.Jigsawx;
 import jigsawx.JigsawPiece;
 import kha.math.FastMatrix3;
+import kha.math.FastVector2;
 import trilateral.angle.Angles;
-//import jigsawxKha.gridSheets.GridSheetRenderer;
 import jigsawxKha.game.Jig;
 import jigsawxKha.tileImage.ImageTiles;
 class JigsawGame {
@@ -19,16 +19,15 @@ class JigsawGame {
     public var jigs     = new Array<Jig>();
     var imageTiles:     ImageTiles;
     var inputScale      = 4.;
-    var outputScale     = 1.;
+    var outputScale     = 1.2;
     var canvasScale     = 1.;
     var showBoxes       = false;
-    //var grids:          GridSheetRenderer;
     var gridDefFill:    GridSheetDef;
     var gridDefOutline: GridSheetDef;
     var gridFill:       GridSheet;
     var gridOutline:    GridSheet;
     var outLineEdge:    OutLineEdge;
-    var wid             = 45;//100;//45;
+    var wid             = 45;//45;//100;//45;
     var hi              = 45;//100;//45;
     var rows            = 6;//3;//6;
     var cols            = 8;//3;//8;
@@ -77,8 +76,8 @@ class JigsawGame {
     }
     inline
     function randomizePieces(){
-        var left   = 320.;
-        var top    = 265.;
+        var left   = wid*cols + 10;
+        var top    = hi*rows + 10;
         var xRange = 370.;
         var yRange = 250.;
         for( jig in jigs ){
@@ -137,24 +136,30 @@ class JigsawGame {
         }
     }
     public inline
-    function hitTest( x: Float, y: Float ){
+    function hitTest( mousex: Float, mousey: Float ){
         var hits = [];  // collate all hitShapes
         var hitCount = 0;
         var jigsawShape: JigsawShape;
         var ox: Float;
         var oy: Float;
         var jig: Jig;
-        // assumes pieces are not moved!
+        var dx: Float;
+        var dy: Float; 
+        var pos: FastVector2;
+        var cx: Float;
+        var cy: Float;
         for( s in 0...jigsawShapeArray.length ){
             jigsawShape = jigsawShapeArray[ s ];
             ox = jigsawShape.x;
             oy = jigsawShape.y;
             jig = jigs[ s ];
+            dx = mousex - jig.x + ox - ( outputScale - 1 ) * wid;
+            dy = mousey - jig.y + oy - ( outputScale - 1 ) * hi;
+            cx = ox + wid/2;
+            cy = oy + hi/2;
+            pos = transformedMouse( dx, dy, cx, cy, jig.rotation );
             for( t in jigsawShape.triangles ){
-                /*if( t.fullHit( ( (x - jig.x - wid/outputScale )/outputScale + ox )
-                             , ( (y - jig.y - hi/outputScale )/outputScale + oy ) ) ){*/
-                if( t.fullHit( ( x - jig.x  + ox )
-                             , ( y - jig.y  + oy ) ) ){
+                if( t.fullHit( pos.x, pos.y ) ){                
                     hits[ hitCount ] = s;
                     hitCount++;
                     break;
@@ -163,10 +168,21 @@ class JigsawGame {
         }
         return hits;
     }
+    function transformedMouse( mousex: Float, mousey: Float
+                             , centreX: Float, centreY: Float
+                             , rotation: Float ): FastVector2 {
+        var rotate    = FastMatrix3.rotation( rotation );
+        var scale     = FastMatrix3.scale( 1/outputScale, 1/outputScale );
+        var tran0     = FastMatrix3.translation( centreX, centreY );
+        var tran1     = FastMatrix3.translation( -centreX, -centreY );
+        var transform = tran0.multmat( scale ).multmat( rotate ).multmat( tran1 );                     
+        var pos       = transform.multvec( new FastVector2( mousex, mousey ) );
+        return pos;
+    } 
     public
     function isInPlace( id: Int, jig: Jig ): Bool {
         var shape = jigsawShapeArray[ id ];
-        var dist = distP( jig.x, jig.y, shape.x, shape.y );
+        var dist = distP( jig.x, jig.y, shape.x*outputScale, shape.y*outputScale );
         return ( dist < 40 );
     }
     public function getShapeXY( id: Int ):{ x: Float, y: Float } {
@@ -175,8 +191,6 @@ class JigsawGame {
     }
     inline
     function setupImageGrid(){
-        //grids = new GridSheetRenderer( wid, hi, cols, rows, imageTiles.fillImage, imageTiles.outlineImage );
-        // piece size is 45 ( or 90? )
         gridDefFill = { gridX:          wid*2,  gridY:     hi*2
                       , totalRows:      rows,  totalCols: cols
                       , scaleX:         outputScale,  scaleY: outputScale
@@ -250,8 +264,8 @@ class JigsawGame {
                     selected.rotation = 0;
                     selected.enabled = false;
                     var p = getShapeXY( id ); // set to final piece postion obtained from the item.
-                    selected.x = p.x;
-                    selected.y = p.y;
+                    selected.x = p.x*outputScale;
+                    selected.y = p.y*outputScale;
                 }
             }
         }

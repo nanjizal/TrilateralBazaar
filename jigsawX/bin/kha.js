@@ -136,7 +136,7 @@ Main.prototype = {
 	,enable: null
 	,loadAll: function() {
 		haxe_Log.trace("loadAll",{ fileName : "Main.hx", lineNumber : 42, className : "Main", methodName : "loadAll"});
-		this.jigsaw.start(kha_Assets.images.tablecloth);
+		this.jigsaw.start(kha_Assets.images.parrot);
 		var _gthis = this;
 		kha_System.notifyOnFrames(function(framebuffer) {
 			var g = framebuffer[0].get_g2();
@@ -196,14 +196,19 @@ Main.prototype = {
 		_this.selectedID = null;
 		var _this1 = this.jigsaw;
 		var _gthis = _this1;
-		var x1 = x - _this1.wid / 2;
-		var y1 = y - _this1.hi / 2;
+		var mousex = x - _this1.wid / 2;
+		var mousey = y - _this1.hi / 2;
 		var hits = [];
 		var hitCount = 0;
 		var jigsawShape;
 		var ox;
 		var oy;
 		var jig;
+		var dx;
+		var dy;
+		var pos;
+		var cx;
+		var cy;
 		var _g = 0;
 		var _g1 = _this1.jigsawShapeArray.length;
 		while(_g < _g1) {
@@ -212,10 +217,15 @@ Main.prototype = {
 			ox = jigsawShape.x;
 			oy = jigsawShape.y;
 			jig = _this1.jigs[s];
+			dx = mousex - jig.x + ox - (_this1.outputScale - 1) * _this1.wid;
+			dy = mousey - jig.y + oy - (_this1.outputScale - 1) * _this1.hi;
+			cx = ox + _this1.wid / 2;
+			cy = oy + _this1.hi / 2;
+			pos = _this1.transformedMouse(dx,dy,cx,cy,jig.rotation);
 			var t = HxOverrides.iter(jigsawShape.triangles);
 			while(t.hasNext()) {
 				var t1 = t.next();
-				if(t1.fullHit(x1 - jig.x + ox,y1 - jig.y + oy)) {
+				if(t1.fullHit(pos.x,pos.y)) {
 					hits[hitCount] = s;
 					++hitCount;
 					break;
@@ -272,8 +282,8 @@ Main.prototype = {
 					_this.selected.rotation = 0;
 					_this.selected.enabled = false;
 					var p = _this.getShapeXY(id);
-					_this.selected.x = p.x;
-					_this.selected.y = p.y;
+					_this.selected.x = p.x * _this.outputScale;
+					_this.selected.y = p.y * _this.outputScale;
 				}
 			}
 		}
@@ -6451,12 +6461,12 @@ jigsawxKha_game_Jig.prototype = {
 var jigsawxKha_game_JigsawGame = function() {
 	this.topDepth = 100;
 	this.cols = 8;
-	this.rows = 6;
+	this.rows = 8;
 	this.hi = 45;
-	this.wid = 45;
+	this.wid = 60;
 	this.showBoxes = false;
 	this.canvasScale = 1.;
-	this.outputScale = 1.;
+	this.outputScale = 1.2;
 	this.inputScale = 4.;
 	this.jigs = [];
 	this.enable = true;
@@ -6470,8 +6480,8 @@ var jigsawxKha_game_JigsawGame = function() {
 		jig = jj[i];
 		this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x * this.outputScale,jig.xy.y * this.outputScale,i);
 	}
-	var left = 320.;
-	var top = 265.;
+	var left = this.wid * this.cols + 10;
+	var top = this.hi * this.rows + 10;
 	var xRange = 370.;
 	var yRange = 250.;
 	var _g2 = 0;
@@ -6526,8 +6536,8 @@ jigsawxKha_game_JigsawGame.prototype = {
 			jig = jj[i];
 			this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x * this.outputScale,jig.xy.y * this.outputScale,i);
 		}
-		var left = 320.;
-		var top = 265.;
+		var left = this.wid * this.cols + 10;
+		var top = this.hi * this.rows + 10;
 		var xRange = 370.;
 		var yRange = 250.;
 		var _g2 = 0;
@@ -6556,8 +6566,8 @@ jigsawxKha_game_JigsawGame.prototype = {
 			jig = jj[i];
 			this.jigs[i] = new jigsawxKha_game_Jig(jig.xy.x * this.outputScale,jig.xy.y * this.outputScale,i);
 		}
-		var left = 320.;
-		var top = 265.;
+		var left = this.wid * this.cols + 10;
+		var top = this.hi * this.rows + 10;
 		var xRange = 370.;
 		var yRange = 250.;
 		var _g2 = 0;
@@ -6847,8 +6857,8 @@ jigsawxKha_game_JigsawGame.prototype = {
 		}
 	}
 	,randomizePieces: function() {
-		var left = 320.;
-		var top = 265.;
+		var left = this.wid * this.cols + 10;
+		var top = this.hi * this.rows + 10;
 		var xRange = 370.;
 		var yRange = 250.;
 		var _g = 0;
@@ -6941,13 +6951,18 @@ jigsawxKha_game_JigsawGame.prototype = {
 			this.selected.rotation -= theta;
 		}
 	}
-	,hitTest: function(x,y) {
+	,hitTest: function(mousex,mousey) {
 		var hits = [];
 		var hitCount = 0;
 		var jigsawShape;
 		var ox;
 		var oy;
 		var jig;
+		var dx;
+		var dy;
+		var pos;
+		var cx;
+		var cy;
 		var _g = 0;
 		var _g1 = this.jigsawShapeArray.length;
 		while(_g < _g1) {
@@ -6956,10 +6971,15 @@ jigsawxKha_game_JigsawGame.prototype = {
 			ox = jigsawShape.x;
 			oy = jigsawShape.y;
 			jig = this.jigs[s];
+			dx = mousex - jig.x + ox - (this.outputScale - 1) * this.wid;
+			dy = mousey - jig.y + oy - (this.outputScale - 1) * this.hi;
+			cx = ox + this.wid / 2;
+			cy = oy + this.hi / 2;
+			pos = this.transformedMouse(dx,dy,cx,cy,jig.rotation);
 			var t = HxOverrides.iter(jigsawShape.triangles);
 			while(t.hasNext()) {
 				var t1 = t.next();
-				if(t1.fullHit(x - jig.x + ox,y - jig.y + oy)) {
+				if(t1.fullHit(pos.x,pos.y)) {
 					hits[hitCount] = s;
 					++hitCount;
 					break;
@@ -6968,9 +6988,81 @@ jigsawxKha_game_JigsawGame.prototype = {
 		}
 		return hits;
 	}
+	,transformedMouse: function(mousex,mousey,centreX,centreY,rotation) {
+		var rotate__00 = Math.cos(rotation);
+		var rotate__10 = -Math.sin(rotation);
+		var rotate__20 = 0;
+		var rotate__01 = Math.sin(rotation);
+		var rotate__11 = Math.cos(rotation);
+		var rotate__21 = 0;
+		var rotate__02 = 0;
+		var rotate__12 = 0;
+		var rotate__22 = 1;
+		var scale__00 = 1 / this.outputScale;
+		var scale__10 = 0;
+		var scale__20 = 0;
+		var scale__01 = 0;
+		var scale__11 = 1 / this.outputScale;
+		var scale__21 = 0;
+		var scale__02 = 0;
+		var scale__12 = 0;
+		var scale__22 = 1;
+		var tran0__00 = 1;
+		var tran0__10 = 0;
+		var tran0__20 = centreX;
+		var tran0__01 = 0;
+		var tran0__11 = 1;
+		var tran0__21 = centreY;
+		var tran0__02 = 0;
+		var tran0__12 = 0;
+		var tran0__22 = 1;
+		var tran1__00 = 1;
+		var tran1__10 = 0;
+		var tran1__20 = -centreX;
+		var tran1__01 = 0;
+		var tran1__11 = 1;
+		var tran1__21 = -centreY;
+		var tran1__02 = 0;
+		var tran1__12 = 0;
+		var tran1__22 = 1;
+		var _this__00 = tran0__00 * scale__00 + tran0__10 * scale__01 + tran0__20 * scale__02;
+		var _this__10 = tran0__00 * scale__10 + tran0__10 * scale__11 + tran0__20 * scale__12;
+		var _this__20 = tran0__00 * scale__20 + tran0__10 * scale__21 + tran0__20 * scale__22;
+		var _this__01 = tran0__01 * scale__00 + tran0__11 * scale__01 + tran0__21 * scale__02;
+		var _this__11 = tran0__01 * scale__10 + tran0__11 * scale__11 + tran0__21 * scale__12;
+		var _this__21 = tran0__01 * scale__20 + tran0__11 * scale__21 + tran0__21 * scale__22;
+		var _this__02 = tran0__02 * scale__00 + tran0__12 * scale__01 + tran0__22 * scale__02;
+		var _this__12 = tran0__02 * scale__10 + tran0__12 * scale__11 + tran0__22 * scale__12;
+		var _this__22 = tran0__02 * scale__20 + tran0__12 * scale__21 + tran0__22 * scale__22;
+		var _this__001 = _this__00 * rotate__00 + _this__10 * rotate__01 + _this__20 * rotate__02;
+		var _this__101 = _this__00 * rotate__10 + _this__10 * rotate__11 + _this__20 * rotate__12;
+		var _this__201 = _this__00 * rotate__20 + _this__10 * rotate__21 + _this__20 * rotate__22;
+		var _this__011 = _this__01 * rotate__00 + _this__11 * rotate__01 + _this__21 * rotate__02;
+		var _this__111 = _this__01 * rotate__10 + _this__11 * rotate__11 + _this__21 * rotate__12;
+		var _this__211 = _this__01 * rotate__20 + _this__11 * rotate__21 + _this__21 * rotate__22;
+		var _this__021 = _this__02 * rotate__00 + _this__12 * rotate__01 + _this__22 * rotate__02;
+		var _this__121 = _this__02 * rotate__10 + _this__12 * rotate__11 + _this__22 * rotate__12;
+		var _this__221 = _this__02 * rotate__20 + _this__12 * rotate__21 + _this__22 * rotate__22;
+		var transform__00 = _this__001 * tran1__00 + _this__101 * tran1__01 + _this__201 * tran1__02;
+		var transform__10 = _this__001 * tran1__10 + _this__101 * tran1__11 + _this__201 * tran1__12;
+		var transform__20 = _this__001 * tran1__20 + _this__101 * tran1__21 + _this__201 * tran1__22;
+		var transform__01 = _this__011 * tran1__00 + _this__111 * tran1__01 + _this__211 * tran1__02;
+		var transform__11 = _this__011 * tran1__10 + _this__111 * tran1__11 + _this__211 * tran1__12;
+		var transform__21 = _this__011 * tran1__20 + _this__111 * tran1__21 + _this__211 * tran1__22;
+		var transform__02 = _this__021 * tran1__00 + _this__121 * tran1__01 + _this__221 * tran1__02;
+		var transform__12 = _this__021 * tran1__10 + _this__121 * tran1__11 + _this__221 * tran1__12;
+		var transform__22 = _this__021 * tran1__20 + _this__121 * tran1__21 + _this__221 * tran1__22;
+		var value_x = mousex;
+		var value_y = mousey;
+		var w = transform__02 * value_x + transform__12 * value_y + transform__22;
+		var x = (transform__00 * value_x + transform__10 * value_y + transform__20) / w;
+		var y = (transform__01 * value_x + transform__11 * value_y + transform__21) / w;
+		var pos = new kha_math_FastVector2(x,y);
+		return pos;
+	}
 	,isInPlace: function(id,jig) {
 		var shape = this.jigsawShapeArray[id];
-		var dist = Math.pow(shape.x - jig.x,2) + Math.pow(shape.y - jig.y,2);
+		var dist = Math.pow(shape.x * this.outputScale - jig.x,2) + Math.pow(shape.y * this.outputScale - jig.y,2);
 		return dist < 40;
 	}
 	,getShapeXY: function(id) {
@@ -7010,14 +7102,19 @@ jigsawxKha_game_JigsawGame.prototype = {
 	}
 	,selectCheck: function(x,y) {
 		var _gthis = this;
-		var x1 = x - this.wid / 2;
-		var y1 = y - this.hi / 2;
+		var mousex = x - this.wid / 2;
+		var mousey = y - this.hi / 2;
 		var hits = [];
 		var hitCount = 0;
 		var jigsawShape;
 		var ox;
 		var oy;
 		var jig;
+		var dx;
+		var dy;
+		var pos;
+		var cx;
+		var cy;
 		var _g = 0;
 		var _g1 = this.jigsawShapeArray.length;
 		while(_g < _g1) {
@@ -7026,10 +7123,15 @@ jigsawxKha_game_JigsawGame.prototype = {
 			ox = jigsawShape.x;
 			oy = jigsawShape.y;
 			jig = this.jigs[s];
+			dx = mousex - jig.x + ox - (this.outputScale - 1) * this.wid;
+			dy = mousey - jig.y + oy - (this.outputScale - 1) * this.hi;
+			cx = ox + this.wid / 2;
+			cy = oy + this.hi / 2;
+			pos = this.transformedMouse(dx,dy,cx,cy,jig.rotation);
 			var t = HxOverrides.iter(jigsawShape.triangles);
 			while(t.hasNext()) {
 				var t1 = t.next();
-				if(t1.fullHit(x1 - jig.x + ox,y1 - jig.y + oy)) {
+				if(t1.fullHit(pos.x,pos.y)) {
 					hits[hitCount] = s;
 					++hitCount;
 					break;
@@ -7091,8 +7193,8 @@ jigsawxKha_game_JigsawGame.prototype = {
 					this.selected.rotation = 0;
 					this.selected.enabled = false;
 					var p = this.getShapeXY(id);
-					this.selected.x = p.x;
-					this.selected.y = p.y;
+					this.selected.x = p.x * this.outputScale;
+					this.selected.y = p.y * this.outputScale;
 				}
 			}
 		}
@@ -8257,16 +8359,41 @@ js_html__$ArrayBuffer_ArrayBufferCompat.sliceImpl = function(begin,end) {
 	return resultArray.buffer;
 };
 var kha__$Assets_ImageList = function() {
-	this.names = ["tablecloth"];
+	this.names = ["parrot","tablecloth"];
 	this.tableclothDescription = { name : "tablecloth", original_height : 262, original_width : 371, files : ["tablecloth.jpg"], type : "image"};
 	this.tableclothName = "tablecloth";
 	this.tablecloth = null;
+	this.parrotDescription = { name : "parrot", original_height : 250, original_width : 250, files : ["parrot.png"], type : "image"};
+	this.parrotName = "parrot";
+	this.parrot = null;
 };
 $hxClasses["kha._Assets.ImageList"] = kha__$Assets_ImageList;
 kha__$Assets_ImageList.__name__ = true;
 kha__$Assets_ImageList.prototype = {
 	get: function(name) {
 		return Reflect.field(this,name);
+	}
+	,parrot: null
+	,parrotName: null
+	,parrotDescription: null
+	,parrotLoad: function(done,failure) {
+		var tmp;
+		if(failure != null) {
+			tmp = failure;
+		} else {
+			var f = haxe_Log.trace;
+			var infos = { fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 130, className : "kha._Assets.ImageList", methodName : "parrotLoad"};
+			tmp = function(v) {
+				f(v,infos);
+			};
+		}
+		kha_Assets.loadImage("parrot",function(image) {
+			done();
+		},tmp,{ fileName : "kha/internal/AssetsBuilder.hx", lineNumber : 130, className : "kha._Assets.ImageList", methodName : "parrotLoad"});
+	}
+	,parrotUnload: function() {
+		this.parrot.unload();
+		this.parrot = null;
 	}
 	,tablecloth: null
 	,tableclothName: null
@@ -10247,27 +10374,27 @@ $hxClasses["kha.Shaders"] = kha_Shaders;
 kha_Shaders.__name__ = true;
 kha_Shaders.init = function() {
 	var blobs = [];
-	var data = Reflect.field(kha_Shaders,"painter_colored_fragData" + 0);
+	var data = Reflect.field(kha_Shaders,"painter_colored_vertData" + 0);
 	var bytes = haxe_Unserializer.run(data);
 	blobs.push(kha_internal_BytesBlob.fromBytes(bytes));
-	var data1 = Reflect.field(kha_Shaders,"painter_colored_fragData" + 1);
+	var data1 = Reflect.field(kha_Shaders,"painter_colored_vertData" + 1);
 	var bytes1 = haxe_Unserializer.run(data1);
 	blobs.push(kha_internal_BytesBlob.fromBytes(bytes1));
-	var data2 = Reflect.field(kha_Shaders,"painter_colored_fragData" + 2);
+	var data2 = Reflect.field(kha_Shaders,"painter_colored_vertData" + 2);
 	var bytes2 = haxe_Unserializer.run(data2);
 	blobs.push(kha_internal_BytesBlob.fromBytes(bytes2));
-	kha_Shaders.painter_colored_frag = new kha_graphics4_FragmentShader(blobs,["painter-colored.frag.essl","painter-colored-relaxed.frag.essl","painter-colored-webgl2.frag.essl"]);
+	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
 	var blobs1 = [];
-	var data3 = Reflect.field(kha_Shaders,"painter_colored_vertData" + 0);
+	var data3 = Reflect.field(kha_Shaders,"painter_colored_fragData" + 0);
 	var bytes3 = haxe_Unserializer.run(data3);
 	blobs1.push(kha_internal_BytesBlob.fromBytes(bytes3));
-	var data4 = Reflect.field(kha_Shaders,"painter_colored_vertData" + 1);
+	var data4 = Reflect.field(kha_Shaders,"painter_colored_fragData" + 1);
 	var bytes4 = haxe_Unserializer.run(data4);
 	blobs1.push(kha_internal_BytesBlob.fromBytes(bytes4));
-	var data5 = Reflect.field(kha_Shaders,"painter_colored_vertData" + 2);
+	var data5 = Reflect.field(kha_Shaders,"painter_colored_fragData" + 2);
 	var bytes5 = haxe_Unserializer.run(data5);
 	blobs1.push(kha_internal_BytesBlob.fromBytes(bytes5));
-	kha_Shaders.painter_colored_vert = new kha_graphics4_VertexShader(blobs1,["painter-colored.vert.essl","painter-colored-relaxed.vert.essl","painter-colored-webgl2.vert.essl"]);
+	kha_Shaders.painter_colored_frag = new kha_graphics4_FragmentShader(blobs1,["painter-colored.frag.essl","painter-colored-relaxed.frag.essl","painter-colored-webgl2.frag.essl"]);
 	var blobs2 = [];
 	var data6 = Reflect.field(kha_Shaders,"painter_image_fragData" + 0);
 	var bytes6 = haxe_Unserializer.run(data6);
@@ -38118,12 +38245,12 @@ kha_Scheduler.timeWarpSaveTime = 10.0;
 kha_Scheduler.DIF_COUNT = 3;
 kha_Scheduler.maxframetime = 0.5;
 kha_Scheduler.startTime = 0;
-kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
-kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
-kha_Shaders.painter_colored_fragData2 = "s223:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgRnJhZ0NvbG9yOwppbiBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBGcmFnQ29sb3IgPSBmcmFnbWVudENvbG9yOwp9Cgo";
 kha_Shaders.painter_colored_vertData0 = "s331:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmF0dHJpYnV0ZSB2ZWMzIHZlcnRleFBvc2l0aW9uOwp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
 kha_Shaders.painter_colored_vertData1 = "s374:I3ZlcnNpb24gMTAwCgp1bmlmb3JtIG1lZGl1bXAgbWF0NCBwcm9qZWN0aW9uTWF0cml4OwoKYXR0cmlidXRlIG1lZGl1bXAgdmVjMyB2ZXJ0ZXhQb3NpdGlvbjsKdmFyeWluZyBtZWRpdW1wIHZlYzQgZnJhZ21lbnRDb2xvcjsKYXR0cmlidXRlIG1lZGl1bXAgdmVjNCB2ZXJ0ZXhDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX1Bvc2l0aW9uID0gcHJvamVjdGlvbk1hdHJpeCAqIHZlYzQodmVydGV4UG9zaXRpb24sIDEuMCk7CiAgICBmcmFnbWVudENvbG9yID0gdmVydGV4Q29sb3I7Cn0KCg";
 kha_Shaders.painter_colored_vertData2 = "s311:I3ZlcnNpb24gMzAwIGVzCgp1bmlmb3JtIG1hdDQgcHJvamVjdGlvbk1hdHJpeDsKCmluIHZlYzMgdmVydGV4UG9zaXRpb247Cm91dCB2ZWM0IGZyYWdtZW50Q29sb3I7CmluIHZlYzQgdmVydGV4Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9Qb3NpdGlvbiA9IHByb2plY3Rpb25NYXRyaXggKiB2ZWM0KHZlcnRleFBvc2l0aW9uLCAxLjApOwogICAgZnJhZ21lbnRDb2xvciA9IHZlcnRleENvbG9yOwp9Cgo";
+kha_Shaders.painter_colored_fragData0 = "s198:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdmFyeWluZyBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBnbF9GcmFnRGF0YVswXSA9IGZyYWdtZW50Q29sb3I7Cn0KCg";
+kha_Shaders.painter_colored_fragData1 = "s192:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp2YXJ5aW5nIHZlYzQgZnJhZ21lbnRDb2xvcjsKCnZvaWQgbWFpbigpCnsKICAgIGdsX0ZyYWdEYXRhWzBdID0gZnJhZ21lbnRDb2xvcjsKfQoK";
+kha_Shaders.painter_colored_fragData2 = "s223:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKb3V0IGhpZ2hwIHZlYzQgRnJhZ0NvbG9yOwppbiBoaWdocCB2ZWM0IGZyYWdtZW50Q29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBGcmFnQ29sb3IgPSBmcmFnbWVudENvbG9yOwp9Cgo";
 kha_Shaders.painter_image_fragData0 = "s471:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKdmFyeWluZyBoaWdocCB2ZWMyIHRleENvb3JkOwp2YXJ5aW5nIGhpZ2hwIHZlYzQgY29sb3I7Cgp2b2lkIG1haW4oKQp7CiAgICBoaWdocCB2ZWM0IHRleGNvbG9yID0gdGV4dHVyZTJEKHRleCwgdGV4Q29vcmQpICogY29sb3I7CiAgICBoaWdocCB2ZWMzIF8zMiA9IHRleGNvbG9yLnh5eiAqIGNvbG9yLnc7CiAgICB0ZXhjb2xvciA9IHZlYzQoXzMyLngsIF8zMi55LCBfMzIueiwgdGV4Y29sb3Iudyk7CiAgICBnbF9GcmFnRGF0YVswXSA9IHRleGNvbG9yOwp9Cgo";
 kha_Shaders.painter_image_fragData1 = "s444:I3ZlcnNpb24gMTAwCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gbWVkaXVtcCBpbnQ7Cgp1bmlmb3JtIG1lZGl1bXAgc2FtcGxlcjJEIHRleDsKCnZhcnlpbmcgdmVjMiB0ZXhDb29yZDsKdmFyeWluZyB2ZWM0IGNvbG9yOwoKdm9pZCBtYWluKCkKewogICAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUyRCh0ZXgsIHRleENvb3JkKSAqIGNvbG9yOwogICAgdmVjMyBfMzIgPSB0ZXhjb2xvci54eXogKiBjb2xvci53OwogICAgdGV4Y29sb3IgPSB2ZWM0KF8zMi54LCBfMzIueSwgXzMyLnosIHRleGNvbG9yLncpOwogICAgZ2xfRnJhZ0RhdGFbMF0gPSB0ZXhjb2xvcjsKfQoK";
 kha_Shaders.painter_image_fragData2 = "s487:I3ZlcnNpb24gMzAwIGVzCnByZWNpc2lvbiBtZWRpdW1wIGZsb2F0OwpwcmVjaXNpb24gaGlnaHAgaW50OwoKdW5pZm9ybSBoaWdocCBzYW1wbGVyMkQgdGV4OwoKaW4gaGlnaHAgdmVjMiB0ZXhDb29yZDsKaW4gaGlnaHAgdmVjNCBjb2xvcjsKb3V0IGhpZ2hwIHZlYzQgRnJhZ0NvbG9yOwoKdm9pZCBtYWluKCkKewogICAgaGlnaHAgdmVjNCB0ZXhjb2xvciA9IHRleHR1cmUodGV4LCB0ZXhDb29yZCkgKiBjb2xvcjsKICAgIGhpZ2hwIHZlYzMgXzMyID0gdGV4Y29sb3IueHl6ICogY29sb3IudzsKICAgIHRleGNvbG9yID0gdmVjNChfMzIueCwgXzMyLnksIF8zMi56LCB0ZXhjb2xvci53KTsKICAgIEZyYWdDb2xvciA9IHRleGNvbG9yOwp9Cgo";
